@@ -27,8 +27,8 @@ The app will be written in Flask and will be using a MySQL database.
 - username (varchar)
 - task id (varchar)
 - evaluated (bool)
-- result (varchar) -> possibly a link to an evaluation result (with errors)
-- score (int) -> score in cycles
+- result (varchar) -> possibly a link to an evaluation result (with errors), or JSON file in the database directly
+- score (int, default -1) -> score in cycles, if negative, task has not been evaluated, or has errors
 
 Users submits a task -> a submission is created. An evaluator evaluates the tasks in the order they came in the database.
 After a task is evaluated, it is marked as evaluated, so it is not evaluated more than one time. An evaluation log is created.
@@ -76,3 +76,5 @@ result = "Expected output for the second input"
 ```
 
 The inputs and ouputs, are the data, which the program will be tested on. (should they be stored in a separate file, or can just be stores as a string here?)
+
+Databases are currently running on local XAMPP server, will be migrated to a VPS when possible.
