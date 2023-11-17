@@ -39,6 +39,10 @@ After a task is evaluated, it is marked as evaluated, so it is not evaluated mor
 - task path (varchar)
 - available (bool) -> if the task is available to submit
 
+Databases are currently running on local XAMPP server, will be migrated to a VPS when possible.
+
+<img src="rsrc/riscvdb.png" width="550">
+
 ## Task creation
 Tasks will be stored in toml format, with structure similar to this one (subject to change):
 
@@ -77,4 +81,18 @@ result = "Expected output for the second input"
 
 The inputs and ouputs, are the data, which the program will be tested on. (should they be stored in a separate file, or can just be stores as a string here?)
 
-Databases are currently running on local XAMPP server, will be migrated to a VPS when possible.
+## Task evaluation log
+The task evaluation log will be stored in a JSON file, with structure similar to this one (subject to change):
+
+```json
+{
+	"taskid": "task id",
+	"user": "username",
+	"submission": "submission id",
+	"timestamp": "2023-01-01 00:00:00",
+	"error_log": "error log\nline 2\nline 3",
+	"result": "accepted/rejected",
+	"score": "score in cycles"
+}
+```
+These file may reside in the database, or in a folder on the server. This has not been decided yet.
