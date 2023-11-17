@@ -11,7 +11,7 @@ The app will be written in Flask and will be using a MySQL database.
 - [ ] The submission form has a textarea for the task solution
 - [ ] After submitting, the file will be saved in a folder, and a new record will be created in the submission table
 - [ ] A file will be evaluated and the submission closed, results will be saved in results file
-- [ ] On each task page, a leaderboard will be shown with the users best submissions (in cycles), made by a request to the submission database for that task
+- [ ] On each task page, a leaderboard will be shown with the users best submissions (in cycles), made by a request (to the submissions table) for that task
 - [ ] Each user will only have the best submission listed (or the latest more probably)
 
 ## Database structure (subject to change):
