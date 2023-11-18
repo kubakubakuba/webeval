@@ -10,7 +10,9 @@ The app will be written in Flask and will be using a MySQL database.
 - [x] Logged in users are able to submit solutions on the submit page (with the task number)
 - [x] The submission form has a textarea for the task solution (library CodeMirror for assembly highlighting)
 - [x] After submitting, the file will be saved in a folder, and a new record will be created in the submission table
-- [ ] A file will be evaluated and the submission closed, results will be saved in results file
+- [x] A file will be evaluated and the submission closed, results will be saved in results file
+- [x] The results will be displayed on the submission page
+- [ ] Automatic evaluator, which periodically checks for new submissions and evaluates them
 - [ ] On each task page, a leaderboard will be shown with the users best submissions (in cycles), made by a request (to the submissions table) for that task
 - [ ] Each user will only have the best submission listed (or the latest more probably)
 
@@ -42,7 +44,10 @@ After a task is evaluated, it is marked as evaluated, so it is not evaluated mor
 - task path (varchar)
 - available (bool) -> if the task is available to submit
 
-Databases are currently running on local XAMPP server, will be migrated to a VPS when possible.
+~~Database are currently running on local XAMPP server, will be migrated to a VPS when possible.~~
+
+Database is running on a remote VPS (omega.swpelc.eu, 158.101.208.70:3306)
+Testing app is running on the same server on port [5000](omega.swpelc.eu:5000). 
 
 <img src="rsrc/riscvdb.png" width="550">
 
@@ -65,6 +70,9 @@ This is a **description** of the task. Here, you can include:
 Write a [bubble sort](https://en.wikipedia.org/wiki/Bubble_sort).
 '''
 
+[arguments]
+run = "--asm submission.S"
+
 [[inputs]]
 data_in = "9 8 7 6 5 4 3 2 1"
 data_out = "1 2 3 4 5 6 7 8 9"
@@ -75,11 +83,11 @@ data_in = "4 9 6 4 7 8 5 1 5 5"
 data_out = "1 4 4 5 5 5 6 7 8 9"
 description = "Sequence with duplicates"
 ```
-
 The inputs and ouputs, are the data, which the program will be tested on. (should they be stored in a separate file, or can just be stores as a string here?)
+Arguments are the flags, which will be passed to the qtrvsim. User also sees the --asm submission.S flag for their information.
 
 ## Task evaluation log
-The task evaluation log will be stored in a JSON file, with structure similar to this one (subject to change):
+~~The task evaluation log will be stored in a JSON file, with structure similar to this one (subject to change):~~
 
 ```json
 {
@@ -92,4 +100,11 @@ The task evaluation log will be stored in a JSON file, with structure similar to
 	"score": "score in cycles"
 }
 ```
-These file may reside in the database, or in a folder on the server. This has not been decided yet.
+This is curently implemented as a plaintext file, from which result are read using regex.
+Probably will be better to transfer this to a JSON file, which will be easier to parse in the future.
+
+## Acknowledgements
+- [Flask](https://flask.palletsprojects.com/en/3.0.x/)
+- [CodeMirror](https://codemirror.net/)
+- [Bootstrap](https://getbootstrap.com/)
+- [QtRVSim](https://github.com/cvut/qtrvsim)
