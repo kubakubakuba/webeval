@@ -3,13 +3,13 @@
 The app will be written in Flask and will be using a MySQL database.
 
 ## Roadmap:
-- [ ] Users are able to register
-- [ ] Users are able to login
-- [ ] List of tasks is displayed on the homepage
-- [ ] Tasks are displayed on their separate pages which the homepage links to
-- [ ] Logged in users are able to submit solutions on the submit page (with the task number)
-- [ ] The submission form has a textarea for the task solution
-- [ ] After submitting, the file will be saved in a folder, and a new record will be created in the submission table
+- [x] Users are able to register
+- [x] Users are able to login
+- [x] List of tasks is displayed on the homepage
+- [x] Tasks are displayed on their separate pages which the homepage links to
+- [x] Logged in users are able to submit solutions on the submit page (with the task number)
+- [x] The submission form has a textarea for the task solution (library CodeMirror for assembly highlighting)
+- [x] After submitting, the file will be saved in a folder, and a new record will be created in the submission table
 - [ ] A file will be evaluated and the submission closed, results will be saved in results file
 - [ ] On each task page, a leaderboard will be shown with the users best submissions (in cycles), made by a request (to the submissions table) for that task
 - [ ] Each user will only have the best submission listed (or the latest more probably)
@@ -26,9 +26,11 @@ The app will be written in Flask and will be using a MySQL database.
 - submission id (primary, auto increment, int)
 - username (varchar)
 - task id (varchar)
-- evaluated (bool)
-- result (varchar) -> possibly a link to an evaluation result (with errors), or JSON file in the database directly
+- filepath (vacrchar) -> path to the submission file
+- evaluated (bool, default false)
+- result (varchar, default NULL) -> possibly a link to an evaluation result (with errors), or JSON file in the database directly
 - score (int, default -1) -> score in cycles, if negative, task has not been evaluated, or has errors
+- time (datetime) -> time of submission
 
 Users submits a task -> a submission is created. An evaluator evaluates the tasks in the order they came in the database.
 After a task is evaluated, it is marked as evaluated, so it is not evaluated more than one time. An evaluation log is created.
@@ -36,6 +38,7 @@ After a task is evaluated, it is marked as evaluated, so it is not evaluated mor
 
 ### Tasks table
 - task id (primary, auto increment, int)
+- task name (varchar)
 - task path (varchar)
 - available (bool) -> if the task is available to submit
 
@@ -58,25 +61,19 @@ This is a **description** of the task. Here, you can include:
 - Objectives
 - Detailed instructions
 - Any relevant information in Markdown format
+
+Write a [bubble sort](https://en.wikipedia.org/wiki/Bubble_sort).
 '''
 
-[inputs]
+[[inputs]]
+data_in = "9 8 7 6 5 4 3 2 1"
+data_out = "1 2 3 4 5 6 7 8 9"
+description = "Reversed sequence"
 
-[inputs.input1]
-data = "First sample input data"
-description = "Description of the first sample input"
-
-[inputs.input2]
-data = "Second sample input data"
-description = "Description of the second sample input"
-
-[outputs]
-
-[outputs.input1]
-result = "Expected output for the first input"
-
-[outputs.input2]
-result = "Expected output for the second input"
+[[inputs]]
+data_in = "4 9 6 4 7 8 5 1 5 5"
+data_out = "1 4 4 5 5 5 6 7 8 9"
+description = "Sequence with duplicates"
 ```
 
 The inputs and ouputs, are the data, which the program will be tested on. (should they be stored in a separate file, or can just be stores as a string here?)

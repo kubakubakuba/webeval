@@ -1,0 +1,19 @@
+<html>
+	<head>
+		<title>Submission Successful</title>
+	</head>
+	<body>
+		<p>Answer submitted successfully! Redirecting in <span id="countdown">3</span> seconds...</p>
+		<script>
+			var seconds = 3;
+			function countdown() {
+				seconds--;
+				document.getElementById("countdown").textContent = seconds;
+				if (seconds <= 0) {
+					window.location.href = "/";
+				}
+			}
+			setInterval(countdown, 1000);
+		</script>
+	</body>
+</html>

@@ -1,0 +1,167 @@
+from flask import Flask, render_template, request, redirect, session, url_for
+import mysql.connector
+from hashlib import sha512
+import secrets
+import os
+import toml
+from markdown import markdown
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = 'PsHYn26gGFi#&yfRB%B5SENWseYpat5#nQTv4yQjJC%qt*9Zy6o3ZRu389RmQkgF'
+
+db_config = { #local db config
+	'user': 'qtrvsim',
+	'password': 'admin123',
+	'host': 'localhost',
+	'database': 'qtrvsim_web_eval',
+	'port': 3306
+}
+
+db = mysql.connector.connect(**db_config)
+cursor = db.cursor()
+
+if __name__ == '__main__':
+	app.run(debug=True)
+
+@app.route('/')
+def index():
+	cursor.execute('SELECT id, name FROM tasks WHERE available = 1')
+	task = cursor.fetchall()
+
+	tasks = {}
+	if task:
+		for(i, t) in enumerate(task):
+			task_id, task_name = t
+			tasks[i] = (task_id, task_name)
+
+	return render_template('index.html', sessions=session, tasks=tasks.values())
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+	if request.method == 'POST':
+		username = request.form['username']
+		password = request.form['password']
+		email = request.form['email']
+
+		salt = secrets.token_hex(16) #generate random salt for hashing password
+		hashed_password = sha512((password + salt).encode()).hexdigest()
+
+		cursor.execute('INSERT INTO users (username, password, email, salt) VALUES (%s, %s, %s, %s)', (username, hashed_password, email, salt))
+		db.commit()
+
+		return redirect('/login')
+	else:
+		return render_template('register.html', sessions=session)
+	
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+	if request.method == 'POST':
+		username = request.form['username']
+		password = request.form['password']
+
+		cursor.execute('SELECT id, password, salt, username FROM users WHERE username = %s', (username,))
+		user = cursor.fetchone()
+
+		if user:
+			user_id, hashed_password, salt, username = user
+			if sha512((password + salt).encode()).hexdigest() == hashed_password:
+				session['logged_in'] = True
+				session['user_id'] = user_id
+				session['username'] = username
+				return render_template('autoredirect.html')
+			else:
+				return 'Invalid username or password!'
+		else:
+			return 'Invalid username or password!'
+	else:
+		return render_template('login.html', sessions=session)	
+	
+@app.route('/logout')
+def logout():
+	session.clear()
+	return redirect('/login')
+
+@app.route('/submit/<int:task_id>', methods=['GET', 'POST'])
+def submit(task_id):
+	if 'logged_in' not in session:
+			return redirect(url_for('login'))
+	
+	if request.method == 'POST':
+		user_id = session['user_id']
+		code = request.form['code'].replace('\r\n', '\n')
+
+		directory = os.path.join('submissions', str(user_id))
+		if not os.path.exists(directory):
+			os.makedirs(directory)
+
+		time_uploaded = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+		filename = time_uploaded + '.S'
+		with open(os.path.join(directory, filename), 'w') as file:
+			file.write(code)
+
+		full_filepath = "submissions/" + str(user_id) + "/" + filename
+
+		cursor.execute('INSERT INTO submissions (userid, taskid, filepath) VALUES (%s, %s, %s)', 
+			(user_id, task_id, full_filepath))
+		db.commit()
+
+		return render_template('autoredirect.html')
+	else:
+		cursor.execute('SELECT name FROM tasks WHERE id = %s AND available = 1', (task_id,))
+		task = cursor.fetchone()
+
+		if task:
+			task_name = task[0]
+
+		else:
+			return 'Task not found or not available to submit!'
+
+		return render_template('submit.html', task_name=task_name, sessions=session)
+	
+@app.route('/task/<int:task_id>')
+def task(task_id):
+	submission_found = False
+	evaluated = None
+	result = None
+	score = None
+	result_file = None
+
+
+	cursor.execute('SELECT path FROM tasks WHERE id = %s AND available = 1', (task_id,))
+	task = cursor.fetchone()
+
+	if task:
+		task_path = task[0]
+	else:
+		return 'Task not found or not available to submit!'
+	
+	#check if toml file exists at the location
+
+	if(not os.path.exists(task_path)):
+		return 'Task not found or not available to submit!'
+	
+	#read toml file and get the task data
+
+	with open(task_path) as f:
+		task_data = toml.load(f)
+
+	task_name = task_data['task']['name']
+	task_description = task_data['task']['description']
+	#parse task description as markdown
+	task_description = markdown(task_description)
+
+	inputs = task_data['inputs']
+
+	user_id = session['user_id']
+	cursor.execute('SELECT evaluated, result, score, result_file, time FROM submissions WHERE userid = %s AND taskid = %s ORDER BY time DESC LIMIT 1', (user_id, task_id))
+	submission = cursor.fetchone()
+	if submission:
+		submission_found = True
+		evaluated, result, score, result_file, time = submission
+
+	#TODO:read result file and parse contents
+
+	print("result: ", result)
+
+	return render_template('task.html', task_name=task_name, task_description=task_description, task_id=task_id, inputs=inputs, sessions=session, result=result, result_file=result_file, score=score, time=time, submission_found=submission_found)

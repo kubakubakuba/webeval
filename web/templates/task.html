@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}
+	{{ task_name }}
+{% endblock title %}
+
+{% block content %}
+	<!--Preformated markdown-->
+	{{ task_description | safe}}
+	<!--End preformated markdown-->
+
+	{% for i in inputs %}
+		<h6>Input {{ loop.index }}: {{ i.description }}</h6>
+		<div>
+			<span>In:</span>  <code>{{ i.data_in }}</code> <br />
+		</div>
+		<div>
+			<span>Out:</span> <code>{{ i.data_out }}</code> <br />
+		</div>
+	{% endfor %}
+	
+	<hr />
+	{% if 'logged_in' in sessions %}
+		<h5><a href="/submit/{{ task_id }}">Submit a solution</a></h5>
+		{% if submission_found %}
+			<h5>Your latest submission:</h5>
+			<div>
+				<div>
+					Submission result:
+					{% if result == -1 %}
+						<span style="color: rgb(239, 198, 15);">Pending</span>
+					{% elif result == 0 %}
+						<span style="color: green;">Accepted</span>
+					{% else %}
+						<span style="color: red;">Rejected</span>
+					{% endif %}
+				</div>
+				<div>
+					Time submitted:
+					{{ time }}
+				</div>
+				<div>
+					Detail:
+					<code>{{ result_file }}</code>
+				</div>
+				{% if result == 0 %}
+					<div>
+						Score:
+						<code>{{ score }}</code>
+					</div>
+				{% endif %}
+			</div>
+		{% endif %}
+	{% endif %}
+{% endblock content %}
+

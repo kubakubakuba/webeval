@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}
+QtRVSim Web Evaluation
+{% endblock title %}
+
+{% block content %}
+	<h4>Tasks available for submission:</h4>
+
+	{% for t in tasks %}
+		<div>
+			<h5><a href="/task/{{ t[0] }}">{{ t[1] }}</a></h5>
+		</div>
+	{% endfor %}
+
+{% endblock content %}
+
