@@ -12,7 +12,8 @@ The app will be written in Flask and will be using a MySQL database.
 - [x] After submitting, the file will be saved in a folder, and a new record will be created in the submission table
 - [x] A file will be evaluated and the submission closed, results will be saved in results file
 - [x] The results will be displayed on the submission page
-- [ ] Automatic evaluator, which periodically checks for new submissions and evaluates them
+- [x] Automatic evaluator, which periodically checks for new submissions and evaluates them
+- [ ] Evaluator compares the task output to the reference
 - [ ] On each task page, a leaderboard will be shown with the users best submissions (in cycles), made by a request (to the submissions table) for that task
 - [ ] Each user will only have the best submission listed (or the latest more probably)
 
