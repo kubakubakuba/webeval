@@ -47,7 +47,7 @@ After a task is evaluated, it is marked as evaluated, so it is not evaluated mor
 ~~Database are currently running on local XAMPP server, will be migrated to a VPS when possible.~~
 
 Database is running on a remote VPS (omega.swpelc.eu, 158.101.208.70:3306)
-Testing app is running on the same server on port [5000](omega.swpelc.eu:5000). 
+Testing app is running on the same server on port 5000 [here](https://omega.swpelc.eu:5000). 
 
 <img src="rsrc/riscvdb.png" width="550">
 
