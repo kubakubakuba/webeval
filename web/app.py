@@ -157,7 +157,8 @@ def task(task_id):
 
 		result_data = ""
 		#check if result file exists
-		if result_file and os.path.exists(result_file):
+		result_file = result_file.decode()
+		if result_file is not None and os.path.exists(result_file):
 			with open(result_file) as f:
 				result_data = f.read()
 		else:
