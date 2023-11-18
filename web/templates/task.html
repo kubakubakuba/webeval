@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "codemirror.html" %}
 
 {% block title %}
 	{{ task_name }}
@@ -6,10 +6,10 @@
 
 {% block content %}
 	<!--Preformated markdown-->
-	{{ task_description | safe}}
+	{{ task.description | safe}}
 	<!--End preformated markdown-->
 
-	{% for i in inputs %}
+	{% for i in task.inputs %}
 		<h6>Input {{ loop.index }}: {{ i.description }}</h6>
 		<div>
 			<span>In:</span>  <code>{{ i.data_in }}</code> <br />
@@ -18,10 +18,14 @@
 			<span>Out:</span> <code>{{ i.data_out }}</code> <br />
 		</div>
 	{% endfor %}
-	
+	<br />
+	Your program will be run with the following arguments:
+	<code>
+		{{ task.arguments }}
+	</code>
 	<hr />
 	{% if 'logged_in' in sessions %}
-		<h5><a href="/submit/{{ task_id }}">Submit a solution</a></h5>
+		<h5><a href="/submit/{{ task.id }}">Submit a solution</a></h5>
 		{% if submission_found %}
 			<h5>Your latest submission:</h5>
 			<div>
@@ -39,18 +43,36 @@
 					Time submitted:
 					{{ time }}
 				</div>
-				<div>
-					Detail:
-					<code>{{ result_file }}</code>
-				</div>
+
 				{% if result == 0 %}
 					<div>
 						Score:
 						<code>{{ score }}</code>
 					</div>
 				{% endif %}
+
+				{% if result_file %}
+					<div id="resultFileCodeMirror"></div>
+				{% endif %}
+				
 			</div>
 		{% endif %}
 	{% endif %}
 {% endblock content %}
 
+{% block cmirror %}
+	<script>
+		var resultFileContent = {{ result_file|tojson }};
+		var resultFileEditor = CodeMirror(document.getElementById("resultFileCodeMirror"), {
+			lineNumbers: true,
+			mode: "python",
+			lineWrapping: true,
+			viewportMargin: Infinity,
+			readOnly: true,
+		});
+
+		resultFileEditor.setSize("1250px", "500px");
+		resultFileEditor.setValue(resultFileContent);
+	</script>
+{% endblock %}
+```

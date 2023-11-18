@@ -7,6 +7,9 @@ description = '''
 Write a **merge sort**.
 '''
 
+[arguments]
+run = "--d-regs --dump-cycles --dump-cache-stats"
+
 [[inputs]]
 data_in = "9 8 7 6 5 4 3 2 1"
 data_out = "1 2 3 4 5 6 7 8 9"

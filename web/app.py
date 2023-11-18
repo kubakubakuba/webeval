@@ -6,17 +6,10 @@ import os
 import toml
 from markdown import markdown
 from datetime import datetime
+from db import db_config
 
 app = Flask(__name__)
 app.secret_key = 'PsHYn26gGFi#&yfRB%B5SENWseYpat5#nQTv4yQjJC%qt*9Zy6o3ZRu389RmQkgF'
-
-db_config = { #local db config
-	'user': 'qtrvsim',
-	'password': 'admin123',
-	'host': 'localhost',
-	'database': 'qtrvsim_web_eval',
-	'port': 3306
-}
 
 db = mysql.connector.connect(**db_config)
 cursor = db.cursor()
@@ -122,11 +115,10 @@ def submit(task_id):
 @app.route('/task/<int:task_id>')
 def task(task_id):
 	submission_found = False
-	evaluated = None
 	result = None
 	score = None
 	result_file = None
-
+	time = None
 
 	cursor.execute('SELECT path FROM tasks WHERE id = %s AND available = 1', (task_id,))
 	task = cursor.fetchone()
@@ -148,20 +140,34 @@ def task(task_id):
 
 	task_name = task_data['task']['name']
 	task_description = task_data['task']['description']
+	task_arguments = task_data['arguments']['run'] + " --asm submission.S"
 	#parse task description as markdown
 	task_description = markdown(task_description)
 
 	inputs = task_data['inputs']
 
-	user_id = session['user_id']
-	cursor.execute('SELECT evaluated, result, score, result_file, time FROM submissions WHERE userid = %s AND taskid = %s ORDER BY time DESC LIMIT 1', (user_id, task_id))
-	submission = cursor.fetchone()
-	if submission:
-		submission_found = True
-		evaluated, result, score, result_file, time = submission
+	if 'user_id' in session:
+		user_id = session['user_id']
+		cursor.execute('SELECT evaluated, result, score, result_file, time FROM submissions WHERE userid = %s AND taskid = %s ORDER BY time DESC LIMIT 1', (user_id, task_id))
+		submission = cursor.fetchone()
+		if submission:
+			submission_found = True
+			evaluated, result, score, result_file, time = submission
 
-	#TODO:read result file and parse contents
+		result_data = ""
+		#check if result file exists
+		if result_file and os.path.exists(result_file):
+			with open(result_file) as f:
+				result_data = f.read()
+		else:
+			result_data = None
 
-	print("result: ", result)
+	task_info = {
+		'name': task_name,
+		'description': task_description,
+		'arguments': task_arguments,
+		'inputs': inputs, 
+		'id': task_id
+	}
 
-	return render_template('task.html', task_name=task_name, task_description=task_description, task_id=task_id, inputs=inputs, sessions=session, result=result, result_file=result_file, score=score, time=time, submission_found=submission_found)
+	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, score=score, time=time, submission_found=submission_found)
