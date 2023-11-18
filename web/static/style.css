@@ -1,0 +1,14 @@
+.highlight {
+	background-color: rgba(100, 203, 153, 50); /* Change this to the color you want */
+}
+
+.main-content {
+	padding-left: 25px;
+	padding-top: 25px;
+	max-width: 1000px;
+}
+
+.scrollable-list {
+	max-height: 300px;
+	overflow-y: auto;
+}

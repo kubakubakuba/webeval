@@ -168,4 +168,6 @@ def task(task_id):
 		'id': task_id
 	}
 
-	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, score=score, time=time, submission_found=submission_found)
+	scores = db.get_latest_scores(task_id)
+
+	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, score=score, time=time, submission_found=submission_found, scores=scores)

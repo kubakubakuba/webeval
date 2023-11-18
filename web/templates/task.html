@@ -5,59 +5,93 @@
 {% endblock title %}
 
 {% block content %}
-	<!--Preformated markdown-->
-	{{ task.description | safe}}
-	<!--End preformated markdown-->
+<div class="container">
+	<div class="row">
+		<!-- Main Content Column -->
+		<div class="col-md-8">
+			<!-- Preformatted markdown for task description -->
+			{{ task.description | safe}}
 
-	{% for i in task.inputs %}
-		<h6>Input {{ loop.index }}: {{ i.description }}</h6>
-		<div>
-			<span>In:</span>  <code>{{ i.data_in }}</code> <br />
-		</div>
-		<div>
-			<span>Out:</span> <code>{{ i.data_out }}</code> <br />
-		</div>
-	{% endfor %}
-	<br />
-	Your program will be run with the following arguments:
-	<code>
-		{{ task.arguments }}
-	</code>
-	<hr />
-	{% if 'logged_in' in sessions %}
-		<h5><a href="/submit/{{ task.id }}">Submit a solution</a></h5>
-		{% if submission_found %}
-			<h5>Your latest submission:</h5>
-			<div>
+			<!-- Loop for task inputs -->
+			{% for i in task.inputs %}
+				<h6>Input {{ loop.index }}: {{ i.description }}</h6>
 				<div>
-					Submission result:
-					{% if result == -1 %}
-						<span style="color: rgb(239, 198, 15);">Pending</span>
-					{% elif result == 0 %}
-						<span style="color: green;">Accepted</span>
-					{% else %}
-						<span style="color: red;">Rejected</span>
-					{% endif %}
+					<span>In:</span>  <code>{{ i.data_in }}</code> <br />
 				</div>
 				<div>
-					Time submitted:
-					{{ time }}
+					<span>Out:</span> <code>{{ i.data_out }}</code> <br />
 				</div>
+			{% endfor %}
+			<br />
 
-				{% if result == 0 %}
+			<!-- Display task arguments -->
+			Your program will be run with the following arguments:
+			<code>
+				{{ task.arguments }}
+			</code>
+			<hr />
+
+			<!-- Submission section for logged-in users -->
+			{% if 'logged_in' in sessions %}
+				<h5><a href="/submit/{{ task.id }}">Submit a solution</a></h5>
+				{% if submission_found %}
+					<h5>Your latest submission:</h5>
 					<div>
-						Score:
-						<code>{{ score }}</code>
+						<div>
+							Submission result:
+							{% if result == -1 %}
+								<span style="color: rgb(239, 198, 15);">Pending</span>
+							{% elif result == 0 %}
+								<span style="color: green;">Accepted</span>
+							{% else %}
+								<span style="color: red;">Rejected</span>
+							{% endif %}
+						</div>
+						<div>
+							Time submitted:
+							{{ time }}
+						</div>
+
+						{% if result == 0 %}
+							<div>
+								Score:
+								<code>{{ score }}</code>
+							</div>
+						{% endif %}
+
+						{% if result_file %}
+							<div id="resultFileCodeMirror"></div>
+						{% endif %}
+						
 					</div>
 				{% endif %}
+			{% endif %}
+		</div>
 
-				{% if result_file %}
-					<div id="resultFileCodeMirror"></div>
-				{% endif %}
-				
+		<!-- Scoreboard Column -->
+		<div class="col-md-4">
+			<div class="card">
+				<div class="card-header">
+					Top Scores (cycles)
+				</div>
+				<ul class="list-group list-group-flush scrollable-list">
+					{% for userid, name, score in scores %}
+					<li class="list-group-item {% if userid == session['user_id'] %}highlight{% endif %}">
+						<div class="row">
+							<div class="col-sm-8">
+								{{ name }}
+							</div>
+							<div class="col-sm-4 border-left">
+								{{ score }}
+							</div>
+						</div>
+					</li>
+					{% endfor %}
+				</ul>
 			</div>
-		{% endif %}
-	{% endif %}
+		</div>
+	</div>
+</div>
 {% endblock content %}
 
 {% block cmirror %}
@@ -75,4 +109,3 @@
 		resultFileEditor.setValue(resultFileContent);
 	</script>
 {% endblock %}
-```

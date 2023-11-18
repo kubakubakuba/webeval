@@ -78,3 +78,25 @@ def get_user_submissions(user_id, task_id):
 		submission = None
 	cursor.close()
 	return submission
+
+def get_latest_scores(taskid):
+	"""Get the latest scores of all users for a specific task."""
+	(db, cursor) = connect()
+	query = f"""
+	SELECT s.userid, s.score, u.username
+	FROM submissions s
+	INNER JOIN users u ON s.userid = u.id
+	WHERE s.taskid = {taskid} AND s.time IN (
+		SELECT MAX(time)
+		FROM submissions
+		WHERE taskid = {taskid}
+		GROUP BY userid
+	)
+	"""
+
+	cursor.execute(query)
+	results = cursor.fetchall()
+
+	cursor.close()
+
+	return results
