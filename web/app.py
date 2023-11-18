@@ -157,10 +157,11 @@ def task(task_id):
 
 		result_data = ""
 		#check if result file exists
-		result_file = result_file.decode()
-		if result_file is not None and os.path.exists(result_file):
-			with open(result_file) as f:
-				result_data = f.read()
+		if result_file is not None:
+			result_file = result_file.decode()
+			if os.path.exists(result_file):
+				with open(result_file) as f:
+					result_data = f.read()
 		else:
 			result_data = None
 
