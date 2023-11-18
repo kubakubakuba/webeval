@@ -119,6 +119,7 @@ def task(task_id):
 	score = None
 	result_file = None
 	time = None
+	result_data = None
 
 	cursor.execute('SELECT path FROM tasks WHERE id = %s AND available = 1', (task_id,))
 	task = cursor.fetchone()
