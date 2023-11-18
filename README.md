@@ -71,7 +71,7 @@ Write a [bubble sort](https://en.wikipedia.org/wiki/Bubble_sort).
 '''
 
 [arguments]
-run = "--asm submission.S"
+run = "--d-regs --dump-cycles --dump-cache-stats"
 
 [[inputs]]
 data_in = "9 8 7 6 5 4 3 2 1"
