@@ -4,8 +4,10 @@ import toml
 import subprocess
 from datetime import datetime
 import re
+import threading
+import time
 
-def fetch_submissions(count = 10):
+def fetch_submissions(count):
 	"""Fetch the earliest <count> submissions from the database."""
 	conn = mysql.connector.connect(**db_config)
 
@@ -51,11 +53,11 @@ def update_submission(submission_id, evaluated, result, score, result_file):
 
 	cursor.close()
 
-if __name__ == "__main__":
-	fetch = fetch_submissions()
+def evaluate_submissions(num_submissions = 10):
+	fetch = fetch_submissions(num_submissions)
 	if fetch is None:
 		print("No submissions fetched.")
-		exit()
+		return None
 	
 	submissions, task_filenames = fetch
 
@@ -104,3 +106,19 @@ if __name__ == "__main__":
 		#update the submission in the database
 
 		update_submission(s[3], 1, was_accepted, cycles, result_filename)
+
+def evaluator_thread(num_submissions = 10, interval = 60):
+	"""Run the evaluator thread."""
+	while True:
+		print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+		evaluate_submissions(num_submissions)
+		time.sleep(interval)
+
+if __name__ == "__main__":
+	num_submissions = 10	#number of submissions to evaluate at a time
+	interval = 60			#seconds between evaluations
+	while True:
+		#print current time
+		print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+		evaluate_submissions(num_submissions)
+		time.sleep(interval)

@@ -1,26 +1,25 @@
 from flask import Flask, render_template, request, redirect, session, url_for
-import mysql.connector
+from evaluator import evaluator_thread
+from markdown import markdown
+from datetime import datetime
 from hashlib import sha512
+from threading import Thread
 import secrets
 import os
 import toml
-from markdown import markdown
-from datetime import datetime
-from db import db_config
+import db
+
 
 app = Flask(__name__)
 app.secret_key = 'PsHYn26gGFi#&yfRB%B5SENWseYpat5#nQTv4yQjJC%qt*9Zy6o3ZRu389RmQkgF'
 
-db = mysql.connector.connect(**db_config)
-cursor = db.cursor()
-
 if __name__ == '__main__':
 	app.run(debug=True)
 
+
 @app.route('/')
 def index():
-	cursor.execute('SELECT id, name FROM tasks WHERE available = 1')
-	task = cursor.fetchall()
+	task = db.list_tasks()
 
 	tasks = {}
 	if task:
@@ -40,10 +39,11 @@ def register():
 		salt = secrets.token_hex(16) #generate random salt for hashing password
 		hashed_password = sha512((password + salt).encode()).hexdigest()
 
-		cursor.execute('INSERT INTO users (username, password, email, salt) VALUES (%s, %s, %s, %s)', (username, hashed_password, email, salt))
-		db.commit()
-
-		return redirect('/login')
+		register_successful = db.register(username, hashed_password, email, salt)
+		if register_successful:
+			return redirect('/login')
+		else:
+			return redirect('/register#username_taken')
 	else:
 		return render_template('register.html', sessions=session)
 	
@@ -53,8 +53,7 @@ def login():
 		username = request.form['username']
 		password = request.form['password']
 
-		cursor.execute('SELECT id, password, salt, username FROM users WHERE username = %s', (username,))
-		user = cursor.fetchone()
+		user = db.login(username)
 
 		if user:
 			user_id, hashed_password, salt, username = user
@@ -95,14 +94,11 @@ def submit(task_id):
 
 		full_filepath = "submissions/" + str(user_id) + "/" + filename
 
-		cursor.execute('INSERT INTO submissions (userid, taskid, filepath) VALUES (%s, %s, %s)', 
-			(user_id, task_id, full_filepath))
-		db.commit()
+		db.submit(user_id, task_id, full_filepath)
 
 		return render_template('autoredirect.html')
 	else:
-		cursor.execute('SELECT name FROM tasks WHERE id = %s AND available = 1', (task_id,))
-		task = cursor.fetchone()
+		task = db.get_task(task_id)
 
 		if task:
 			task_name = task[0]
@@ -121,8 +117,7 @@ def task(task_id):
 	time = None
 	result_data = None
 
-	cursor.execute('SELECT path FROM tasks WHERE id = %s AND available = 1', (task_id,))
-	task = cursor.fetchone()
+	task = db.get_task_path(task_id)
 
 	if task:
 		task_path = task[0]
@@ -149,8 +144,8 @@ def task(task_id):
 
 	if 'user_id' in session:
 		user_id = session['user_id']
-		cursor.execute('SELECT evaluated, result, score, result_file, time FROM submissions WHERE userid = %s AND taskid = %s ORDER BY time DESC LIMIT 1', (user_id, task_id))
-		submission = cursor.fetchone()
+		submission = db.get_user_submissions(user_id, task_id)
+
 		if submission:
 			submission_found = True
 			evaluated, result, score, result_file, time = submission
@@ -158,7 +153,7 @@ def task(task_id):
 		result_data = ""
 		#check if result file exists
 		if result_file is not None:
-			result_file = result_file.decode()
+			#result_file = result_file.decode() #if result_file is bytes for some reason
 			if os.path.exists(result_file):
 				with open(result_file) as f:
 					result_data = f.read()
