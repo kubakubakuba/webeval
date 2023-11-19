@@ -93,14 +93,15 @@ def evaluate_submissions(num_submissions = 10):
 			f.write("\nstderr:\n")
 			f.write(stderr_text)
 
-		was_accepted = 0 #TODO: check if the output is correct
+		was_accepted = 0  #TODO: check if the output is correct
 
 		match = re.search(r"^cycles: (\d+)$", stdout_text, re.MULTILINE)
 
 		if match:
 			cycles = int(match.group(1))
 		else:
-			cycles = None
+			cycles = 0
+			was_accepted = 1 #not accepted
 
 		print(f"submission {s[0]} evaluated, accepted: {was_accepted}, cycles: {cycles}, result file: {result_filename}")
 		#update the submission in the database

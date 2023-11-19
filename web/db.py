@@ -83,16 +83,17 @@ def get_latest_scores(taskid):
 	"""Get the latest scores of all users for a specific task."""
 	(db, cursor) = connect()
 	query = f"""
-	SELECT s.userid, s.score, u.username
-	FROM submissions s
-	INNER JOIN users u ON s.userid = u.id
-	WHERE s.taskid = {taskid} AND s.time IN (
-		SELECT MAX(time)
-		FROM submissions
-		WHERE taskid = {taskid}
-		GROUP BY userid
-	)
-	"""
+    SELECT s.userid, 
+        CASE 
+            WHEN MAX(s.time) = s.time AND s.evaluated = 1 AND s.result = 0 THEN s.score
+            ELSE NULL
+        END AS score,
+        u.username
+    FROM submissions s
+    INNER JOIN users u ON s.userid = u.id
+    WHERE s.taskid = {taskid}
+    GROUP BY s.userid, u.username
+    """
 
 	cursor.execute(query)
 	results = cursor.fetchall()

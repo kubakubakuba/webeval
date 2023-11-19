@@ -75,17 +75,19 @@
 					Top Scores (cycles)
 				</div>
 				<ul class="list-group list-group-flush scrollable-list">
-					{% for userid, name, score in scores %}
-					<li class="list-group-item {% if userid == session['user_id'] %}highlight{% endif %}">
-						<div class="row">
-							<div class="col-sm-8">
-								{{ name }}
-							</div>
-							<div class="col-sm-4 border-left">
-								{{ score }}
-							</div>
-						</div>
-					</li>
+					{% for userid, score, name in scores %}
+						{% if score > 0 %}
+							<li class="list-group-item {% if userid == session['user_id'] %}highlight{% endif %}">
+								<div class="row">
+									<div class="col-sm-8">
+										{{ name }}
+									</div>
+									<div class="col-sm-4 border-left">
+										{{ score }}
+									</div>
+								</div>
+							</li>
+						{% endif %}
 					{% endfor %}
 				</ul>
 			</div>

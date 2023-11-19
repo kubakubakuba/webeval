@@ -170,4 +170,10 @@ def task(task_id):
 
 	scores = db.get_latest_scores(task_id)
 
+	#replace score by its int value
+
+	if scores:
+		#replace NoneType by -1
+		scores = [(s[0], int(s[1]) if s[1] is not None else -1, s[2]) for s in scores]
+
 	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, score=score, time=time, submission_found=submission_found, scores=scores)
