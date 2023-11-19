@@ -45,9 +45,21 @@ def login(username):
 	return user
 
 def submit(user_id, task_id, filepath):
-	"""Submit a new task solution."""
+	"""Submit a new task solution. Check if a submission for that same task by the same user exists, if so update it, otherwise create a new submission."""
 	(db, cursor) = connect()
-	cursor.execute('INSERT INTO submissions (userid, taskid, filepath) VALUES (%s, %s, %s)', (user_id, task_id, filepath))
+
+	# Check if a submission already exists
+	cursor.execute('SELECT * FROM submissions WHERE userid = %s AND taskid = %s AND evaluated = 0', (user_id, task_id))
+	submission = cursor.fetchone()
+	submission_id = submission[0] if submission else None
+
+	if submission:
+		# Update the existing submission
+		cursor.execute('UPDATE submissions SET filepath = %s WHERE id = %s', (filepath, submission_id,))
+	else:
+		# Create a new submission
+		cursor.execute('INSERT INTO submissions (userid, taskid, filepath) VALUES (%s, %s, %s)', (user_id, task_id, filepath))
+
 	db.commit()
 	cursor.close()
 
@@ -83,17 +95,17 @@ def get_latest_scores(taskid):
 	"""Get the latest scores of all users for a specific task."""
 	(db, cursor) = connect()
 	query = f"""
-    SELECT s.userid, 
-        CASE 
-            WHEN MAX(s.time) = s.time AND s.evaluated = 1 AND s.result = 0 THEN s.score
-            ELSE NULL
-        END AS score,
-        u.username
-    FROM submissions s
-    INNER JOIN users u ON s.userid = u.id
-    WHERE s.taskid = {taskid}
-    GROUP BY s.userid, u.username
-    """
+	SELECT s.userid, 
+		CASE 
+			WHEN MAX(s.time) = s.time AND s.evaluated = 1 AND s.result = 0 THEN s.score
+			ELSE NULL
+		END AS score,
+		u.username
+	FROM submissions s
+	INNER JOIN users u ON s.userid = u.id
+	WHERE s.taskid = {taskid}
+	GROUP BY s.userid, u.username
+	"""
 
 	cursor.execute(query)
 	results = cursor.fetchall()

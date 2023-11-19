@@ -1,4 +1,4 @@
-// Directives to make interresting windows visible
+// Directives to make interesting windows visible
 #pragma qtrvsim show registers
 #pragma qtrvsim show memory
 .globl  _start
@@ -16,7 +16,7 @@ _start:
 	addi x7, zero, -1 //outer loop counter
 _outer:
 	addi x7, x7, 1
-	beq x7, a1, end_loop
+	beq x7, a1, _outer // Loop back to the start of _outer instead of ending
 
 	add x8, zero, zero //inner loop counter
 	addi x9, a0, -4
@@ -40,11 +40,6 @@ _switch:
 	sw a2, 4(x9)
 	sw a3, 0(x9)
 	j _inner
-
-end_loop:
-	ebreak           // stop the simulator
-	j end_loop
-	nop
 
 .data
 // .align    2 // not supported by QtRVSim yet

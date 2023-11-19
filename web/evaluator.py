@@ -6,13 +6,16 @@ from datetime import datetime
 import re
 import threading
 import time
+from subprocess import TimeoutExpired
+
+TIMEOUT_TIME = 10 #seconds
 
 def fetch_submissions(count):
 	"""Fetch the earliest <count> submissions from the database."""
 	conn = mysql.connector.connect(**db_config)
 
 	if not conn.is_connected():
-		print("Could not connect to database, no submissions fetched.")
+		print("  Could not connect to database, no submissions fetched.")
 		return None
 
 	cursor = conn.cursor()
@@ -25,7 +28,7 @@ def fetch_submissions(count):
 	task_ids = [submission[0] for submission in submissions]
 
 	if len(task_ids) == 0:
-		print("No submissions available to evaluate.")
+		print("  No submissions available to evaluate.")
 		return None
 
 	cursor.execute("SELECT id, path FROM tasks WHERE id IN (%s)" % (','.join(['%s'] * len(task_ids))), task_ids)
@@ -43,7 +46,7 @@ def update_submission(submission_id, evaluated, result, score, result_file):
 	conn = mysql.connector.connect(**db_config)
 
 	if not conn.is_connected():
-		print("Could not connect to database, no submission updated.")
+		print("  Could not connect to database, no submission updated.")
 		return None
 
 	cursor = conn.cursor()
@@ -56,7 +59,7 @@ def update_submission(submission_id, evaluated, result, score, result_file):
 def evaluate_submissions(num_submissions = 10):
 	fetch = fetch_submissions(num_submissions)
 	if fetch is None:
-		print("No submissions fetched.")
+		print("  No submissions fetched.")
 		return None
 	
 	submissions, task_filenames = fetch
@@ -72,18 +75,24 @@ def evaluate_submissions(num_submissions = 10):
 		#run the task in qtrvsim_cli with the given arguments, dump the output into a file results/userid_taskid.log
 		arguments = arguments.split()
 		command = ["qtrvsim_cli"] + arguments + ["--asm", s[1]]
-		print(f"evaluating submission {s[0]}, with arguments: {arguments}, filename: {s[1]}")
+		print(f"  evaluating submission {s[0]}, with arguments: {arguments}, filename: {s[1]}")
 		command.extend(arguments)
 
-		process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		stdout, stderr = process.communicate()
+		try:
+			process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			stdout, stderr = process.communicate(timeout=TIMEOUT_TIME)
+		except TimeoutExpired:
+			process.kill()
+			stdout, stderr = None, None
+			#print in red
+			print(f"\033[91m  submission {s[0]} for {task_filenames[task_id].split('/')[1]} timed out\033[0m")
 
 		time_evaluated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 		result_filename = f"results/{s[2]}_{task_id}.log"
 
-		stdout_text = stdout.decode('utf-8')
-		stderr_text = stderr.decode('utf-8')
+		stdout_text = stdout.decode('utf-8') if stdout else ""
+		stderr_text = stderr.decode('utf-8') if stderr else f'Killed after {TIMEOUT_TIME} seconds.'
 
 		#write stdout and stderr to a file
 		with open(result_filename, 'w') as f:
@@ -103,7 +112,7 @@ def evaluate_submissions(num_submissions = 10):
 			cycles = 0
 			was_accepted = 1 #not accepted
 
-		print(f"submission {s[0]} evaluated, accepted: {was_accepted}, cycles: {cycles}, result file: {result_filename}")
+		print(f"  submission {s[0]} evaluated, accepted: {was_accepted}, cycles: {cycles}, result file: {result_filename}")
 		#update the submission in the database
 
 		update_submission(s[3], 1, was_accepted, cycles, result_filename)
