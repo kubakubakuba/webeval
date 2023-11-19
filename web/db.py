@@ -1,12 +1,5 @@
 import mysql.connector
-
-db_config = {
-	'user': 'qtrvsim',
-	'password': 'QtRVSim_Admin!',
-	'host': '158.101.208.70',
-	'database': 'qtrvsim_web_eval',
-	'port': 3306
-}
+from db_connect import db_config
 
 def connect():
 	"""Connect to the database."""
