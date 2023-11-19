@@ -106,7 +106,7 @@ This is curently implemented as a plaintext file, from which result are read usi
 Probably will be better to transfer this to a JSON file, which will be easier to parse in the future.
 
 ## Database config
-Database configuration is made in a file db_config.py
+Database configuration is made in a file `db_connect.py`
 ```python
 db_config = {
 	'user': 'username',
