@@ -8,7 +8,7 @@ Write a **bubble sort**.
 '''
 
 [arguments]
-run = "--d-regs --dump-cycles --dump-cache-stats --d-cache --i-cache"
+run = "--d-regs --dump-cycles --dump-cache-stats"
 
 [[inputs]]
 data_in = "9 8 7 6 5 4 3 2 1"

@@ -13,6 +13,7 @@ def list_tasks():
 	cursor.execute('SELECT id, name FROM tasks WHERE available = 1')
 	tasks = cursor.fetchall()
 	cursor.close()
+	db.close()
 	return tasks
 
 def register(username, hashed_password, email, salt):
@@ -23,10 +24,12 @@ def register(username, hashed_password, email, salt):
 	user = cursor.fetchone()
 	if user:
 		cursor.close()
+		db.close()
 		return False
 	cursor.execute('INSERT INTO users (username, password, email, salt) VALUES (%s, %s, %s, %s)', (username, hashed_password, email, salt))
 	db.commit()
 	cursor.close()
+	db.close()
 	return True
 
 def login(username):
@@ -35,6 +38,7 @@ def login(username):
 	cursor.execute('SELECT id, password, salt, username FROM users WHERE username = %s', (username,))
 	user = cursor.fetchone()
 	cursor.close()
+	db.close()
 	return user
 
 def submit(user_id, task_id, filepath):
@@ -42,19 +46,20 @@ def submit(user_id, task_id, filepath):
 	(db, cursor) = connect()
 
 	# Check if a submission already exists
-	cursor.execute('SELECT * FROM submissions WHERE userid = %s AND taskid = %s AND evaluated = 0', (user_id, task_id))
-	submission = cursor.fetchone()
-	submission_id = submission[0] if submission else None
+	#cursor.execute('SELECT * FROM submissions WHERE userid = %s AND taskid = %s AND evaluated = 0', (user_id, task_id))
+	#submission = cursor.fetchone()
+	#submission_id = submission[0] if submission else None
 
-	if submission:
+	#if submission:
 		# Update the existing submission
-		cursor.execute('UPDATE submissions SET filepath = %s WHERE id = %s', (filepath, submission_id,))
-	else:
+	#	cursor.execute('UPDATE submissions SET filepath = %s WHERE id = %s', (filepath, submission_id,))
+	#else:
 		# Create a new submission
-		cursor.execute('INSERT INTO submissions (userid, taskid, filepath) VALUES (%s, %s, %s)', (user_id, task_id, filepath))
+	cursor.execute('INSERT INTO submissions (userid, taskid, filepath, evaluated) VALUES (%s, %s, %s, %s)', (user_id, task_id, filepath, 0))
 
 	db.commit()
 	cursor.close()
+	db.close()
 
 def get_task(task_id):
 	"""Get a task."""
@@ -62,6 +67,7 @@ def get_task(task_id):
 	cursor.execute('SELECT name FROM tasks WHERE id = %s AND available = 1', (task_id,))
 	task = cursor.fetchone()
 	cursor.close()
+	db.close()
 	return task
 
 def get_task_path(task_id):
@@ -70,6 +76,7 @@ def get_task_path(task_id):
 	cursor.execute('SELECT path FROM tasks WHERE id = %s AND available = 1', (task_id,))
 	task = cursor.fetchone()
 	cursor.close()
+	db.close()
 	return task
 
 def get_user_submissions(user_id, task_id):
@@ -82,22 +89,28 @@ def get_user_submissions(user_id, task_id):
 	else:
 		submission = None
 	cursor.close()
+
+	db.close()
 	return submission
 
 def get_latest_scores(taskid):
 	"""Get the latest scores of all users for a specific task."""
 	(db, cursor) = connect()
 	query = f"""
-	SELECT s.userid, 
-		CASE 
-			WHEN MAX(s.time) = s.time AND s.evaluated = 1 AND s.result = 0 THEN s.score
-			ELSE NULL
-		END AS score,
-		u.username
-	FROM submissions s
-	INNER JOIN users u ON s.userid = u.id
-	WHERE s.taskid = {taskid}
-	GROUP BY s.userid, u.username
+		SELECT s.userid,
+			CASE
+				WHEN s.result = 0 THEN s.score
+				ELSE NULL
+			END AS score,
+			u.username
+		FROM (
+			SELECT userid, MAX(time) as max_time
+			FROM submissions
+			WHERE taskid = {taskid}
+			GROUP BY userid
+		) as latest_submissions
+		INNER JOIN submissions s ON s.userid = latest_submissions.userid AND s.time = latest_submissions.max_time
+		INNER JOIN users u ON s.userid = u.id
 	"""
 
 	cursor.execute(query)
@@ -105,4 +118,32 @@ def get_latest_scores(taskid):
 
 	cursor.close()
 
+	db.close()
 	return results
+
+def update_submission(evaluated, result, score, result_file, submission_id):
+	(db, cursor) = connect()
+	print(f"  updating submission {submission_id} with evaluated: {evaluated}, result: {result}, score: {score}, result_file: {result_file}")
+	cursor.execute("UPDATE submissions SET evaluated = %s, result = %s, score = %s, result_file = %s WHERE id = %s", (evaluated, result, score, result_file, submission_id))
+	db.commit()
+	cursor.close()
+	db.close()
+
+def get_latest_submissions(count):
+	"""Get all submissions."""
+	(db, cursor) = connect()
+	#select the earliest <count> submissions that have not been evaluated yet
+	cursor.execute("SELECT taskid, filepath, userid, id FROM submissions WHERE evaluated = 0 ORDER BY id ASC LIMIT %s", (count,))
+	submissions = cursor.fetchall()
+	cursor.close()
+	db.close()
+	return submissions
+
+def get_task_files(task_ids):
+	"""Get task filenames"""
+	(db, cursor) = connect()
+	cursor.execute("SELECT id, path FROM tasks WHERE id IN (%s)" % (','.join(['%s'] * len(task_ids))), task_ids)
+	task_files = cursor.fetchall()
+	cursor.close()
+	db.close()
+	return task_files

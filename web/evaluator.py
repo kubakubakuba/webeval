@@ -7,21 +7,14 @@ import re
 import threading
 import time
 from subprocess import TimeoutExpired
+import db
 
 TIMEOUT_TIME = 10 #seconds
 
 def fetch_submissions(count):
 	"""Fetch the earliest <count> submissions from the database."""
-	conn = mysql.connector.connect(**db_config)
 
-	if not conn.is_connected():
-		print("  Could not connect to database, no submissions fetched.")
-		return None
-
-	cursor = conn.cursor()
-	#select the earliest <count> submissions that have not been evaluated yet
-	cursor.execute("SELECT taskid, filepath, userid, id FROM submissions WHERE evaluated = 0 ORDER BY id ASC LIMIT %s", (count,))
-	submissions = cursor.fetchall()
+	submissions = db.get_latest_submissions(count)
 
 	#for each taskid fetch its task filename
 
@@ -31,35 +24,21 @@ def fetch_submissions(count):
 		print("  No submissions available to evaluate.")
 		return None
 
-	cursor.execute("SELECT id, path FROM tasks WHERE id IN (%s)" % (','.join(['%s'] * len(task_ids))), task_ids)
-	task_filenames = cursor.fetchall()
+	task_filenames = db.get_task_files(task_ids)
 
 	#make a dictionary of taskid -> task filename
 	task_filenames = {task[0]: task[1] for task in task_filenames}
-
-	cursor.close()
 
 	return (submissions, task_filenames)
 
 def update_submission(submission_id, evaluated, result, score, result_file):
 	"""Update a submission in the database."""
-	conn = mysql.connector.connect(**db_config)
-
-	if not conn.is_connected():
-		print("  Could not connect to database, no submission updated.")
-		return None
-
-	cursor = conn.cursor()
 	#update the submission with the given id
-	cursor.execute("UPDATE submissions SET evaluated = %s, result = %s, score = %s, result_file = %s WHERE id = %s", (evaluated, result, score, result_file, submission_id))
-	conn.commit()
-
-	cursor.close()
+	db.update_submission(evaluated, result, score, result_file, submission_id)
 
 def evaluate_submissions(num_submissions = 10):
 	fetch = fetch_submissions(num_submissions)
 	if fetch is None:
-		print("  No submissions fetched.")
 		return None
 	
 	submissions, task_filenames = fetch
@@ -78,21 +57,23 @@ def evaluate_submissions(num_submissions = 10):
 		print(f"  evaluating submission {s[0]}, with arguments: {arguments}, filename: {s[1]}")
 		command.extend(arguments)
 
+		killed = False
+
 		try:
 			process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			stdout, stderr = process.communicate(timeout=TIMEOUT_TIME)
 		except TimeoutExpired:
 			process.kill()
 			stdout, stderr = None, None
-			#print in red
+			killed = True
 			print(f"\033[91m  submission {s[0]} for {task_filenames[task_id].split('/')[1]} timed out\033[0m")
 
 		time_evaluated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 		result_filename = f"results/{s[2]}_{task_id}.log"
 
-		stdout_text = stdout.decode('utf-8') if stdout else ""
-		stderr_text = stderr.decode('utf-8') if stderr else f'Killed after {TIMEOUT_TIME} seconds.'
+		stdout_text =  "" if killed else stdout.decode('utf-8')
+		stderr_text = f'Killed after {TIMEOUT_TIME} seconds.' if killed else stderr.decode('utf-8')
 
 		#write stdout and stderr to a file
 		with open(result_filename, 'w') as f:
@@ -102,20 +83,25 @@ def evaluate_submissions(num_submissions = 10):
 			f.write("\nstderr:\n")
 			f.write(stderr_text)
 
-		was_accepted = 0  #TODO: check if the output is correct
+		was_accepted = 0 #TODO: check if the output is correct
 
 		match = re.search(r"^cycles: (\d+)$", stdout_text, re.MULTILINE)
 
-		if match:
+		if (match is not None) and not killed:
 			cycles = int(match.group(1))
 		else:
-			cycles = 0
-			was_accepted = 1 #not accepted
+			cycles = -1
+
+		#TODO: sample evaluation, if cycles if less than zero
+		if cycles < 0:
+			was_accepted = 1
+
+		if killed:
+			was_accepted = 2
 
 		print(f"  submission {s[0]} evaluated, accepted: {was_accepted}, cycles: {cycles}, result file: {result_filename}")
-		#update the submission in the database
-
 		update_submission(s[3], 1, was_accepted, cycles, result_filename)
+		time.sleep(1)
 
 def evaluator_thread(num_submissions = 10, interval = 60):
 	"""Run the evaluator thread."""
@@ -126,7 +112,7 @@ def evaluator_thread(num_submissions = 10, interval = 60):
 
 if __name__ == "__main__":
 	num_submissions = 10	#number of submissions to evaluate at a time
-	interval = 60			#seconds between evaluations
+	interval = 10			#seconds between evaluations
 	while True:
 		#print current time
 		print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))

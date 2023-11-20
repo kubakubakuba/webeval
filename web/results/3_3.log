@@ -1,4 +1,4 @@
-evaluation started on: 2023-11-20 17:44:58
+evaluation started on: 2023-11-20 17:19:46
 stdout:
 Machine stopped on BREAK exception.
 Machine state report:
@@ -22,3 +22,4 @@ cycles: 973
 stalls: 0
 
 stderr:
+Killed after 10 seconds.

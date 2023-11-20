@@ -43,6 +43,8 @@
 								<span style="color: rgb(239, 198, 15);">Pending</span>
 							{% elif result == 0 %}
 								<span style="color: green;">Accepted</span>
+							{% elif result == 2 %}
+								<span style="color: red;">Timeout</span>
 							{% else %}
 								<span style="color: red;">Rejected</span>
 							{% endif %}
