@@ -7,11 +7,10 @@ QtRVSim Web Evaluation
 {% block content %}
 	<h4>Tasks available for submission:</h4>
 
-	{% for t in tasks %}
-		<div>
-			<h5><a href="/task/{{ t[0] }}">{{ t[1] }}</a></h5>
-		</div>
-	{% endfor %}
+	<div class="list-group">
+		{% for t in tasks %}
+			<a href="/task/{{ t[0] }}" class="list-group-item list-group-item-action">{{ t[1] }}</a>
+		{% endfor %}
+	</div>
 
 {% endblock content %}
-

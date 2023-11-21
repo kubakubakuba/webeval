@@ -1,16 +1,18 @@
 <html>
 	<head>
-		<title>Submission Successful</title>
+		<title>Success</title>
 	</head>
 	<body>
-		<p>Answer submitted successfully! Redirecting in <span id="countdown">3</span> seconds...</p>
+		<p>Success! Redirecting in <span id="countdown">3</span> seconds...</p>
 		<script>
 			var seconds = 3;
 			function countdown() {
 				seconds--;
 				document.getElementById("countdown").textContent = seconds;
 				if (seconds <= 0) {
-					window.location.href = "/";
+					var urlParams = new URLSearchParams(window.location.search);
+					var next = urlParams.get('next');
+					window.location.href = next || "/";
 				}
 			}
 			setInterval(countdown, 1000);

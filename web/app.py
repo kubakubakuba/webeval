@@ -34,7 +34,8 @@ def register():
 	if request.method == 'POST':
 		username = request.form['username']
 		password = request.form['password']
-		email = request.form['email']
+		#email = request.form['email']
+		email = ""
 
 		salt = secrets.token_hex(16) #generate random salt for hashing password
 		hashed_password = sha512((password + salt).encode()).hexdigest()
@@ -61,7 +62,7 @@ def login():
 				session['logged_in'] = True
 				session['user_id'] = user_id
 				session['username'] = username
-				return render_template('autoredirect.html')
+				return render_template('autoredirect.html?next=/')
 			else:
 				return 'Invalid username or password!'
 		else:
@@ -83,20 +84,16 @@ def submit(task_id):
 		user_id = session['user_id']
 		code = request.form['code'].replace('\r\n', '\n')
 
-		directory = os.path.join('submissions', str(user_id))
-		if not os.path.exists(directory):
-			os.makedirs(directory)
-
 		time_uploaded = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-		filename = time_uploaded + '.S'
-		with open(os.path.join(directory, filename), 'w') as file:
+		filename = str(user_id) + "_" + time_uploaded + '.S'
+		with open(os.path.join("submissions", filename), 'w') as file:
 			file.write(code)
 
-		full_filepath = "submissions/" + str(user_id) + "/" + filename
+		full_filepath = "submissions/" + filename
 
 		db.submit(user_id, task_id, full_filepath)
 
-		return render_template('autoredirect.html')
+		return render_template(f'autoredirect.html?next=/task/{task_id}') #TODO:fix redirect
 	else:
 		task = db.get_task(task_id)
 
@@ -139,6 +136,7 @@ def task(task_id):
 	task_arguments = task_data['arguments']['run'] + " --asm submission.S"
 	#parse task description as markdown
 	task_description = markdown(task_description)
+	task_scoring = task_data['score']['description']
 
 	inputs = task_data['inputs']
 
@@ -165,7 +163,8 @@ def task(task_id):
 		'description': task_description,
 		'arguments': task_arguments,
 		'inputs': inputs, 
-		'id': task_id
+		'id': task_id,
+		'scoring': task_scoring
 	}
 
 	scores = db.get_latest_scores(task_id)

@@ -29,6 +29,13 @@
 			<code>
 				{{ task.arguments }}
 			</code>
+
+			<br />
+
+			Your program will be scored by this following metric:
+			<code>
+				{{ task.scoring }}
+			</code>
 			<hr />
 
 			<!-- Submission section for logged-in users -->
@@ -109,7 +116,7 @@
 			readOnly: true,
 		});
 
-		resultFileEditor.setSize("1250px", "500px");
+		resultFileEditor.setSize("750px", "500px");
 		resultFileEditor.setValue(resultFileContent);
 	</script>
 {% endblock %}

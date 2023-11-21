@@ -1,0 +1,35 @@
+[task]
+name = "Sample task"
+
+description = '''
+# Simple value addition
+
+Write a program that loads a value `10` into register a1 and value `12` into register a2.
+Then, add the values and store the result in register a3.
+'''
+
+[arguments]
+run = "--d-regs --dump-cycles --dump-cache-stats"
+
+[[inputs]]
+data_in = "None"
+data_out = "Save the result of the addition in register a2."
+description = "Sample task, simple loading of values"
+
+[[testcases]]
+description = "Test setting of values to register a0 and a1"
+do_compare_registers = true
+[[testcases.reference_regs]]
+R11 = "0x0000000a"
+R12 = "0x0000000c"
+
+[[testcases]]
+description = "Test addition of values in register a0 and a1, and storing the result in register a2"
+do_compare_registers = true
+
+[[testcases.reference_regs]]
+R13 = "0x00000016"
+
+[score]
+description = "Scoring based on the number of cycles used to execute the program."
+metric = "cycles"
