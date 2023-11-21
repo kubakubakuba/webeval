@@ -62,7 +62,7 @@ def login():
 				session['logged_in'] = True
 				session['user_id'] = user_id
 				session['username'] = username
-				return render_template('autoredirect.html?next=/')
+				return render_template('autoredirect.html')
 			else:
 				return 'Invalid username or password!'
 		else:
@@ -93,7 +93,7 @@ def submit(task_id):
 
 		db.submit(user_id, task_id, full_filepath)
 
-		return render_template(f'autoredirect.html?next=/task/{task_id}') #TODO:fix redirect
+		return render_template(f'autoredirect.html') #TODO:fix redirect
 	else:
 		task = db.get_task(task_id)
 
