@@ -89,6 +89,7 @@ class QtRVSim:
 
 	def end_eval(self, score_metric="cycles"):
 		self.log += f"\n\nEvaluation ended on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+		score = self.scores[score_metric]
 		self.log += f"Result: {score}\n"
 
 	def rgx_get_cache_stats(self, log):
