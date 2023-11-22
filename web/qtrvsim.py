@@ -13,13 +13,21 @@ class QtRVSim:
 		self.log += f"Error log:"
 
 		self.args = args
+		self.mem_arg = ""
+		self.dump_mem_arg = ""
 		self.submission_file = submission_file
 
 		self.compare_registes = defaultdict(str) # list of registers to compare
 		self.compare_memory_ranges = defaultdict(str) # list of memory ranges to compare
+		self.starting_memory_file = '__starting_mem__'
+		self.starting_memory_addr = '0x00000000'
+
+		self.reference_ending_memory_addr = '0x00000000'
+		self.reference_ending_memory_length = '0x00000000'
 
 		self.do_compare_registers = False
 		self.do_compare_memory_ranges = False
+		self.do_set_starting_memory = False
 
 		self.cycles = -1
 		self.result = -1
@@ -33,7 +41,7 @@ class QtRVSim:
 
 		self.verbose = False
 
-		self.mem_output_file = "__mem_output__"
+		self.mem_output_file = "__ending_mem__"
 	
 	def get_result(self):
 		'''Return the result of the evaluation.'''
@@ -67,17 +75,39 @@ class QtRVSim:
 		'''Set whether to compare memory ranges or not.'''
 		self.do_compare_memory_ranges = val
 
+	def set_do_set_starting_regs(self, val=True):
+		'''Set whether to set the starting registers or not.'''
+		self.do_set_starting_regs = val
+
+	def set_do_set_starting_memory(self, val=True):
+		'''Set whether to set the starting memory or not.'''
+		self.do_set_starting_memory = val
+
+	def set_starting_memory(self, addr, mem):
+		'''Set the starting memory. Pass an array of pairs (address, value).'''
+		self.starting_memory_addr = addr[0]
+		#write lines of memory to a file
+		with open(self.starting_memory_file, 'w') as f:
+			for line in mem:
+				f.write(f"{line}\n")
+
+		self.mem_arg = f" --load-range {self.starting_memory_addr},{self.starting_memory_file}"
+
 	def set_compare_memory_ranges(self, mem):
 		'''Set the memory ranges to compare. Pass an array of pairs (start, end) of memory ranges.'''
 		self.compare_memory_ranges = mem
 
-	def set_reference_regs(self, reg_dict):
+	def set_reference_ending_regs(self, reg_dict):
 		'''Pass a dict of values to compare against.'''
 		self.compare_registes = reg_dict[0]
 
-	def set_reference_memory(self, mem_values):
+	def set_reference_ending_memory(self, start_addr, length, mem_values):
 		'''Pass an array of pairs (address, value) to compare against.'''
-		self.compare_memory = mem_values
+		self.reference_ending_memory_addr = start_addr
+		self.reference_ending_memory_length = length
+		#add a flag to dump memory to a file
+
+		self.dump_mem_arg = f" --dump-range {self.reference_ending_memory_addr},{self.reference_ending_memory_length},{self.mem_output_file}"
 
 	def rgx_get_cycles(self, log):
 		'''Get the number of cycles from the stdout of qtrvsim.'''
@@ -141,7 +171,11 @@ class QtRVSim:
 	def run(self):
 		'''Run qtrvsim with the current configuration.'''
 		#run qtrvsim with the given arguments, dump the output into the log string
-		arguments = self.args.split()
+		arguments = self.args + self.mem_arg + self.dump_mem_arg
+		print(self.args)
+		print(self.mem_arg)
+		print(self.dump_mem_arg)
+		arguments = arguments.split()
 		command = ["qtrvsim_cli"] + arguments + ["--asm", self.submission_file]
 
 		killed = False
@@ -193,4 +227,4 @@ class QtRVSim:
 
 		#save score metrics, -> cycles and cache stats
 		self.scores["cycles"] = self.cycles #scoring metric for cycles
-		self.scores["cache"] = self.cache_stats["i-cache:improved-speed"] #scoring metric for cache
+		self.scores["cache"] = self.cache_stats["i-cache:improved-speed"] #scoring metric for cachepri
