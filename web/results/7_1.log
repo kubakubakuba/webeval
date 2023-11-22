@@ -1,10 +1,10 @@
-Evaluation started on: 2023-11-22 00:44:11
+Evaluation started on: 2023-11-22 00:52:01
 Arguments: --d-regs --dump-cycles --dump-cache-stats
-Submission file: submissions/7_2023_11_22_00_42_38.S
+Submission file: submissions/7_2023_11_21_23_51_55.S
 
 Error log:
 Killed after 10 seconds.
 Killed after 10 seconds.
 
-Evaluation ended on: 2023-11-22 00:44:31
+Evaluation ended on: 2023-11-22 00:52:21
 Result: -1

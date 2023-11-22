@@ -5,6 +5,15 @@
 {% endblock title %}
 
 {% block content %}
+<style>
+	.card-btn:hover {
+		background-color: #f8f9fa;
+	}
+
+	.card-btn{
+		margin-bottom: 10px;
+	}
+</style>
 <div class="container">
 	<div class="row">
 		<!-- Main Content Column -->
@@ -40,7 +49,11 @@
 
 			<!-- Submission section for logged-in users -->
 			{% if 'logged_in' in sessions %}
-				<h5><a href="/submit/{{ task.id }}">Submit a solution</a></h5>
+				<div class="card card-btn">
+					<a href="/submit/{{ task.id }}" class="card-body text-center text-decoration-none">
+						Submit a solution
+					</a>
+				</div>
 				{% if submission_found %}
 					<h5>Your latest submission:</h5>
 					<div>
@@ -69,7 +82,9 @@
 						{% endif %}
 
 						{% if result_file %}
-							<div id="resultFileCodeMirror"></div>
+							<div class="card">
+								<div class="card-body" id="resultFileCodeMirror"></div>
+							</div>
 						{% endif %}
 						
 					</div>
@@ -116,7 +131,7 @@
 			readOnly: true,
 		});
 
-		resultFileEditor.setSize("750px", "500px");
+		resultFileEditor.setSize("500px", "500px");
 		resultFileEditor.setValue(resultFileContent);
 	</script>
 {% endblock %}
