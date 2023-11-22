@@ -101,7 +101,7 @@ R13 = "0x00000016"
 description = "Here, score the task based on some metric."
 metric = "cycles"
 ```
-Arguments are passed to the `QtRVSim` class, which is used to run the simulator.
+Arguments are passed to the `QtRVSim` object, which is used to run the simulator.
 
 Inputs is an array, that will be printed to users. Here, you can specify sample data, which the user can test their program on.
 
@@ -121,7 +121,7 @@ R12 = "0x0000000c"
 #this has yet to be implemented
 ```
 
-After all necessary tests a score test will be run. This is a "test", which measures the final result based on a metric we provide. Metric that can be provided as of now are:
+After all necessary tests a score test will be run. This is a "test", which measures the final result based on a metric we provide. Metrics that can be provided as of now are:
 ```toml
 metric = "cycles"
 metric = "cache"
