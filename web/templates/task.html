@@ -13,6 +13,17 @@
 	.card-btn{
 		margin-bottom: 10px;
 	}
+
+	.cm-argument { color: #708090; font-style: italic; }
+	.cm-failed { color: #DC143C; }
+	.cm-success { color: #228B22; }
+	.cm-time-string { color: #4682B4; }
+	.cm-register-memory { color: #217a7a }
+	.cm-expected-number-value { color: #2E8B57; }
+	.cm-provided-number-value { color: #DC143C; }
+	.cm-error-value { color: #B22222; }
+
+
 </style>
 <div class="container">
 	<div class="row">
@@ -122,10 +133,59 @@
 
 {% block cmirror %}
 	<script>
+	CodeMirror.defineMode("qtrvsimLog", function() {
+		return {
+		token: function(stream, state) {
+			// Matching time strings
+			if (stream.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/)) {
+				console.log(stream.current());
+				return "time-string";
+			}
+			// Matching arguments
+			if (stream.match(/Arguments:.*$/)) {
+				console.log(stream.current());
+				return "argument";
+			}
+			// Matching "FAILED" and "SUCCESS"
+			if (stream.match(/FAILED/)) {
+				console.log(stream.current());
+				return "failed";
+			}
+			if (stream.match(/PASSED/)) {
+				console.log(stream.current());
+				return "passed";
+			}
+			// Matching register names and memory addresses
+			if (stream.match(/(register \w+|memory at 0x[0-9A-Fa-f]+)/)) {
+				console.log(stream.current());
+				return "register-memory";
+			}
+			// Matching expected number value
+			if (stream.match(/ \b\d+\b,/)) {
+				console.log(stream.current());
+				return "expected-number-value";
+			}
+
+			// Matching provided number value
+			if (stream.match(/ \b\d+\b$/)) {
+				console.log(stream.current());
+				return "provided-number-value";
+			}
+			// Default token
+			stream.next();
+			return null;
+		}
+		};
+	});
+	
+	CodeMirror.defineMIME("text/qtrvsimLog", "qtrvsimLog");
+	</script>
+
+	<script>
 		var resultFileContent = {{ result_file|tojson }};
 		var resultFileEditor = CodeMirror(document.getElementById("resultFileCodeMirror"), {
 			lineNumbers: true,
-			mode: "python",
+			mode: "qtrvsimLog",
 			lineWrapping: true,
 			viewportMargin: Infinity,
 			readOnly: true,
