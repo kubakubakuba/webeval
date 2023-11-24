@@ -1,7 +1,8 @@
 # QtRVSim online evaluation
 
 The app will be written in Flask and will be using a MySQL database.
-Public version [here](http://omega.swpelc.eu:5000).
+
+Public version is running [here](http://omega.swpelc.eu:5000).
 
 ## Roadmap:
 - [x] Users are able to register
