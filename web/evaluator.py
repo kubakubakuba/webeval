@@ -56,30 +56,48 @@ def evaluate_submissions(num_submissions = 10):
 
 			num_testcases = len(task_data['testcases'])
 			sim = QtRVSim(args=task_data["arguments"]["run"], submission_file=s[1])
+			#sim.set_verbose(True)
 
 			score = 0
 			tests_passed = 0
 			timed_out = False
 
 			for i in range(num_testcases):
-				if task_data["testcases"][i]["do_compare_registers"] == True: #compare registers
+				if task_data["testcases"][i].get("do_compare_registers", False): #compare registers
 					sim.set_do_compare_registers(True)
-					sim.set_reference_regs(task_data["testcases"][i]["reference_regs"])
+					sim.set_reference_ending_regs(task_data["testcases"][i]["reference_regs"][0])
 
-				#TODO: implement memory checking
+				if task_data["testcases"][i].get("do_compare_memory", False): #compare memory
+					sim.set_do_compare_memory(True)
+
+					mem = task_data["testcases"][i]["reference_mem"][0]
+					mem = {int(k, 16) : v for k, v in mem.items()} #rewrite the memory dict from 'address' : value to adress : value
+
+					sim.set_reference_ending_memory(mem)
+
+				if task_data["testcases"][i].get("do_set_starting_memory", False): #set starting memory
+					mem = task_data["testcases"][i]["starting_mem"][0]
+					mem = {int(k, 16) : v for k, v in mem.items()}#rewrite the memory dict from 'address' : value to adress : value
+
+					sim.set_starting_memory(mem)
 
 				#run the evaluation
 				sim.run()
+				sim.log_test_name(task_data["testcases"][i]["name"])
+				
 				if sim.get_result() == 0:
 					tests_passed += 1
-				
-				if sim.get_result() == 2:
+
+				if sim.get_result() == 2: #do not evaluate further testcases if one timed out
 					timed_out = True
+					break
+
+				sim.reset()
 			
 			if tests_passed == num_testcases:
 				was_accepted = 0
 				sim.set_do_compare_registers(False)
-				sim.set_do_compare_memory_ranges(False)
+				sim.set_do_compare_memory(False)
 				sim.run()
 
 				score_metric = task_data["score"]["metric"]
@@ -100,7 +118,7 @@ def evaluate_submissions(num_submissions = 10):
 		print(f"  submission {s[0]} evaluated, accepted: {was_accepted}, cycles: {score}, result file: {result_filename}")
 		update_submission(s[3], 1, was_accepted, score, result_filename)
 		#remove the submission file
-		os.remove(s[1])
+		#os.remove(s[1])
 
 		#wait for a second
 		time.sleep(1)

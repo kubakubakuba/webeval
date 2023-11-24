@@ -1,0 +1,18 @@
+Evaluation started on: 2023-11-24 03:00:55
+Arguments: --d-regs --dump-cycles
+Error log:
+register a0 does not match, expected 5, got 10
+register a1 does not match, expected 10, got 0
+register a2 does not match, expected 15, got 0
+memory at 0x408 does not match, expected 15, got 0
+Running: test01 - FAILED
+
+memory at 0x408 does not match, expected 350, got 0
+Running: test02 - FAILED
+
+memory at 0x408 does not match, expected 2982, got 0
+Running: test03 - FAILED
+
+
+Evaluation ended on: 2023-11-24 03:00:55
+Result: -1

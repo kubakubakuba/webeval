@@ -1,8 +1,10 @@
-Evaluation started on: 2023-11-22 00:27:55
+Evaluation started on: 2023-11-24 02:49:40
 Arguments: --d-regs --dump-cycles --dump-cache-stats
-Submission file: submissions/1_2023_11_22_00_27_51.S
-
 Error log:
+Running: test01 - PASSED
 
-Evaluation ended on: 2023-11-22 00:27:55
-Result: 7
+Running: test02 - PASSED
+
+
+Evaluation ended on: 2023-11-24 02:49:40
+Result: 6

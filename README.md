@@ -16,9 +16,13 @@ The app will be written in Flask and will be using a MySQL database.
 - [x] Find a way to compare the output to the expected output
 - [x] Evaluator compares the task output to the reference
 - [x] Comparison of reference registers and submission registers
-- [ ] Comparison of reference memory and submission memory
+- [x] Comparison of reference memory and submission memory
 - [x] On each task page, a leaderboard will be shown with the users best submissions (in cycles), made by a request (to the submissions table) for that task
 - [x] Each user will only have the latest submission listed
+- [x] Basic app functionality Done?
+- [ ] Improve styling if need be
+- [ ] Implement admin panel
+- [ ] Users can view their last submissions (before it gets overwritten by new one of the same task)
 
 ## Database structure (subject to change):
 
@@ -56,49 +60,64 @@ After a task is evaluated, it is marked as evaluated, so it is not evaluated mor
 | path      | varchar | 256    | None           |
 | available | tinyint | 1      | 1              |
 
-~~Database are currently running on local XAMPP server, will be migrated to a VPS when possible.~~
-
 Database is running on a remote VPS (omega.swpelc.eu, 158.101.208.70:3306)
 Testing app is running on the same server on port 5000 [here](http://omega.swpelc.eu:5000). 
 
 ## Task creation
-Tasks will be stored in toml format, with structure similar to this one (subject to change):
+Tasks will be stored in toml format, with structure similar to this one (rewritten it to make it more readable, user friendly).
 
 ```toml
 [task]
-name = "Sample task"
+name = "Read an save to memory"
 
 description = '''
-# Simple value addition
+# Read and save to memory
 
-Write a program that loads a value `10` into register a1 and value `12` into register a2.
-Then, add the values and store the result in register a3.
+Write a program that loads 2 values from memory starting at the adress 0x400 into two registers (a0 and a1).
+Then add the values in a0 and a1, and store the result in a2.
+Save the result in memory after the two values that were loaded.
 '''
 
 [arguments]
-run = "--d-regs --dump-cycles --dump-cache-stats"
+run = "--d-regs --dump-cycles"
 
 [[inputs]]
-data_in = "None"
-data_out = "Save the result of the addition in register a2."
-description = "Sample task, simple loading of values"
+data_in = "Two values in memory starting at address 0x400."
+data_out = "The values in registers, the sum in register a2, and the sum in memory after the two values."
+description = "Loading of values from memory."
 
 [[testcases]]
-description = "Test setting of values to register a0 and a1"
+name = "test01"
 do_compare_registers = true
-[[testcases.reference_regs]]
-R11 = "0x0000000a"
-R12 = "0x0000000c"
+do_compare_memory = true
+do_set_starting_memory = true
 
+[[testcases.reference_regs]]
+a0 = 5
+a1 = 10
+a2 = 15
+
+[[testcases.starting_mem]]
+0x400 = 5
+0x404 = 10
+
+[[testcases.reference_mem]]
+0x408 = 15
 
 [[testcases]]
-description = "Test addition of values in register a0 and a1, and storing the result in register a2"
-do_compare_registers = true
-[[testcases.reference_regs]]
-R13 = "0x00000016"
+name = "test02"
+do_compare_memory = true
+do_set_starting_memory = true
+
+[[testcases.starting_mem]]
+0x400 = 150
+0x404 = 200
+
+[[testcases.reference_mem]]
+0x408 = 350
 
 [score]
-description = "Here, score the task based on some metric."
+description = "Runtime of the program in cycles."
 metric = "cycles"
 ```
 Arguments are passed to the `QtRVSim` object, which is used to run the simulator.
@@ -111,15 +130,22 @@ In each of the testcases a flag can be set, whether to compare register (or memo
 These are the flags and values that can be set:
 ```toml
 do_compare_registers = true
-do_compare_memory_ranges = true
+do_compare_memory = true
+do_set_starting_memory = true
 
 [[testcases.reference_regs]]
-R11 = "0x0000000a"
-R12 = "0x0000000c"
+a0 = 5
+a1 = 10
+a2 = 15
 
-[[testcases.reference_memory_ranges]]
-#this has yet to be implemented
+[[testcases.starting_mem]]
+0x400 = 5
+0x404 = 10
+
+[[testcases.reference_mem]]
+0x408 = 350
 ```
+You can use hex and decimal values for the the values set to the registers and memory adresses.
 
 After all necessary tests a score test will be run. This is a "test", which measures the final result based on a metric we provide. Metrics that can be provided as of now are:
 ```toml
@@ -134,27 +160,45 @@ If you need to run a manual evaluation, you can do so by using the `QtRVSim` cla
 ```python
 from qtrvsim import QtRVSim
 
-sim = QtRVSim(args="--d-regs --dump-cycles --dump-cache-stats", submission_file="submission.S")
-sim.do_compare_registers = True
-reference_regs = {
-	'R11' : '0x0000000a',
-	'R12' : '0x0000000c',
-	'R13' : '0x00000016',
+sim = QtRVSim(args="--d-regs --dump-cycles --dump-cache-stats", submission_file="submissions/test/test.S")
+#sim.set_verbose(True)
+staring_memory = {
+	0x400 : 1,
+	0x404 : 2,
 }
-sim.set_reference_regs(reference_regs)
+
+sim.set_starting_memory(staring_memory)
+
+sim.set_do_compare_registers(True)
+reference_regs = {
+	'a0' : 0x00000001,
+	'a1' : 0x00000002,
+	'a2' : 0x00000003,
+}
+sim.set_reference_ending_regs(reference_regs)
+
+sim.set_do_compare_memory(True)
+
+memory = {
+	0x408 : 3,
+}
+
+sim.set_reference_ending_memory(memory)
+
 sim.run()
 
 print(sim.get_log())
-print(sim.get_result())
-print(sim.get_score())
+#print(sim.get_result())
+#print(sim.get_score())
 ```
 
 ## Task evaluation log
-~~The task evaluation log will be stored in a JSON file, with structure similar to this one (subject to change):~~
 
 The log is saved as a plaintext .log file, and is shown to the user. Each log file name is of this format: `username_taskid.log`. (this means that new submission's log overwrites the old one). This file is displayed to the user in this way:
 
-<img src="rsrc/addition.png" width="750">
+<img src="rsrc/eval.png" width="750">
+
+A custom styling for CodeMirror has been written, to make the log more readable.
 
 ## Database config
 Database configuration is made in a file `db_connect.py`

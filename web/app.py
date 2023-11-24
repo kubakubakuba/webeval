@@ -62,7 +62,8 @@ def login():
 				session['logged_in'] = True
 				session['user_id'] = user_id
 				session['username'] = username
-				return render_template('autoredirect.html')
+				#return render_template('autoredirect.html')
+				return redirect('/')
 			else:
 				return 'Invalid username or password!'
 		else:
@@ -85,7 +86,9 @@ def submit(task_id):
 		code = request.form['code'].replace('\r\n', '\n')
 
 		time_uploaded = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-		filename = str(user_id) + "_" + time_uploaded + '.S'
+		#filename = str(user_id) + "_" + time_uploaded + '.S'
+		filename = str(user_id) + '_' + str(task_id) + '.S'
+
 		with open(os.path.join("submissions", filename), 'w') as file:
 			file.write(code)
 
@@ -93,7 +96,8 @@ def submit(task_id):
 
 		db.submit(user_id, task_id, full_filepath)
 
-		return render_template(f'autoredirect.html') #TODO:fix redirect
+		#return render_template(f'autoredirect.html') #TODO:fix redirect
+		return redirect('/task/' + str(task_id))
 	else:
 		task = db.get_task(task_id)
 
