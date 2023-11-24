@@ -5,11 +5,11 @@ from collections import defaultdict
 
 class QtRVSim:
 	def __init__(self, args="", submission_file=""):
-		'''Initialize the evaluator with the submission file, arguments, and registers and memory ranges to compare.'''
+		'''Initialize the evaluator with the submission file, arguments, and registers and memory to compare.'''
 
 		self.log = f"Evaluation started on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
 		self.log += f"Arguments: {args}\n"
-		self.log += f"Submission file: {submission_file}\n\n"
+		#self.log += f"Submission file: {submission_file}\n\n"
 		self.log += f"Error log:"
 
 		self.args = args
@@ -18,15 +18,14 @@ class QtRVSim:
 		self.submission_file = submission_file
 
 		self.compare_registes = defaultdict(str) # list of registers to compare
-		self.compare_memory_ranges = defaultdict(str) # list of memory ranges to compare
-		self.starting_memory_file = '__starting_mem__'
-		self.starting_memory_addr = '0x00000000'
+		self.reference_memory = defaultdict(str) # list of memory to compare
+		self.starting_memory_addr = 0
 
-		self.reference_ending_memory_addr = '0x00000000'
-		self.reference_ending_memory_length = '0x00000000'
+		self.reference_ending_memory_addr = 0
+		self.reference_ending_memory_length = 0
 
 		self.do_compare_registers = False
-		self.do_compare_memory_ranges = False
+		self.do_compare_memory = False
 		self.do_set_starting_memory = False
 
 		self.cycles = -1
@@ -42,6 +41,14 @@ class QtRVSim:
 		self.verbose = False
 
 		self.mem_output_file = "__ending_mem__"
+		self.starting_memory_file = '__starting_mem__'
+
+		self.register_names = [
+			"zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
+			"s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
+			"a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7",
+			"s8", "s9", "s10","s11", "t3", "t4", "t5", "t6"
+		]
 	
 	def get_result(self):
 		'''Return the result of the evaluation.'''
@@ -71,43 +78,42 @@ class QtRVSim:
 		'''Set whether to compare registers or not.'''
 		self.do_compare_registers = val
 
-	def set_do_compare_memory_ranges(self, val=True):
-		'''Set whether to compare memory ranges or not.'''
-		self.do_compare_memory_ranges = val
-
-	def set_do_set_starting_regs(self, val=True):
-		'''Set whether to set the starting registers or not.'''
-		self.do_set_starting_regs = val
-
-	def set_do_set_starting_memory(self, val=True):
-		'''Set whether to set the starting memory or not.'''
-		self.do_set_starting_memory = val
-
-	def set_starting_memory(self, addr, mem):
-		'''Set the starting memory. Pass an array of pairs (address, value).'''
-		self.starting_memory_addr = addr[0]
-		#write lines of memory to a file
-		with open(self.starting_memory_file, 'w') as f:
-			for line in mem:
-				f.write(f"{line}\n")
-
-		self.mem_arg = f" --load-range {self.starting_memory_addr},{self.starting_memory_file}"
-
-	def set_compare_memory_ranges(self, mem):
-		'''Set the memory ranges to compare. Pass an array of pairs (start, end) of memory ranges.'''
-		self.compare_memory_ranges = mem
+	def set_do_compare_memory(self, val=True):
+		'''Set whether to compare memory or not.'''
+		self.do_compare_memory = val
+		if not val:
+			self.mem_arg = ""
+			self.dump_mem_arg = ""
 
 	def set_reference_ending_regs(self, reg_dict):
 		'''Pass a dict of values to compare against.'''
-		self.compare_registes = reg_dict[0]
+		self.compare_registes = reg_dict
 
-	def set_reference_ending_memory(self, start_addr, length, mem_values):
+	def set_starting_memory(self, mem):
+		'''Set the starting memory. Pass an array of pairs (address, value).'''
+		start_address = min(mem.keys())
+		end_address = max(mem.keys()) + 4
+
+		self.starting_memory_addr = start_address
+
+		with open(self.starting_memory_file, 'w') as file:
+			for address in range(start_address, end_address, 4):
+				# Write the value if the address is in the dictionary, otherwise write 0
+				value = mem.get(address, 0)
+				file.write(f"{value}\n")
+
+		self.mem_arg = f" --load-range {self.starting_memory_addr},{self.starting_memory_file}"
+
+	def set_reference_ending_memory(self, mem):
 		'''Pass an array of pairs (address, value) to compare against.'''
-		self.reference_ending_memory_addr = start_addr
-		self.reference_ending_memory_length = length
+		self.reference_ending_memory_addr = min(mem.keys())
+		self.reference_ending_memory_length = max(mem.keys()) + 4
 		#add a flag to dump memory to a file
+		self.reference_ending_memory_length = self.reference_ending_memory_length - self.reference_ending_memory_addr
 
-		self.dump_mem_arg = f" --dump-range {self.reference_ending_memory_addr},{self.reference_ending_memory_length},{self.mem_output_file}"
+		self.dump_mem_arg = f" --dump-range {hex(self.reference_ending_memory_addr)},{self.reference_ending_memory_length},{self.mem_output_file}"
+
+		self.reference_memory = mem
 
 	def rgx_get_cycles(self, log):
 		'''Get the number of cycles from the stdout of qtrvsim.'''
@@ -117,10 +123,40 @@ class QtRVSim:
 		else:
 			self.cycles = -1
 
+	def read_mem_output_file(self):
+		'''Read the memory file and set the self.mem dictionary.'''
+		self.mem = defaultdict(int) #clear the memory
+		base_address = self.reference_ending_memory_addr
+
+		with open(self.mem_output_file, 'r') as file:
+			for line in file:
+				mem_val = line.strip()
+				self.mem[base_address] = int(mem_val, 16)
+				base_address += 4
+
+	def clear_files(self):
+		'''Clear the memory and starting memory files.'''
+		with open(self.mem_output_file, 'w') as f:
+			f.write("")
+		with open(self.starting_memory_file, 'w') as f:
+			f.write("")
+
 	def end_eval(self, score_metric="cycles"):
 		self.log += f"\n\nEvaluation ended on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
 		score = self.scores[score_metric] if self.result == 0 else -1
 		self.log += f"Result: {score}\n"
+		self.clear_files()
+
+	def reset(self):
+		self.do_compare_memory = False
+		self.do_compare_registers = False
+		self.starting_memory_addr = 0
+		self.reference_ending_memory_addr = 0
+		self.reference_ending_memory_length = 0
+		self.mem = defaultdict(int)
+		self.regs = defaultdict(int)
+		self.compare_registes = defaultdict(int)
+		self.reference_memory = defaultdict(int)
 
 	def rgx_get_cache_stats(self, log):
 		'''Get the cache stats from the stdout of qtrvsim. Set them to the self.cache_stats dictionary.'''
@@ -147,6 +183,7 @@ class QtRVSim:
 		
 	def rgx_get_registers(self, log):
 		'''Get the registers from the stdout of qtrvsim. Set them to the self.regs dictionary.'''
+		self.regs = defaultdict(int) #clear the registers
 
 		# Patterns for registers
 		patterns = {
@@ -162,11 +199,24 @@ class QtRVSim:
 		for pattern, reg_key in patterns.items():
 			match = re.search(pattern, log, re.MULTILINE)
 			if match:
-				self.regs[reg_key] = match.group(1)
+				self.regs[reg_key] = int(match.group(1), 16)
+		
+		for i in range(32):
+			if f"R{i}" in self.regs:
+				self.regs[self.register_names[i]] = self.regs.pop(f"R{i}") #replace Ri values with the register names
 
 	def set_verbose(self, val=True):
 		'''Set whether to print the stdout and stderr of qtrvsim to the console.'''
 		self.verbose = val
+
+	def log_test_name(self, test_name):
+		'''Log the name of the test.'''
+		failed = self.result != 0
+
+		if failed:
+			self.log += f"\nRunning: {test_name} - FAILED\n"
+		else:
+			self.log += f"\nRunning: {test_name} - PASSED\n"
 
 	def run(self):
 		'''Run qtrvsim with the current configuration.'''
@@ -211,14 +261,12 @@ class QtRVSim:
 						was_accepted = 1
 						self.log += f"\nregister {reg} does not match, expected {value}, got {self.regs[reg]}"
 
-			# if self.do_compare_memory_ranges: #TODO: implement
-			# 	#compare memory ranges
-			# 	self.rgx_get_memory_ranges(stdout_text)
-			# 	for start, end in self.compare_memory_ranges:
-			# 		for addr in range(start, end):
-			# 			if self.mem[addr] != self.mem[addr]:
-			# 				was_accepted = 1
-			# 				break
+			if self.do_compare_memory:
+				self.read_mem_output_file()
+				for addr, value in self.reference_memory.items():
+					if self.mem[addr] != value:
+						was_accepted = 1
+						self.log += f"\nmemory at {hex(addr)} does not match, expected {value}, got {self.mem[addr]}"
 
 		if killed:
 			self.result = 2
@@ -227,4 +275,4 @@ class QtRVSim:
 
 		#save score metrics, -> cycles and cache stats
 		self.scores["cycles"] = self.cycles #scoring metric for cycles
-		self.scores["cache"] = self.cache_stats["i-cache:improved-speed"] #scoring metric for cachepri
+		self.scores["cache"] = self.cache_stats["i-cache:improved-speed"] #scoring metric for cache
