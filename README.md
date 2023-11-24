@@ -201,7 +201,7 @@ The log is saved as a plaintext .log file, and is shown to the user. Each log fi
 
 <img src="rsrc/eval.png" width="750">
 
-A custom styling for CodeMirror has been written, to make the log more readable.
+A custom styling for CodeMirror has been written to make the log more readable.
 
 ## Database config
 Database configuration is made in a file `db_connect.py`
