@@ -2,6 +2,8 @@
 
 The app will be written in Flask and will be using a MySQL database.
 
+Public version is running [here](http://omega.swpelc.eu:5000).
+
 ## Roadmap:
 - [x] Users are able to register
 - [x] Users are able to login
@@ -126,8 +128,9 @@ Arguments are passed to the `QtRVSim` object, which is used to run the simulator
 
 Inputs is an array, that will be printed to users. Here, you can specify sample data, which the user can test their program on.
 
-Testcases is the crucial part of the evaluation. This needs to be set correctly.
-In each of the testcases a flag can be set, whether to compare register (or memory, ...), as well as a dictionary, which specific registers (or memory adresses) to compare. In this sample task file, we can see that there are two tests, each testing certain register values.
+Testcases is main part of the evaluator.
+
+In each of the testcases a flag can be set, whether to compare registers (or memory adresses), as well as a dictionary of which of them to compare. We do not need to set the flags at each test (setting them back to `False`) is done automatically at the end of each test.
 
 These are the flags and values that can be set:
 ```toml
@@ -147,7 +150,7 @@ a2 = 15
 [[testcases.reference_mem]]
 0x408 = 350
 ```
-You can use hex and decimal values for the the values set to the registers and memory adresses.
+You can use hex and/or decimal values for the the values set to the registers and memory adresses.
 
 After all necessary tests a score test will be run. This is a "test", which measures the final result based on a metric we provide. Metrics that can be provided as of now are:
 ```toml
@@ -200,7 +203,7 @@ The log is saved as a plaintext .log file, and is shown to the user. Each log fi
 
 <img src="rsrc/eval.png" width="750">
 
-A custom styling for CodeMirror has been written, to make the log more readable.
+A custom styling for CodeMirror has been written to make the log more readable.
 
 ## Database config
 Database configuration is made in a file `db_connect.py`
