@@ -1,51 +1,77 @@
 {% extends "codemirror.html" %}
 
 {% block title %}
-    {{ task_name }}
+	{{ task_name }}
 {% endblock title %}
 
 {% block content %}
-    <style>
-        .card-btn:hover {
-            background-color: #f8f9fa;
-        }
-    </style>
+	<style>
+		.card-btn:hover {
+			background-color: #f8f9fa;
+		}
+	</style>
 
-    <h2>Submission for task: {{ task_name }}</h2>
-    <div class="card">
-        <div class="card-body">
-            <form method="post" id="codeForm">
-                <div class="mb-3">
-                    <label for="code">Paste your code below:</label><br>
-                    <textarea class="form-control" id="code" name="code" style="width:600px; display:none;"></textarea>
-                    <div id="codeMirror"></div>
-                </div>
-                <div class="card card-btn">
-                    <a href="#" onclick="submitForm();" class="card-body text-center text-decoration-none">
-                        Submit
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
+	<h2>Submission for task: {{ task_name }}</h2>
+	<div class="card">
+		<div class="card-body">
+			<form method="post" id="codeForm">
+				<div class="mb-3">
+					<label for="code">Paste your code below:</label><br>
+					<textarea class="form-control" id="code" name="code" style="width:600px; display:none;"></textarea>
+					<div id="codeMirror"></div>
+				</div>
+				<div class="row">
+					<div class="col-8">
+						<div class="card card-btn">
+							<a href="#" onclick="submitForm();" class="card-body text-center text-decoration-none">
+								Submit
+							</a>
+						</div>
+					</div>
+					<div class="col-4">
+						<div class="card card-btn">
+							<a href="#" onclick="resetCode();" class="card-body text-center text-decoration-none">
+								Reset
+							</a>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
 {% endblock content %}
 
 {% block cmirror %}
-    <script>
-        var textarea = document.getElementById('code');
-        var editor = CodeMirror(document.getElementById("codeMirror"), {
-            lineNumbers: true,
-            mode: "gas",
-            lineWrapping: true,
-            viewportMargin: Infinity,
-            value: textarea.value
-        });
+	<script>
+		let textarea = document.getElementById('code');
+		let templateContent = {{template_code|tojson}};
+		let submissionContent = {{submission_code|tojson}};
 
-        editor.setSize("800px", "750px");
+		if (submissionContent == null) {
+			submissionContent = template_code;
+		}
 
-        function submitForm() {
-            textarea.value = editor.getValue();
-            document.getElementById('codeForm').submit();
-        }
-    </script>
+		let editor = CodeMirror(document.getElementById("codeMirror"), {
+			lineNumbers: true,
+			mode: "gas",
+			lineWrapping: true,
+			viewportMargin: Infinity,
+			value: textarea.value
+		});
+
+		editor.setSize("800px", "750px");
+		editor.setValue(submissionContent);
+
+		function submitForm() {
+			textarea.value = editor.getValue();
+			document.getElementById('codeForm').submit();
+		}
+
+		function resetCode() { //change from template code to submission code and vice versa
+			editor.setValue(templateContent);
+			let temp = templateContent;
+			templateContent = submissionContent;
+			submissionContent = temp;
+		}
+	</script>
 {% endblock %}

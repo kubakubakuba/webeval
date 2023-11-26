@@ -96,7 +96,6 @@ def submit(task_id):
 
 		db.submit(user_id, task_id, full_filepath)
 
-		#return render_template(f'autoredirect.html') #TODO:fix redirect
 		return redirect('/task/' + str(task_id))
 	else:
 		task = db.get_task(task_id)
@@ -107,7 +106,18 @@ def submit(task_id):
 		else:
 			return 'Task not found or not available to submit!'
 
-		return render_template('submit.html', task_name=task_name, sessions=session)
+		#if there is a submission for this task by the logged in user, read the submission file
+		submission_code = ""
+		if os.path.exists(f"submissions/{session['user_id']}_{task_id}.S"):
+			with open(f"submissions/{session['user_id']}_{task_id}.S") as f:
+				submission_code = f.read()
+
+		template_code = "" #TODO:here a submission template for each task can be created if needed
+		if os.path.exists(f"submissions/template.S"):
+			with open(f"submissions/template.S") as f:
+				template_code = f.read()
+
+		return render_template('submit.html', task_name=task_name, sessions=session, submission_code=submission_code, template_code=template_code)
 	
 @app.route('/task/<int:task_id>')
 def task(task_id):

@@ -136,39 +136,38 @@
 	CodeMirror.defineMode("qtrvsimLog", function() {
 		return {
 		token: function(stream, state) {
-			// Matching time strings
+
 			if (stream.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/)) {
-				console.log(stream.current());
+				//console.log(stream.current());
 				return "time-string";
 			}
-			// Matching arguments
+
 			if (stream.match(/Arguments:.*$/)) {
-				console.log(stream.current());
+				//console.log(stream.current());
 				return "argument";
 			}
-			// Matching "FAILED" and "SUCCESS"
+
 			if (stream.match(/FAILED/)) {
-				console.log(stream.current());
+				//console.log(stream.current());
 				return "failed";
 			}
 			if (stream.match(/PASSED/)) {
-				console.log(stream.current());
+				//console.log(stream.current());
 				return "passed";
 			}
-			// Matching register names and memory addresses
+
 			if (stream.match(/(register \w+|memory at 0x[0-9A-Fa-f]+)/)) {
-				console.log(stream.current());
+				//console.log(stream.current());
 				return "register-memory";
 			}
-			// Matching expected number value
+
 			if (stream.match(/ \b\d+\b,/)) {
-				console.log(stream.current());
+				//console.log(stream.current());
 				return "expected-number-value";
 			}
 
-			// Matching provided number value
 			if (stream.match(/ \b\d+\b$/)) {
-				console.log(stream.current());
+				//console.log(stream.current());
 				return "provided-number-value";
 			}
 			// Default token
@@ -182,8 +181,8 @@
 	</script>
 
 	<script>
-		var resultFileContent = {{ result_file|tojson }};
-		var resultFileEditor = CodeMirror(document.getElementById("resultFileCodeMirror"), {
+		let resultFileContent = {{ result_file|tojson }};
+		let resultFileEditor = CodeMirror(document.getElementById("resultFileCodeMirror"), {
 			lineNumbers: true,
 			mode: "qtrvsimLog",
 			lineWrapping: true,

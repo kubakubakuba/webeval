@@ -21,8 +21,10 @@ The app will be written in Flask and will be using a MySQL database.
 - [x] Each user will only have the latest submission listed
 - [x] Basic app functionality Done?
 - [ ] Improve styling if need be
-- [ ] Implement admin panel
-- [ ] Users can view their last submissions (before it gets overwritten by new one of the same task)
+- [x] Users can view their last submissions (before it gets overwritten by new one of the same task)
+- [ ] User will see their best score and the their latest submission score in the leaderboard
+- [ ] Move qtrsvim into docker container, for security reasons
+
 
 ## Database structure (subject to change):
 
@@ -75,7 +77,7 @@ description = '''
 
 Write a program that loads 2 values from memory starting at the adress 0x400 into two registers (a0 and a1).
 Then add the values in a0 and a1, and store the result in a2.
-Save the result in memory after the two values that were loaded.
+Save the result in memory after the two values that were loaded (0x408).
 '''
 
 [arguments]
@@ -154,7 +156,7 @@ metric = "cache"
 ```
 Note that, in order to use the cache metric, the simulator needs to be run with the `--dump-cache-stats` argument. To use the cycles metric, the simulator needs to be run with the `--dump-cycles` argument.
 
-The scoring metrics are handled at the end of `qtrvsim.py` file.
+The scoring metrics are handled at the end of `qtrvsim.py` file. You can add your own metrics there.
 
 If you need to run a manual evaluation, you can do so by using the `QtRVSim` class from the `qtrvsim.py` file in a following way:
 ```python
