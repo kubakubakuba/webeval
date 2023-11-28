@@ -203,4 +203,6 @@ def task(task_id):
 
 	scores.sort(key=lambda x: x[1])
 
-	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, scores=scores, time=time, submission_found=submission_found)
+	latest_score = None if latest_score is None else latest_score[1]
+
+	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, scores=scores, time=time, submission_found=submission_found, score=latest_score)
