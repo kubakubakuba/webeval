@@ -1,5 +1,9 @@
-.highlight {
-	background-color: rgba(100, 203, 153, 50); /* Change this to the color you want */
+.highlight-green {
+	background-color: rgba(100, 203, 153, 0.6); /* Change this to the color you want */
+}
+
+.highlight-yellow {
+	background-color: rgba(255, 255, 0, 0.6); /* Light yellow with 50% opacity */
 }
 
 .main-content {

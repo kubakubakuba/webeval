@@ -110,9 +110,9 @@
 					Top Scores (cycles)
 				</div>
 				<ul class="list-group list-group-flush scrollable-list">
-					{% for userid, score, name in scores %}
+					{% for userid, score, name, is_best in scores %}
 						{% if score > 0 %}
-							<li class="list-group-item {% if userid == session['user_id'] %}highlight{% endif %}">
+							<li class="list-group-item {% if userid == session['user_id'] and is_best == 1 %}highlight-green{% elif userid == session['user_id'] and is_best == 0 %}highlight-yellow{% endif %}">
 								<div class="row">
 									<div class="col-sm-8">
 										{{ name }}

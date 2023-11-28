@@ -181,13 +181,26 @@ def task(task_id):
 		'scoring': task_scoring
 	}
 
-	scores = db.get_latest_scores(task_id)
+	# Get the best scores of all users for a specific task
+	best_scores = db.get_best_scores(task_id)
+	#add flag 1 (best) to the third argument of the tuple
+	best_scores = [(score[0], score[1], score[2], 1) for score in best_scores]
+	
+	latest_score = None
+	if 'user_id' in session:
+		latest_score = db.get_latest_score(task_id, session['user_id']) #add flag 1 (latest) to the third argument of the tuple
+		latest_score = (latest_score[0], latest_score[1], latest_score[2], 0)
 
-	#replace score by its int value
+	#check if latest score is already in best scores
+	duplicate_score = []
+	if latest_score is not None:
+		duplicate_score = (latest_score[0], latest_score[1], latest_score[2], 1) #reflag to 1 (best)
 
-	if scores:
-		#replace NoneType by -1
-		scores = [(s[0], int(s[1]) if s[1] is not None else -1, s[2]) for s in scores]
-		scores = sorted(scores, key=lambda s: s[1])
+	if duplicate_score in best_scores:
+		latest_score = None
 
-	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, score=score, time=time, submission_found=submission_found, scores=scores)
+	scores = best_scores + ([latest_score] if latest_score else [])
+
+	scores.sort(key=lambda x: x[1])
+
+	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, scores=scores, time=time, submission_found=submission_found)

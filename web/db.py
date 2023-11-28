@@ -93,27 +93,38 @@ def get_user_submissions(user_id, task_id):
 	db.close()
 	return submission
 
-def get_latest_scores(taskid):
-	"""Get the latest scores of all users for a specific task."""
+def get_latest_score(taskid, user_id):
+	"""Get the latest score for a specific user and taskid."""
+	(db, cursor) = connect()
+	cursor.execute('''
+		SELECT s.userid, s.score, u.username 
+		FROM submissions s
+		INNER JOIN users u ON s.userid = u.id
+		WHERE s.taskid = %s AND s.userid = %s 
+		ORDER BY s.time DESC LIMIT 1
+	''', (taskid, user_id))
+	scores = cursor.fetchall()
+	if scores:
+		score = scores[0]
+	else:
+		score = None
+	cursor.close()
+
+	db.close()
+	return score
+
+def get_best_scores(taskid):
+	"""Get the best scores of all users for a specific task."""
 	(db, cursor) = connect()
 	query = f"""
-		SELECT s.userid,
-			CASE
-				WHEN s.result = 0 THEN s.score
-				ELSE NULL
-			END AS score,
-			u.username
-		FROM (
-			SELECT userid, MAX(time) as max_time
-			FROM submissions
-			WHERE taskid = {taskid}
-			GROUP BY userid
-		) as latest_submissions
-		INNER JOIN submissions s ON s.userid = latest_submissions.userid AND s.time = latest_submissions.max_time
+		SELECT s.userid, MIN(s.score), u.username
+		FROM submissions s
 		INNER JOIN users u ON s.userid = u.id
+		WHERE s.taskid = %s AND s.score > 0 AND s.result = 0
+		GROUP BY s.userid, u.username
 	"""
 
-	cursor.execute(query)
+	cursor.execute(query, (taskid,))
 	results = cursor.fetchall()
 
 	cursor.close()
