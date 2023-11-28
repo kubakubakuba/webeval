@@ -25,7 +25,8 @@ Public version is running [here](http://omega.swpelc.eu:5000).
 - [x] Users can view their last submissions (before it gets overwritten by new one of the same task)
 - [x] User will see their best score and the their latest submission score in the leaderboard
 - [ ] Move qtrsvim into docker container, for security reasons
-- [ ] Improve styling if need be
+- [ ] Implement maximum number of register requests for one IP adress / time
+- [ ] Delete old, not needed submissions (not the latest and the best for each task and user, other can be deleted)
 
 
 ## Database structure (subject to change):
@@ -131,6 +132,8 @@ Inputs is an array, that will be printed to users. Here, you can specify sample 
 Testcases is main part of the evaluator.
 
 In each of the testcases a flag can be set, whether to compare registers (or memory adresses), as well as a dictionary of which of them to compare. We do not need to set the flags at each test (setting them back to `False`) is done automatically at the end of each test.
+
+Test name will be displayed to the user, so it can be set to such a name, that users know, why their code is not passing the test. (eg. `name="checkArrayOrder"`).
 
 These are the flags and values that can be set:
 ```toml
