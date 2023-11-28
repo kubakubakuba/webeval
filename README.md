@@ -22,10 +22,10 @@ Public version is running [here](http://omega.swpelc.eu:5000).
 - [x] On each task page, a leaderboard will be shown with the users best submissions (in cycles), made by a request (to the submissions table) for that task
 - [x] Each user will only have the latest submission listed
 - [x] Basic app functionality Done?
-- [ ] Improve styling if need be
 - [x] Users can view their last submissions (before it gets overwritten by new one of the same task)
-- [ ] User will see their best score and the their latest submission score in the leaderboard
+- [x] User will see their best score and the their latest submission score in the leaderboard
 - [ ] Move qtrsvim into docker container, for security reasons
+- [ ] Improve styling if need be
 
 
 ## Database structure (subject to change):
@@ -202,6 +202,10 @@ print(sim.get_log())
 The log is saved as a plaintext .log file, and is shown to the user. Each log file name is of this format: `username_taskid.log`. (this means that new submission's log overwrites the old one). This file is displayed to the user in this way:
 
 <img src="rsrc/eval.png" width="750">
+
+The latest score is highlighted in yellow, and the best score is highlighted in green.
+
+<img src="rsrc/latest.png" width="750">
 
 A custom styling for CodeMirror has been written to make the log more readable.
 
