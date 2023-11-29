@@ -5,11 +5,23 @@ Login
 {% endblock title %}
 
 {% block content %}
-	<form method="post">
-		<label for="username">Username:</label><br>
-		<input type="text" id="username" name="username" required><br>
-		<label for="password">Password:</label><br>
-		<input type="password" id="password" name="password" required><br>
-		<input type="submit" value="Login">
-	</form>
+	<div class="card">
+		<div class="card-body">
+			<form method="post" id="loginForm">
+				<div class="form-group">
+					<label for="username">Username:</label>
+					<input type="text" id="username" name="username" class="form-control" required>
+				</div>
+				<div class="form-group">
+					<label for="password">Password:</label>
+					<input type="password" id="password" name="password" class="form-control" required>
+				</div>
+				<div class="card card-btn col-sm-4 mx-auto mt-4" onclick="document.getElementById('loginForm').submit();">
+					<div class="card-body text-center">
+						Login
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
 {% endblock content %}

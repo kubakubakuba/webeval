@@ -65,9 +65,9 @@ def login():
 				#return render_template('autoredirect.html')
 				return redirect('/')
 			else:
-				return 'Invalid username or password!'
+				return render_template('invalid.html', redirect_url='/login')
 		else:
-			return 'Invalid username or password!'
+			return render_template('invalid.html', redirect_url='/login')
 	else:
 		return render_template('login.html', sessions=session)	
 	
@@ -104,7 +104,7 @@ def submit(task_id):
 			task_name = task[0]
 
 		else:
-			return 'Task not found or not available to submit!'
+			return render_template('404.html'), 404
 
 		#if there is a submission for this task by the logged in user, read the submission file
 		submission_code = ""
@@ -133,12 +133,12 @@ def task(task_id):
 	if task:
 		task_path = task[0]
 	else:
-		return 'Task not found or not available to submit!'
+		return render_template('404.html'), 404
 	
 	#check if toml file exists at the location
 
 	if(not os.path.exists(task_path)):
-		return 'Task not found or not available to submit!'
+		return render_template('404.html'), 404
 	
 	#read toml file and get the task data
 
@@ -206,3 +206,7 @@ def task(task_id):
 	latest_score = None if latest_score is None else latest_score[1]
 
 	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, scores=scores, time=time, submission_found=submission_found, score=latest_score)
+
+@app.errorhandler(404)
+def page_not_found(e):
+	return render_template('404.html'), 404
