@@ -1,2 +1,4 @@
 web/db_connect.py
 web/test.py
+web/results/*.log
+web/submissions/*.S
