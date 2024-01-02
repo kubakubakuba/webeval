@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, session, url_for
-from evaluator import evaluator_thread
 from markdown import markdown
 from datetime import datetime
 from hashlib import sha512
@@ -189,7 +188,10 @@ def task(task_id):
 	latest_score = None
 	if 'user_id' in session:
 		latest_score = db.get_latest_score(task_id, session['user_id']) #add flag 1 (latest) to the third argument of the tuple
-		latest_score = (latest_score[0], latest_score[1], latest_score[2], 0)
+		if latest_score is not None:
+			latest_score = (latest_score[0], latest_score[1], latest_score[2], 0)
+		else:
+			latest_score = None
 
 	#check if latest score is already in best scores
 	duplicate_score = []
