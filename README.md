@@ -24,12 +24,15 @@ Public version is running [here](http://omega.swpelc.eu:5000).
 - [x] Basic app functionality Done?
 - [x] Users can view their last submissions (before it gets overwritten by new one of the same task)
 - [x] User will see their best score and the their latest submission score in the leaderboard
+- [ ] Move qtrsvim into docker container, for security reasons / into an isolate utility
+- [ ] Implement maximum number of register requests for one IP adress / time
 - [ ] Delete old, not needed submissions (not the latest and the best for each task and user, other can be deleted)
+- [ ] Split submission table into pure submissions and results
+- [ ] Add the starting template file to each task (instead of one template for all tasks)
+- [ ] Remove the explicit declaration of do_comapare_registers and do_compare_memory, and implicitly set them to True, if the reference registers or memory are set
+- [ ] Move database info into .env file
 - [ ] Register confirm email
 - [ ] Password reset
-- [ ] Remove flag setting in toml file (make it automatic if memory, registers are set)
-
-
 
 ## Database structure (subject to change):
 
@@ -39,12 +42,7 @@ Public version is running [here](http://omega.swpelc.eu:5000).
 | id                 | int     | 32     | AUTO_INCREMENT |
 | username           | varchar | 128    | None           |
 | password           | varchar | 128    | None           |
-| email              | varchar | 128    | None           |
 | salt               | varchar | 128    | None           |
-| verification_code  | varchar | 128    | None           |
-| user_verified      | tinyint | 1      | 0              |
-
-Email is a hash of the email adress, so it allows users to send a password to their email adress.
 
 ### Submissions table
 
@@ -61,22 +59,6 @@ Email is a hash of the email adress, so it allows users to send a password to th
 | time         | datetime   | None   | current_timestamp() |
 
 User submits a task -> a submission is created. An evaluator evaluates the tasks in the order they came in the database.
-After a task is evaluated, it is marked as evaluated, so it is not evaluated more than one time. An evaluation log is created. The evaluated submissions is deleted from the database, and written into the results table.
-
-Result file 
-
-### Results
-
-| Field        | Type       | Length | Default             |
-|--------------|------------|--------|---------------------|
-| userid       | int        | 64     | PRIMARY             |
-| taskid       | int        | 64     | PRIMARY             |
-| result_file  | text       | 64     | NULL                |
-| last_source  | text       |        | NULL                |
-| score_best   | int        | 32     |                     |
-| score_last   | int        | 32     |                     |
-
-User submits a task -> a submission is created. An evaluator evaluates the tasks in the order they came in the database.
 After a task is evaluated, it is marked as evaluated, so it is not evaluated more than one time. An evaluation log is created.
 
 ### Tasks table
@@ -90,6 +72,7 @@ After a task is evaluated, it is marked as evaluated, so it is not evaluated mor
 
 Database is running on a remote VPS (omega.swpelc.eu, 158.101.208.70:3306)
 Testing app is running on the same server on port 5000 [here](http://omega.swpelc.eu:5000). 
+Release app is running on a Eval-Comarch VPS [https://eval.comarch.edu.cvut.cz](https://eval.comarch.edu.cvut.cz).
 
 ## Task creation
 Tasks will be stored in toml format, with structure similar to this one (rewritten it to make it more readable, user friendly).
