@@ -34,7 +34,7 @@ Public version is running [here](http://omega.swpelc.eu:5000).
 - [ ] Register confirm email
 - [ ] Password reset
 
-## Database structure (subject to change):
+## Database structure
 
 ### Users table
 | Field              | Type    | Length | Default        |
@@ -42,7 +42,12 @@ Public version is running [here](http://omega.swpelc.eu:5000).
 | id                 | int     | 32     | AUTO_INCREMENT |
 | username           | varchar | 128    | None           |
 | password           | varchar | 128    | None           |
+| email              | varchar | 128    | None           |
 | salt               | varchar | 128    | None           |
+| verification_code  | varchar | 128    | None           |
+| user_verified      | tinyint | 1      | 0              |
+
+Email is a hash of the email adress, so it allows users to send a password to their email adress.
 
 ### Submissions table
 
@@ -59,6 +64,22 @@ Public version is running [here](http://omega.swpelc.eu:5000).
 | time         | datetime   | None   | current_timestamp() |
 
 User submits a task -> a submission is created. An evaluator evaluates the tasks in the order they came in the database.
+After a task is evaluated, it is marked as evaluated, so it is not evaluated more than one time. An evaluation log is created. The evaluated submissions is deleted from the database, and written into the results table.
+
+Result file 
+
+### Results
+
+| Field        | Type       | Length | Default             |
+|--------------|------------|--------|---------------------|
+| userid       | int        | 64     | PRIMARY             |
+| taskid       | int        | 64     | PRIMARY             |
+| result_file  | text       | 64     | NULL                |
+| last_source  | text       |        | NULL                |
+| score_best   | int        | 32     |                     |
+| score_last   | int        | 32     |                     |
+
+User submits a task -> a submission is created. An evaluator evaluates the tasks in the order they came in the database.
 After a task is evaluated, it is marked as evaluated, so it is not evaluated more than one time. An evaluation log is created.
 
 ### Tasks table
@@ -69,6 +90,7 @@ After a task is evaluated, it is marked as evaluated, so it is not evaluated mor
 | name      | varchar | 64     | None           |
 | path      | varchar | 256    | None           |
 | available | tinyint | 1      | 1              |
+
 
 Database is running on a remote VPS (omega.swpelc.eu, 158.101.208.70:3306)
 Testing app is running on the same server on port 5000 [here](http://omega.swpelc.eu:5000). 
