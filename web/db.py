@@ -16,7 +16,7 @@ def list_tasks():
 	db.close()
 	return tasks
 
-def register(username, hashed_password, email, salt):
+def register(username, hashed_password, email, salt, token):
 	"""Register a new user."""
 	(db, cursor) = connect()
 	#check if username is already taken
@@ -26,7 +26,7 @@ def register(username, hashed_password, email, salt):
 		cursor.close()
 		db.close()
 		return False
-	cursor.execute('INSERT INTO users (username, password, email, salt) VALUES (%s, %s, %s, %s)', (username, hashed_password, email, salt))
+	cursor.execute('INSERT INTO users (username, password, email, salt, token) VALUES (%s, %s, %s, %s, %s)', (username, hashed_password, email, salt, token))
 	db.commit()
 	cursor.close()
 	db.close()
@@ -35,7 +35,7 @@ def register(username, hashed_password, email, salt):
 def login(username):
 	"""Login a user."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT id, password, salt, username FROM users WHERE username = %s', (username,))
+	cursor.execute('SELECT id, password, salt, username, verified FROM users WHERE username = %s', (username,))
 	user = cursor.fetchone()
 	cursor.close()
 	db.close()
@@ -158,3 +158,35 @@ def get_task_files(task_ids):
 	cursor.close()
 	db.close()
 	return task_files
+
+def verify_manual(token, username):
+	"""Verify a user manually."""
+	(db, cursor) = connect()
+	cursor.execute("UPDATE users SET verified = 1 WHERE token = %s AND username = %s", (token, username))
+	success = cursor.rowcount > 0
+	
+	db.commit()
+	cursor.close()
+	db.close()
+	
+	return success
+
+def verify_auto(token, user, email):
+	"""Verify a user automatically."""
+	(db, cursor) = connect()
+	cursor.execute("UPDATE users SET verified = 1 WHERE token = %s AND username = %s AND email = %s", (token, user, email))
+	success = cursor.rowcount > 0
+
+	db.commit()
+	cursor.close()
+	db.close()
+
+	return success
+
+def reset_token(username):
+	"""Reset a user's token."""
+	(db, cursor) = connect()
+	cursor.execute("UPDATE users SET token = NULL WHERE username = %s", (username,))
+	db.commit()
+	cursor.close()
+	db.close()
