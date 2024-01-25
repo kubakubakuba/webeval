@@ -1,35 +1,16 @@
 from flask import Flask, render_template, request, redirect, session, url_for
-from flask_mail import Mail, Message
 from markdown import markdown
 from datetime import datetime
 from hashlib import sha512
-from dotenv import load_dotenv
+from threading import Thread
 import secrets
 import os
 import toml
 import db
-import random
-import string
 
-load_dotenv("../.env")
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY')
-app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
-app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
-app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS') == 'True'
-app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL') == 'True'
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
-
-mail = Mail(app)
-
-def send_email(subject, recipient, body, html):
-	msg = Message(subject, recipients=recipient)
-	msg.body = body
-	msg.html = html
-	mail.send(msg)
+app.secret_key = 'PsHYn26gGFi#&yfRB%B5SENWseYpat5#nQTv4yQjJC%qt*9Zy6o3ZRu389RmQkgF'
 
 if __name__ == '__main__':
 	app.run(debug=True)
@@ -52,84 +33,20 @@ def register():
 	if request.method == 'POST':
 		username = request.form['username']
 		password = request.form['password']
-		email = request.form['email']
+		#email = request.form['email']
+		email = ""
 
 		salt = secrets.token_hex(16) #generate random salt for hashing password
 		hashed_password = sha512((password + salt).encode()).hexdigest()
-		hashed_email = sha512((email + salt).encode()).hexdigest()
 
-		token = ''.join([''.join(random.choices(string.ascii_uppercase + string.digits, k=2)) for _ in range(4)])
-
-		subject = "Verify your email address"
-		recipients = [email]
-		body = f"Click the link to verify your email address: http://localhost:5000/verify/{token}/{username}/{hashed_email}"
-		token_parts = [token[i:i+2] for i in range(0, len(token), 2)]
-		html = f"""
-		<div style='max-width: 600px; margin: 30px auto; text-align: center;'>
-			<h2 style='font-size: 20px; margin-bottom: 20px;'>Thanks for registering!</h2>
-		</div>
-
-		<div style='max-width: 600px; margin: 0 auto;'>
-			<div style='border: 1px solid #ddd; padding: 20px; text-align: center;'>
-				<h1 style='font-size: 24px; margin-bottom: 20px;'>Email Verification</h1>
-				<table style='margin: 0 auto;'>
-					<tr>
-						{"".join([f"<td style='border: 1px solid #ddd; padding: 20px; font-size: 24px;'>{part}</td>" for part in token_parts])}
-					</tr>
-				</table>
-				<p style='font-size: 16px; margin-bottom: 30px;'>Click the card below to verify your email address:</p>
-				<a href='http://localhost:5000/verify/{token}/{username}/{hashed_email}' style='text-decoration: none; color: inherit;'>
-					<div style='border: 1px solid #ddd; padding: 20px; cursor: pointer;'>
-						<p style='font-size: 16px; margin: 0;'>Verify Email</p>
-					</div>
-				</a>
-
-				<p style='text-align: center; font-size: 16px; margin-top: 30px;'>Or enter the code manually on the page: <a href='http://localhost:5000/verify'>http://localhost:5000/verify</a></p>
-			</div>
-		</div>
-		"""
-
-		send_email(subject, recipients, body, html)
-		register_successful = True
-
-		register_successful = db.register(username, hashed_password, hashed_email, salt, token)
+		register_successful = db.register(username, hashed_password, email, salt)
 		if register_successful:
-			return redirect('/verify')
+			return redirect('/login')
 		else:
 			return redirect('/register#username_taken')
 	else:
 		return render_template('register.html', sessions=session)
 	
-@app.route('/verify', methods=['GET', 'POST'])
-def verify_manual():
-	if request.method == 'POST':
-		token =  request.form.get('verification0')
-		token += request.form.get('verification1')
-		token += request.form.get('verification2')
-		token += request.form.get('verification3')
-
-		username = request.form.get('username')
-		
-		success = db.verify_manual(token, username)
-		if success:
-			reset_token(username)
-			return redirect('/login')
-		else:
-			return redirect('/verify')
-	return render_template('verify.html')
-
-@app.route('/verify/<token>/<user>/<email>', methods=['GET'])
-def verify_auto(token, user, email):
-	success = db.verify_auto(token, user, email)
-	if success:
-		reset_token(user)
-		return redirect('/login')
-	else:
-		return redirect('/verify')
-
-def reset_token(username):
-	db.reset_token(username)
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 	if request.method == 'POST':
@@ -139,11 +56,8 @@ def login():
 		user = db.login(username)
 
 		if user:
-			user_id, hashed_password, salt, username, verified = user
+			user_id, hashed_password, salt, username = user
 			if sha512((password + salt).encode()).hexdigest() == hashed_password:
-				if verified == 0:
-					return redirect('/verify')
-				
 				session['logged_in'] = True
 				session['user_id'] = user_id
 				session['username'] = username
@@ -278,7 +192,6 @@ def task(task_id):
 			latest_score = (latest_score[0], latest_score[1], latest_score[2], 0)
 		else:
 			latest_score = None
-
 
 	#check if latest score is already in best scores
 	duplicate_score = []
