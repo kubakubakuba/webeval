@@ -37,8 +37,6 @@ a2 = 15
 
 [[testcases]]
 name = "test02"
-do_compare_memory = true
-do_set_starting_memory = true
 
 [[testcases.starting_mem]]
 0x400 = 150
@@ -49,8 +47,6 @@ do_set_starting_memory = true
 
 [[testcases]]
 name = "test03"
-do_compare_memory = true
-do_set_starting_memory = true
 
 [[testcases.starting_mem]]
 0x400 = 1523
@@ -61,4 +57,4 @@ do_set_starting_memory = true
 
 [score]
 description = "Runtime of the program in cycles."
-metric = "cycles"
+testcase = 0

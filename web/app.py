@@ -23,6 +23,8 @@ app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 
+URL = "https://eval.comparch.edu.cvut.cz"
+
 mail = Mail(app)
 
 def send_email(subject, recipient, body, html):
@@ -77,13 +79,13 @@ def register():
 					</tr>
 				</table>
 				<p style='font-size: 16px; margin-bottom: 30px;'>Click the card below to verify your email address:</p>
-				<a href='http://localhost:5000/verify/{token}/{username}/{hashed_email}' style='text-decoration: none; color: inherit;'>
+				<a href='{URL}/verify/{token}/{username}/{hashed_email}' style='text-decoration: none; color: inherit;'>
 					<div style='border: 1px solid #ddd; padding: 20px; cursor: pointer;'>
 						<p style='font-size: 16px; margin: 0;'>Verify Email</p>
 					</div>
 				</a>
 
-				<p style='text-align: center; font-size: 16px; margin-top: 30px;'>Or enter the code manually on the page: <a href='http://localhost:5000/verify'>http://localhost:5000/verify</a></p>
+				<p style='text-align: center; font-size: 16px; margin-top: 30px;'>Or enter the code manually on the page: <a href='{URL}/verify'>{URL}/verify</a></p>
 			</div>
 		</div>
 		"""
@@ -129,27 +131,118 @@ def verify_auto(token, user, email):
 def reset_token(username):
 	db.reset_token(username)
 
+@app.route('/reset', methods=['GET', 'POST']) #TODO: implement reset password
+def reset():
+	if request.method == 'POST':
+		username = request.form['username']
+		email = request.form['email']
+
+		user = db.get_user(username)
+
+		if user is None:
+			return redirect('/reset')
+
+		user_id, hashed_password, salt, username, verified, email_hashed = user
+
+		if sha512((email + salt).encode()).hexdigest() != email_hashed:
+			return redirect('/reset')
+
+		token = ''.join([''.join(random.choices(string.ascii_uppercase + string.digits, k=2)) for _ in range(4)])
+
+		subject = "Reset your password"
+		recipients = [email]
+		body = f"Click the link to reset your password: {URL}/newpassword/"
+		token_parts = [token[i:i+2] for i in range(0, len(token), 2)]
+		html = f"""
+		<div style='max-width: 600px; margin: 30px auto; text-align: center;'>
+			<h2 style='font-size: 20px; margin-bottom: 20px;'>You have requested a password reset for you account.</h2>
+		</div>
+
+		<div style='max-width: 600px; margin: 0 auto;'>
+			<div style='border: 1px solid #ddd; padding: 20px; text-align: center;'>
+				<h1 style='font-size: 24px; margin-bottom: 20px;'>Reset Password</h1>
+				<table style='margin: 0 auto;'>
+					<tr>
+						{"".join([f"<td style='border: 1px solid #ddd; padding: 20px; font-size: 24px;'>{part}</td>" for part in token_parts])}
+					</tr>
+				</table>
+				<p style='font-size: 16px; margin-bottom: 30px;'>Click the card below to verify your email address:</p>
+				<a href='{URL}/newpassword/' style='text-decoration: none; color: inherit;'>
+					<div style='border: 1px solid #ddd; padding: 20px; cursor: pointer;'>
+						<p style='font-size: 16px; margin: 0;'>Reset Password</p>
+					</div>
+				</a>
+
+				<p style='text-align: center; font-size: 16px; margin-top: 30px;'>Or enter the code manually on the page: <a href='{URL}/newpassword/'>{URL}/newpassword/</a></p>
+			</div>
+		</div>
+		"""
+
+		send_email(subject, recipients, body, html)
+
+		db.add_verify_code(username, token)
+
+		return redirect('/newpassword')
+		
+	else:
+		return render_template('reset.html', sessions=session)
+
+@app.route('/newpassword', methods=['GET', 'POST'])
+def newpassword():
+	if request.method == 'POST':
+		token =  request.form.get('verification0')
+		token += request.form.get('verification1')
+		token += request.form.get('verification2')
+		token += request.form.get('verification3')
+
+		username = request.form.get('username')
+		email = request.form.get('email')
+		password = request.form.get('password')
+
+		user = db.get_user(username)
+
+		if user is None:
+			return redirect('/newpassword')
+
+		user_id, hashed_password, salt, username, verified, email_hashed = user
+
+		new_hashed_password = sha512((password + salt).encode()).hexdigest()
+
+		if sha512((email + salt).encode()).hexdigest() != email_hashed:
+			return redirect('/newpassword')
+		
+		success = db.set_new_password(username, new_hashed_password, token)
+
+		if success:
+			reset_token(username)
+			return redirect('/login')
+		else:
+			return redirect('/newpassword')
+		
+	return render_template('newpassword.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 	if request.method == 'POST':
 		username = request.form['username']
 		password = request.form['password']
 
-		user = db.login(username)
+		user = db.get_user(username)
 
-		if user:
-			user_id, hashed_password, salt, username, verified = user
-			if sha512((password + salt).encode()).hexdigest() == hashed_password:
-				if verified == 0:
-					return redirect('/verify')
-				
-				session['logged_in'] = True
-				session['user_id'] = user_id
-				session['username'] = username
-				#return render_template('autoredirect.html')
-				return redirect('/')
-			else:
-				return render_template('invalid.html', redirect_url='/login')
+		if user is None:
+			return render_template('invalid.html', redirect_url='/login')
+
+		user_id, hashed_password, salt, username, verified, email = user
+
+		if sha512((password + salt).encode()).hexdigest() == hashed_password:
+			if verified == 0:
+				return redirect('/verify')
+			
+			session['logged_in'] = True
+			session['user_id'] = user_id
+			session['username'] = username
+			#return render_template('autoredirect.html')
+			return redirect('/')
 		else:
 			return render_template('invalid.html', redirect_url='/login')
 	else:
@@ -197,8 +290,8 @@ def submit(task_id):
 				submission_code = f.read()
 
 		template_code = "" #TODO:here a submission template for each task can be created if needed
-		if os.path.exists(f"submissions/template.S"):
-			with open(f"submissions/template.S") as f:
+		if os.path.exists(f"S_templates/{task_id}.S"):
+			with open(f"S_templates/{task_id}.S") as f:
 				template_code = f.read()
 
 		return render_template('submit.html', task_name=task_name, sessions=session, submission_code=submission_code, template_code=template_code)

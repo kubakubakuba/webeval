@@ -63,11 +63,12 @@ def evaluate_submissions(num_submissions = 10):
 			timed_out = False
 
 			for i in range(num_testcases):
-				if task_data["testcases"][i].get("do_compare_registers", False): #compare registers
+				#if flag is set or reference_regs are not empty, compare registers
+				if task_data["testcases"][i].get("do_compare_registers", False) or task_data["testcases"][i].get("reference_regs", None) != None:
 					sim.set_do_compare_registers(True)
 					sim.set_reference_ending_regs(task_data["testcases"][i]["reference_regs"][0])
 
-				if task_data["testcases"][i].get("do_compare_memory", False): #compare memory
+				if task_data["testcases"][i].get("do_compare_memory", False) or task_data["testcases"][i].get("reference_mem", None) != None:
 					sim.set_do_compare_memory(True)
 
 					mem = task_data["testcases"][i]["reference_mem"][0]
@@ -75,7 +76,7 @@ def evaluate_submissions(num_submissions = 10):
 
 					sim.set_reference_ending_memory(mem)
 
-				if task_data["testcases"][i].get("do_set_starting_memory", False): #set starting memory
+				if task_data["testcases"][i].get("do_set_starting_memory", False) or task_data["testcases"][i].get("starting_mem", None) != None:
 					mem = task_data["testcases"][i]["starting_mem"][0]
 					mem = {int(k, 16) : v for k, v in mem.items()}#rewrite the memory dict from 'address' : value to adress : value
 
@@ -96,18 +97,18 @@ def evaluate_submissions(num_submissions = 10):
 			
 			if tests_passed == num_testcases:
 				was_accepted = 0
-				sim.set_do_compare_registers(False)
-				sim.set_do_compare_memory(False)
-				sim.run()
+				#sim.set_do_compare_registers(False)
+				#sim.set_do_compare_memory(False)
+				#sim.run()
 
-				score_metric = task_data["score"]["metric"]
-				score = sim.get_scores()[score_metric]
+				#score_metric = task_data["score"]["metric"]
+				score = sim.results[task_data["score"]["testcase"]][0]
 
 			if timed_out:
 				score = -1
 				was_accepted = 2
 
-			sim.end_eval(task_data["score"]["metric"])
+			sim.end_eval(task_data["score"]["testcase"])
 
 		result_filename = f"results/{s[2]}_{task_id}.log"
 

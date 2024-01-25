@@ -32,10 +32,10 @@ def register(username, hashed_password, email, salt, token):
 	db.close()
 	return True
 
-def login(username):
-	"""Login a user."""
+def get_user(username):
+	"""Get user info"""
 	(db, cursor) = connect()
-	cursor.execute('SELECT id, password, salt, username, verified FROM users WHERE username = %s', (username,))
+	cursor.execute('SELECT id, password, salt, username, verified, email FROM users WHERE username = %s', (username,))
 	user = cursor.fetchone()
 	cursor.close()
 	db.close()
@@ -190,3 +190,24 @@ def reset_token(username):
 	db.commit()
 	cursor.close()
 	db.close()
+
+def add_verify_code(username, token):
+	"""Add a verification code for a user."""
+	(db, cursor) = connect()
+	cursor.execute("UPDATE users SET token = %s WHERE username = %s", (token, username,))
+	
+	db.commit()
+	cursor.close()
+	db.close()
+
+def set_new_password(username, hashed_password, token):
+	"""Set a new password for a user."""
+	(db, cursor) = connect()
+	cursor.execute("UPDATE users SET password = %s, token = NULL WHERE username = %s AND token = %s", (hashed_password, username, token))
+	success = cursor.rowcount > 0
+
+	db.commit()
+	cursor.close()
+	db.close()
+
+	return success

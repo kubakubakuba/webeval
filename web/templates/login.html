@@ -16,9 +16,20 @@ Login
 					<label for="password">Password:</label>
 					<input type="password" id="password" name="password" class="form-control" required>
 				</div>
-				<div class="card card-btn col-sm-4 mx-auto mt-4" onclick="document.getElementById('loginForm').submit();">
-					<div class="card-body text-center">
-						Login
+				<div class="row">
+					<div class="col-sm-9">
+						<div class="card card-btn mx-auto mt-4" onclick="document.getElementById('loginForm').submit();">
+							<div class="card-body text-center">
+								Login
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-3">
+						<div class="card card-btn mx-auto mt-4" onclick="location.href='/reset';">
+							<div class="card-body text-center">
+								Forgot Password
+							</div>
+						</div>
 					</div>
 				</div>
 			</form>

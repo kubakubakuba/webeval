@@ -18,18 +18,17 @@ description = "Sample task, simple loading of values"
 
 [[testcases]]
 name = "test01"
-do_compare_registers = true
+
 [[testcases.reference_regs]]
 a1 = 10
 a2 = 12
 
 [[testcases]]
 name = "test02"
-do_compare_registers = true
 
 [[testcases.reference_regs]]
 a3 = 22
 
 [score]
 description = "Scoring based on the number of cycles used to execute the program."
-metric = "cycles"
+testcase = 1

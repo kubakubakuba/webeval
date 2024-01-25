@@ -49,6 +49,8 @@ class QtRVSim:
 			"a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7",
 			"s8", "s9", "s10","s11", "t3", "t4", "t5", "t6"
 		]
+
+		self.results = []
 	
 	def get_result(self):
 		'''Return the result of the evaluation.'''
@@ -141,9 +143,9 @@ class QtRVSim:
 		with open(self.starting_memory_file, 'w') as f:
 			f.write("")
 
-	def end_eval(self, score_metric="cycles"):
+	def end_eval(self, testcase=0):
 		self.log += f"\n\nEvaluation ended on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-		score = self.scores[score_metric] if self.result == 0 else -1
+		score = self.results[testcase][1] if self.results[testcase][0] == 0 else -1
 		self.log += f"Result: {score}\n"
 		self.clear_files()
 
@@ -276,3 +278,5 @@ class QtRVSim:
 		#save score metrics, -> cycles and cache stats
 		self.scores["cycles"] = self.cycles #scoring metric for cycles
 		self.scores["cache"] = self.cache_stats["i-cache:improved-speed"] #scoring metric for cache
+
+		self.results.append((self.result, self.scores["cycles"], self.scores["cache"]))
