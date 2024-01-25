@@ -63,7 +63,7 @@ def register():
 
 		subject = "Verify your email address"
 		recipients = [email]
-		body = f"Click the link to verify your email address: http://localhost:5000/verify/{token}/{username}/{hashed_email}"
+		body = f"Click the link to verify your email address: {URL}/verify/{token}/{username}/{hashed_email}"
 		token_parts = [token[i:i+2] for i in range(0, len(token), 2)]
 		html = f"""
 		<div style='max-width: 600px; margin: 30px auto; text-align: center;'>
@@ -131,7 +131,7 @@ def verify_auto(token, user, email):
 def reset_token(username):
 	db.reset_token(username)
 
-@app.route('/reset', methods=['GET', 'POST']) #TODO: implement reset password
+@app.route('/reset', methods=['GET', 'POST'])
 def reset():
 	if request.method == 'POST':
 		username = request.form['username']
