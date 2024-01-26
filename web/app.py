@@ -151,7 +151,7 @@ def reset():
 
 		subject = "Reset your password"
 		recipients = [email]
-		body = f"Click the link to reset your password: {URL}/newpassword/"
+		body = f"Click the link to reset your password: {URL}/newpassword"
 		token_parts = [token[i:i+2] for i in range(0, len(token), 2)]
 		html = f"""
 		<div style='max-width: 600px; margin: 30px auto; text-align: center;'>
@@ -167,13 +167,13 @@ def reset():
 					</tr>
 				</table>
 				<p style='font-size: 16px; margin-bottom: 30px;'>Click the card below to verify your email address:</p>
-				<a href='{URL}/newpassword/' style='text-decoration: none; color: inherit;'>
+				<a href='{URL}/newpassword' style='text-decoration: none; color: inherit;'>
 					<div style='border: 1px solid #ddd; padding: 20px; cursor: pointer;'>
 						<p style='font-size: 16px; margin: 0;'>Reset Password</p>
 					</div>
 				</a>
 
-				<p style='text-align: center; font-size: 16px; margin-top: 30px;'>Or enter the code manually on the page: <a href='{URL}/newpassword/'>{URL}/newpassword/</a></p>
+				<p style='text-align: center; font-size: 16px; margin-top: 30px;'>Or enter the code manually on the page: <a href='{URL}/newpassword'>{URL}/newpassword</a></p>
 			</div>
 		</div>
 		"""
