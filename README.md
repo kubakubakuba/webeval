@@ -24,6 +24,7 @@ Public version is running [here](http://omega.swpelc.eu:5000).
 - [x] Basic app functionality Done?
 - [x] Users can view their last submissions (before it gets overwritten by new one of the same task)
 - [x] User will see their best score and the their latest submission score in the leaderboard
+- [ ] Change user id from the internal database id to some arbitrary hash
 - [ ] Move qtrsvim into docker container, for security reasons / into an isolate utility
 - [ ] Delete old, not needed submissions (not the latest and the best for each task and user, other can be deleted)
 - [ ] Split submission table into pure submissions and results
