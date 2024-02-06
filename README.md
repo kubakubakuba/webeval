@@ -29,9 +29,15 @@ Public version is running [here](http://omega.swpelc.eu:5000).
 - [ ] Split submission table into pure submissions and results
 - [X] Add the starting template file to each task (instead of one template for all tasks)
 - [X] Remove the explicit declaration of do_comapare_registers and do_compare_memory, and implicitly set them to True, if the reference registers or memory are set
-- [ ] Move database info into .env file
+- [X] Move database info into .env file
 - [X] Register confirm email
 - [X] Password reset
+- [ ] Migrate database into PostgreSQL
+- [ ] Implement database trigger for evaluator
+- [ ] Write tasks, same as these: [b35apo](https://cw.fel.cvut.cz/b222/courses/b35apo/homeworks/bonus/start)
+- [ ] Implement cache settings (first line of the submission code)
+- [ ] Implement uart communication
+- [ ] Implement c file submission
 
 ## Database structure
 
