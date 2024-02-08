@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import secrets
 import os
 import toml
-import db
+import db as db
 import random
 import string
 
@@ -263,15 +263,8 @@ def submit(task_id):
 		code = request.form['code'].replace('\r\n', '\n')
 
 		time_uploaded = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-		#filename = str(user_id) + "_" + time_uploaded + '.S'
-		filename = str(user_id) + '_' + str(task_id) + '.S'
 
-		with open(os.path.join("submissions", filename), 'w') as file:
-			file.write(code)
-
-		full_filepath = "submissions/" + filename
-
-		db.submit(user_id, task_id, full_filepath)
+		db.submit(user_id, task_id, code)
 
 		return redirect('/task/' + str(task_id))
 	else:
@@ -284,10 +277,11 @@ def submit(task_id):
 			return render_template('404.html'), 404
 
 		#if there is a submission for this task by the logged in user, read the submission file
-		submission_code = ""
-		if os.path.exists(f"submissions/{session['user_id']}_{task_id}.S"):
-			with open(f"submissions/{session['user_id']}_{task_id}.S") as f:
-				submission_code = f.read()
+		#get user latest submission code
+		submission_code = db.get_last_user_code(task_id, session['user_id'])[0]
+		#if os.path.exists(f"submissions/{session['user_id']}_{task_id}.S"):
+		#	with open(f"submissions/{session['user_id']}_{task_id}.S") as f:
+		#		submission_code = f.read()
 
 		template_code = "" #TODO:here a submission template for each task can be created if needed
 		if os.path.exists(f"S_templates/{task_id}.S"):
@@ -304,6 +298,7 @@ def task(task_id):
 	result_file = None
 	time = None
 	result_data = None
+	name = None
 
 	task = db.get_task_path(task_id)
 
@@ -331,23 +326,21 @@ def task(task_id):
 
 	inputs = task_data['inputs']
 
+	latest_score = None
+
 	if 'user_id' in session:
 		user_id = session['user_id']
-		submission = db.get_user_submissions(user_id, task_id)
-
+		submission = db.get_last_user_submission(user_id, task_id)
 		if submission:
 			submission_found = True
-			evaluated, result, score, result_file, time = submission
+			result, result_file, score, time = submission
+			name = db.get_username(user_id)
+			name = None if name is None else name[0]
 
-		result_data = ""
-		#check if result file exists
-		if result_file is not None:
-			#result_file = result_file.decode() #if result_file is bytes for some reason
-			if os.path.exists(result_file):
-				with open(result_file) as f:
-					result_data = f.read()
-		else:
-			result_data = None
+			#evaluated, result, score, result_file, time = submission
+			latest_score = (user_id, score, name, 0)
+
+		result_data = result_file
 
 	task_info = {
 		'name': task_name,
@@ -361,21 +354,16 @@ def task(task_id):
 	# Get the best scores of all users for a specific task
 	best_scores = db.get_best_scores(task_id)
 	#add flag 1 (best) to the third argument of the tuple
-	best_scores = [(score[0], score[1], score[2], 1) for score in best_scores]
-	
-	latest_score = None
-	if 'user_id' in session:
-		latest_score = db.get_latest_score(task_id, session['user_id']) #add flag 1 (latest) to the third argument of the tuple
-		if latest_score is not None:
-			latest_score = (latest_score[0], latest_score[1], latest_score[2], 0)
-		else:
-			latest_score = None
+	best_scores = [(score[3], score[1], score[0], 1) for score in best_scores]
 
+	print(best_scores)
 
 	#check if latest score is already in best scores
 	duplicate_score = []
 	if latest_score is not None:
 		duplicate_score = (latest_score[0], latest_score[1], latest_score[2], 1) #reflag to 1 (best)
+
+	print(duplicate_score)
 
 	if duplicate_score in best_scores:
 		latest_score = None
@@ -386,7 +374,7 @@ def task(task_id):
 
 	latest_score = None if latest_score is None else latest_score[1]
 
-	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, scores=scores, time=time, submission_found=submission_found, score=latest_score)
+	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, scores=scores, time=time, submission_found=submission_found, score=score)
 
 @app.errorhandler(404)
 def page_not_found(e):

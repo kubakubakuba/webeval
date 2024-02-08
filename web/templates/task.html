@@ -132,7 +132,8 @@
 {% endblock content %}
 
 {% block cmirror %}
-	<script>
+	{% if result is not none and result > -1 %}
+<script>
 	CodeMirror.defineMode("qtrvsimLog", function() {
 		return {
 		token: function(stream, state) {
@@ -193,4 +194,6 @@
 		resultFileEditor.setSize("500px", "500px");
 		resultFileEditor.setValue(resultFileContent);
 	</script>
+	{% endif %}
 {% endblock %}
+

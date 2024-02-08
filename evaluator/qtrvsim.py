@@ -4,7 +4,7 @@ import re
 from collections import defaultdict
 
 class QtRVSim:
-	def __init__(self, args="", submission_file=""):
+	def __init__(self, args="", submission_file="", working_dir=""):
 		'''Initialize the evaluator with the submission file, arguments, and registers and memory to compare.'''
 
 		self.log = f"Evaluation started on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
@@ -40,8 +40,8 @@ class QtRVSim:
 
 		self.verbose = False
 
-		self.mem_output_file = "__ending_mem__"
-		self.starting_memory_file = '__starting_mem__'
+		self.mem_output_file = working_dir + "/__ending_mem__"
+		self.starting_memory_file = working_dir + '/__starting_mem__'
 
 		self.register_names = [
 			"zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
@@ -50,7 +50,7 @@ class QtRVSim:
 			"s8", "s9", "s10","s11", "t3", "t4", "t5", "t6"
 		]
 
-		self.results = []
+		self.results = {}
 	
 	def get_result(self):
 		'''Return the result of the evaluation.'''
@@ -143,7 +143,7 @@ class QtRVSim:
 		with open(self.starting_memory_file, 'w') as f:
 			f.write("")
 
-	def end_eval(self, testcase=0):
+	def end_eval(self, testcase):
 		self.log += f"\n\nEvaluation ended on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
 		score = self.results[testcase][1] if self.results[testcase][0] == 0 else -1
 		self.log += f"Result: {score}\n"
@@ -220,7 +220,7 @@ class QtRVSim:
 		else:
 			self.log += f"\nRunning: {test_name} - PASSED\n"
 
-	def run(self):
+	def run(self, test_name):
 		'''Run qtrvsim with the current configuration.'''
 		#run qtrvsim with the given arguments, dump the output into the log string
 		arguments = self.args + self.mem_arg + self.dump_mem_arg
@@ -229,7 +229,6 @@ class QtRVSim:
 		print(self.dump_mem_arg)
 		arguments = arguments.split()
 		command = ["qtrvsim_cli"] + arguments + ["--asm", self.submission_file]
-
 		killed = False
 
 		try:
@@ -279,4 +278,4 @@ class QtRVSim:
 		self.scores["cycles"] = self.cycles #scoring metric for cycles
 		self.scores["cache"] = self.cache_stats["i-cache:improved-speed"] #scoring metric for cache
 
-		self.results.append((self.result, self.scores["cycles"], self.scores["cache"]))
+		self.results[test_name] = (self.result, self.scores["cycles"], self.scores["cache"])

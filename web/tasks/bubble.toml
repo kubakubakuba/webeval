@@ -1,12 +1,16 @@
+
 [task]
-name = "Read an save to memory"
+name = "Sample Task"
+template = "S_templates/sample.S"
 
 description = '''
-# Read and save to memory
-
-Write a program that loads 2 values from memory starting at the adress 0x400 into two registers (a0 and a1).
-Then add the values in a0 and a1, and store the result in a2.
-Save the result in memory after the two values that were loaded.
+# SUBJECT TO CHANGE! Needs C file and cache settings.
+# Your task description goes here (formatted in markdown).
+## Use this as a template.
+Starting memory is set by setting testcases.starting_mem, ending memory check is done by
+setting testcases.reference_mem.
+The ending values in registers are checked by setting testcases.reference_regs.
+The scoring task is done by referencing the test name in the score.testcase field.
 '''
 
 [arguments]
@@ -19,9 +23,6 @@ description = "Loading of values from memory."
 
 [[testcases]]
 name = "test01"
-do_compare_registers = true
-do_compare_memory = true
-do_set_starting_memory = true
 
 [[testcases.reference_regs]]
 a0 = 5
@@ -44,16 +45,6 @@ name = "test02"
 
 [[testcases.reference_mem]]
 0x408 = 350
-
-[[testcases]]
-name = "test03"
-
-[[testcases.starting_mem]]
-0x400 = 1523
-0x404 = 1459
-
-[[testcases.reference_mem]]
-0x408 = 2982
 
 [score]
 description = "Runtime of the program in cycles."

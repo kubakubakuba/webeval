@@ -31,4 +31,4 @@ a3 = 22
 
 [score]
 description = "Scoring based on the number of cycles used to execute the program."
-testcase = 1
+testcase = "test02"

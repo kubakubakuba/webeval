@@ -1,13 +1,7 @@
-import mysql.connector
-from db import db_config
 import toml
-import subprocess
 from datetime import datetime
-import re
-import threading
 import time
-from subprocess import TimeoutExpired
-import db
+import evaldb as db
 from qtrvsim import QtRVSim
 import os
 
@@ -20,7 +14,7 @@ def fetch_submissions(count):
 
 	#for each taskid fetch its task filename
 
-	task_ids = [submission[0] for submission in submissions]
+	task_ids = [submission[1] for submission in submissions]
 
 	if len(task_ids) == 0:
 		print("  No submissions available to evaluate.")
@@ -31,12 +25,10 @@ def fetch_submissions(count):
 	#make a dictionary of taskid -> task filename
 	task_filenames = {task[0]: task[1] for task in task_filenames}
 
-	return (submissions, task_filenames)
+	#for each task_filename add ../web/ to the beginning
+	task_filenames = {task_id: "../web/" + task_filename for task_id, task_filename in task_filenames.items()}
 
-def update_submission(submission_id, evaluated, result, score, result_file):
-	"""Update a submission in the database."""
-	#update the submission with the given id
-	db.update_submission(evaluated, result, score, result_file, submission_id)
+	return (submissions, task_filenames)
 
 def evaluate_submissions(num_submissions = 10):
 	fetch = fetch_submissions(num_submissions)
@@ -47,15 +39,28 @@ def evaluate_submissions(num_submissions = 10):
 
 	for s in submissions:
 		#get arguments from task toml file
-		task_id = s[0]
+		task_id = s[1] #task id
 		arguments = []
 		was_accepted = 1 #was not accepted
+
+		#get PID of the running evaluator
+		pid = os.getpid()
+		#save file into /tmp/qtrvsim_web_eval/_job_PID/submission.S
+		filepath = f"/tmp/qtrvsim_web_eval/_job_{pid}/submission.S"
+		#make the directory if it does not exist
+		os.makedirs(os.path.dirname(filepath), exist_ok=True)
+		#save the file from s[2] to filepath
+		with open(filepath, 'w') as f:
+			f.write(s[2])
+
+		print(task_filenames)
+
 		with open(task_filenames[task_id]) as f:
 			task_data = toml.load(f)
 			arguments = task_data['arguments']['run']
 
 			num_testcases = len(task_data['testcases'])
-			sim = QtRVSim(args=task_data["arguments"]["run"], submission_file=s[1])
+			sim = QtRVSim(args=task_data["arguments"]["run"], submission_file=filepath, working_dir=os.path.dirname(filepath))
 			#sim.set_verbose(True)
 
 			score = 0
@@ -83,7 +88,7 @@ def evaluate_submissions(num_submissions = 10):
 					sim.set_starting_memory(mem)
 
 				#run the evaluation
-				sim.run()
+				sim.run(task_data["testcases"][i]["name"])
 				sim.log_test_name(task_data["testcases"][i]["name"])
 				
 				if sim.get_result() == 0:
@@ -96,13 +101,10 @@ def evaluate_submissions(num_submissions = 10):
 				sim.reset()
 			
 			if tests_passed == num_testcases:
-				was_accepted = 0
-				#sim.set_do_compare_registers(False)
-				#sim.set_do_compare_memory(False)
-				#sim.run()
+				was_accepted = 0 #mark as accepted
 
-				#score_metric = task_data["score"]["metric"]
-				score = sim.results[task_data["score"]["testcase"]][0]
+				scoring_testcase = sim.results[task_data["score"]["testcase"]]
+				score = scoring_testcase[1] #TODO: can be changed to cache, now is set to cycles
 
 			if timed_out:
 				score = -1
@@ -110,16 +112,17 @@ def evaluate_submissions(num_submissions = 10):
 
 			sim.end_eval(task_data["score"]["testcase"])
 
-		result_filename = f"results/{s[2]}_{task_id}.log"
+		print(f"  submission {s[0]} evaluated, accepted: {was_accepted}, cycles: {score}")
+		db.update_submission(s[0])
+		db.update_result(s[4], s[1], score, was_accepted, sim.get_log())
+		
+		#TODO: remove the directory after evaluation
+		#remove submission.S and __ending_mem__ and __starting_mem__ files
+		os.remove(filepath)
+		os.remove(sim.mem_output_file)
+		os.remove(sim.starting_memory_file)
 
-		#write stdout and stderr to a file
-		with open(result_filename, 'w') as f:
-			f.write(sim.get_log())
-
-		print(f"  submission {s[0]} evaluated, accepted: {was_accepted}, cycles: {score}, result file: {result_filename}")
-		update_submission(s[3], 1, was_accepted, score, result_filename)
-		#remove the submission file
-		#os.remove(s[1])
+		os.rmdir(os.path.dirname(filepath)) #if is notempty will not be deleted
 
 		#wait for a second
 		time.sleep(1)
