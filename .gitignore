@@ -10,3 +10,4 @@ web/__starting_mem__
 web/__pycache__/
 web/encode_email.py
 web/old_db.py
+evaluator/__pycache__/
