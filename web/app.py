@@ -278,7 +278,8 @@ def submit(task_id):
 
 		#if there is a submission for this task by the logged in user, read the submission file
 		#get user latest submission code
-		submission_code = db.get_last_user_code(task_id, session['user_id'])[0]
+		submission_code = db.get_last_user_code(task_id, session['user_id'])
+		submission_code = "" if submission_code is None else submission_code[0]
 		#if os.path.exists(f"submissions/{session['user_id']}_{task_id}.S"):
 		#	with open(f"submissions/{session['user_id']}_{task_id}.S") as f:
 		#		submission_code = f.read()
@@ -330,7 +331,7 @@ def task(task_id):
 
 	if 'user_id' in session:
 		user_id = session['user_id']
-		submission = db.get_last_user_submission(user_id, task_id)
+		submission = db.get_last_user_submission(task_id, user_id)
 		if submission:
 			submission_found = True
 			result, result_file, score, time = submission
@@ -356,14 +357,10 @@ def task(task_id):
 	#add flag 1 (best) to the third argument of the tuple
 	best_scores = [(score[3], score[1], score[0], 1) for score in best_scores]
 
-	print(best_scores)
-
 	#check if latest score is already in best scores
 	duplicate_score = []
 	if latest_score is not None:
 		duplicate_score = (latest_score[0], latest_score[1], latest_score[2], 1) #reflag to 1 (best)
-
-	print(duplicate_score)
 
 	if duplicate_score in best_scores:
 		latest_score = None

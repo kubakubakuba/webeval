@@ -137,7 +137,7 @@ def set_new_password(username, hashed_password, token):
 def get_best_scores(taskid):
 	"""Get the best scores for a task."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT users.username, results.score_last, results.result_file, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s ORDER BY results.score_last ASC', (taskid,))
+	cursor.execute('SELECT users.username, results.score_best, results.result_file, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s ORDER BY results.score_last ASC', (taskid,))
 	scores = cursor.fetchall()
 	cursor.close()
 	db.close()

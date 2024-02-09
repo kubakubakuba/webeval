@@ -24,11 +24,6 @@ description = "Loading of values from memory."
 [[testcases]]
 name = "test01"
 
-[[testcases.reference_regs]]
-a0 = 5
-a1 = 10
-a2 = 15
-
 [[testcases.starting_mem]]
 0x400 = 5
 0x404 = 10
