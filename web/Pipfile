@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 flask = "*"
-flask-mail = "*"
+flask_mail = "*"
 toml = "*"
 markdown = "*"
 psycopg2-binary = "*"
