@@ -1,5 +1,6 @@
 [task]
 name = "Read an save to memory"
+template = "S_templates/memory.S"
 
 description = '''
 # Read and save to memory
@@ -29,31 +30,28 @@ a1 = 10
 a2 = 15
 
 [[testcases.starting_mem]]
-0x400 = 5
-0x404 = 10
+0x400 = [5, 10]
 
 [[testcases.reference_mem]]
-0x408 = 15
+0x408 = [15]
 
 [[testcases]]
 name = "test02"
 
 [[testcases.starting_mem]]
-0x400 = 150
-0x404 = 200
+0x400 = [150, 200]
 
 [[testcases.reference_mem]]
-0x408 = 350
+0x408 = [350]
 
 [[testcases]]
 name = "test03"
 
 [[testcases.starting_mem]]
-0x400 = 1523
-0x404 = 1459
+0x400 = [1523, 1459]
 
 [[testcases.reference_mem]]
-0x408 = 2982
+0x408 = [2982]
 
 [score]
 description = "Runtime of the program in cycles."

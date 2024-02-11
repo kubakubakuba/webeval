@@ -2,6 +2,7 @@ import subprocess
 from datetime import datetime
 import re
 from collections import defaultdict
+import os
 
 class QtRVSim:
 	def __init__(self, args="", submission_file="", working_dir=""):
@@ -18,8 +19,8 @@ class QtRVSim:
 		self.submission_file = submission_file
 
 		self.compare_registes = defaultdict(str) # list of registers to compare
-		self.reference_memory = defaultdict(str) # list of memory to compare
-		self.starting_memory_addr = 0
+		self.reference_memory = defaultdict(list) # list of memory to compare
+		self.starting_memory_addresses = []
 
 		self.reference_ending_memory_addr = 0
 		self.reference_ending_memory_length = 0
@@ -30,18 +31,22 @@ class QtRVSim:
 
 		self.cycles = -1
 		self.result = -1
+		self.is_private = False
 		self.cache_stats = defaultdict(int)
 		self.scores = defaultdict(int)
 
 		self.timeout_time = 10 #seconds
 
 		self.regs = defaultdict(int)
-		self.mem = defaultdict(int)
+		self.mem = defaultdict(list)
 
 		self.verbose = False
 
-		self.mem_output_file = working_dir + "/__ending_mem__"
-		self.starting_memory_file = working_dir + '/__starting_mem__'
+		self.mem_output_files_prefix = working_dir + "/"
+		self.starting_memory_files_prefix = working_dir + "/"
+
+		self.mem_output_files = []
+		self.starting_memory_files = []
 
 		self.register_names = [
 			"zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
@@ -51,6 +56,10 @@ class QtRVSim:
 		]
 
 		self.results = {}
+
+		self.makefile_present = False
+		self.makefile_successfull = True
+		self.makefile_log = ""
 	
 	def get_result(self):
 		'''Return the result of the evaluation.'''
@@ -93,29 +102,30 @@ class QtRVSim:
 
 	def set_starting_memory(self, mem):
 		'''Set the starting memory. Pass an array of pairs (address, value).'''
-		start_address = min(mem.keys())
-		end_address = max(mem.keys()) + 4
 
-		self.starting_memory_addr = start_address
+		for address in mem.keys():
+			self.starting_memory_addresses.append(address)
+			curr_starting_memory_file = f"{self.starting_memory_files_prefix}{address}.in"
+			self.starting_memory_files.append(curr_starting_memory_file)
 
-		with open(self.starting_memory_file, 'w') as file:
-			for address in range(start_address, end_address, 4):
-				# Write the value if the address is in the dictionary, otherwise write 0
-				value = mem.get(address, 0)
-				file.write(f"{value}\n")
+			with open(curr_starting_memory_file, 'w') as file:
+				for val in mem[address]:
+					file.write(f"{val}\n")
 
-		self.mem_arg = f" --load-range {self.starting_memory_addr},{self.starting_memory_file}"
+			self.mem_arg += f" --load-range {address},{curr_starting_memory_file}"
 
 	def set_reference_ending_memory(self, mem):
 		'''Pass an array of pairs (address, value) to compare against.'''
-		self.reference_ending_memory_addr = min(mem.keys())
-		self.reference_ending_memory_length = max(mem.keys()) + 4
-		#add a flag to dump memory to a file
-		self.reference_ending_memory_length = self.reference_ending_memory_length - self.reference_ending_memory_addr
 
-		self.dump_mem_arg = f" --dump-range {hex(self.reference_ending_memory_addr)},{self.reference_ending_memory_length},{self.mem_output_file}"
+		for address in mem.keys():
+			curr_mem_output_file = f"{self.mem_output_files_prefix}{address}.out"
 
-		self.reference_memory = mem
+			self.mem_output_files.append(curr_mem_output_file)
+			memory_len = len(mem[address])
+
+			self.mem_arg += f" --dump-range {address},{memory_len*4},{curr_mem_output_file}"
+			for val in mem[address]:
+				self.reference_memory[address].append(val)
 
 	def rgx_get_cycles(self, log):
 		'''Get the number of cycles from the stdout of qtrvsim.'''
@@ -127,38 +137,45 @@ class QtRVSim:
 
 	def read_mem_output_file(self):
 		'''Read the memory file and set the self.mem dictionary.'''
-		self.mem = defaultdict(int) #clear the memory
-		base_address = self.reference_ending_memory_addr
+		self.mem = defaultdict(list) #clear the memory
 
-		with open(self.mem_output_file, 'r') as file:
-			for line in file:
-				mem_val = line.strip()
-				self.mem[base_address] = int(mem_val, 16)
-				base_address += 4
+		for address in self.reference_memory.keys():
+			curr_mem_output_file = f"{self.mem_output_files_prefix}{address}.out"
+			with open(curr_mem_output_file, 'r') as file:
+				for line in file:
+					mem_val = line.strip()
+					self.mem[address].append(int(mem_val, 16))
 
 	def clear_files(self):
 		'''Clear the memory and starting memory files.'''
-		with open(self.mem_output_file, 'w') as f:
-			f.write("")
-		with open(self.starting_memory_file, 'w') as f:
-			f.write("")
+		for file in self.mem_output_files + self.starting_memory_files:
+			try:
+				os.remove(file)
+			except:
+				pass
 
 	def end_eval(self, testcase):
 		self.log += f"\n\nEvaluation ended on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+		print(self.results)
 		score = self.results[testcase][1] if self.results[testcase][0] == 0 else -1
 		self.log += f"Result: {score}\n"
 		self.clear_files()
 
+	def set_private(self):
+		'''Set the evaluation to private.'''
+		self.is_private = True
+
 	def reset(self):
 		self.do_compare_memory = False
 		self.do_compare_registers = False
+		self.is_private = False
 		self.starting_memory_addr = 0
 		self.reference_ending_memory_addr = 0
 		self.reference_ending_memory_length = 0
-		self.mem = defaultdict(int)
+		self.mem = defaultdict(list)
 		self.regs = defaultdict(int)
 		self.compare_registes = defaultdict(int)
-		self.reference_memory = defaultdict(int)
+		self.reference_memory = defaultdict(list)
 
 	def rgx_get_cache_stats(self, log):
 		'''Get the cache stats from the stdout of qtrvsim. Set them to the self.cache_stats dictionary.'''
@@ -213,22 +230,73 @@ class QtRVSim:
 
 	def log_test_name(self, test_name):
 		'''Log the name of the test.'''
+		
+		self.log += f"\nRunning: '{test_name}'\n"
+
+	def log_test_result(self, test_name):
+		'''Log the name of the test.'''
 		failed = self.result != 0
 
 		if failed:
-			self.log += f"\nRunning: {test_name} - FAILED\n"
+			self.log += f"\n{test_name} - FAILED\n"
 		else:
-			self.log += f"\nRunning: {test_name} - PASSED\n"
+			self.log += f"\n{test_name} - PASSED\n"
+
+	def create_makefile(self, makefile):
+		'''Create a makefile in the working directory.'''
+		self.makefile_present = True
+		with open(self.mem_output_files_prefix + "Makefile", 'w') as f:
+			f.write(makefile)
+
+	def run_make(self):
+		'''Run make in the working directory.'''
+		command = ["make"]
+		try:
+			process = subprocess.Popen(command, cwd=self.mem_output_files_prefix, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			stdout, stderr = process.communicate(timeout=self.timeout_time)
+		except subprocess.TimeoutExpired:
+			process.kill()
+			stdout, stderr = None, None
+			self.log += f"\nKilled after {self.timeout_time} seconds, while running make."
+			self.makefile_successfull = False
+		else:
+			# Check the return code
+			if process.returncode == 0:
+				self.makefile_successfull = True
+			else:
+				self.log += "\nMake command failed with return code: {}".format(process.returncode)
+				self.makefile_successfull = False
+
+		self.makefile_log = stderr.decode('utf-8') if stderr else ''
+
+		#print(stdout.decode('utf-8') if stdout else '')
+		#print(stderr.decode('utf-8') if stderr else '')
+
+	def run_make_clean(self):
+		'''Run make clean in the working directory.'''
+		command = ["make", "clean"]
+		process = subprocess.Popen(command, cwd=self.mem_output_files_prefix, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		stdout, stderr = process.communicate()
+		if self.verbose:
+			print(stdout.decode('utf-8'))
+			print(stderr.decode('utf-8'))
 
 	def run(self, test_name):
 		'''Run qtrvsim with the current configuration.'''
 		#run qtrvsim with the given arguments, dump the output into the log string
 		arguments = self.args + self.mem_arg + self.dump_mem_arg
-		print(self.args)
-		print(self.mem_arg)
-		print(self.dump_mem_arg)
+		#print(self.args)
+		#print(self.mem_arg)
+		#print(self.dump_mem_arg)
 		arguments = arguments.split()
 		command = ["qtrvsim_cli"] + arguments + ["--asm", self.submission_file]
+		
+		if self.makefile_present:
+			command = ["qtrvsim_cli"] + arguments + [self.submission_file.split(".")[0]]
+
+		if self.verbose:
+			print("Running command: ", command, "\n\n\n")
+		
 		killed = False
 
 		try:
@@ -260,14 +328,18 @@ class QtRVSim:
 				for reg, value in self.compare_registes.items():
 					if self.regs[reg] != value:
 						was_accepted = 1
-						self.log += f"\nregister {reg} does not match, expected {value}, got {self.regs[reg]}"
+
+						if not self.is_private:
+							self.log += f"\nregister {reg} does not match, \nexpected: {value},\ngot: {self.regs[reg]}\n"
 
 			if self.do_compare_memory:
 				self.read_mem_output_file()
 				for addr, value in self.reference_memory.items():
 					if self.mem[addr] != value:
 						was_accepted = 1
-						self.log += f"\nmemory at {hex(addr)} does not match, expected {value}, got {self.mem[addr]}"
+
+						if not self.is_private:
+							self.log += f"\nmemory at {addr} does not match, \nexpected: {value},\ngot: {self.mem[addr]}\n"
 
 		if killed:
 			self.result = 2
@@ -279,3 +351,9 @@ class QtRVSim:
 		self.scores["cache"] = self.cache_stats["i-cache:improved-speed"] #scoring metric for cache
 
 		self.results[test_name] = (self.result, self.scores["cycles"], self.scores["cache"])
+
+		self.mem_arg = ""
+		self.dump_mem_arg = ""
+
+		if self.verbose:
+			print(self.get_log())

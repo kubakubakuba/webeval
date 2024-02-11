@@ -284,10 +284,24 @@ def submit(task_id):
 		#	with open(f"submissions/{session['user_id']}_{task_id}.S") as f:
 		#		submission_code = f.read()
 
-		template_code = "" #TODO:here a submission template for each task can be created if needed
-		if os.path.exists(f"S_templates/{task_id}.S"):
-			with open(f"S_templates/{task_id}.S") as f:
-				template_code = f.read()
+		#read task file
+		task_path = db.get_task_path(task_id)
+		if task_path:
+			task_path = task_path[0]
+
+		task_data = None
+		if os.path.exists(task_path):
+			with open(task_path) as f:
+				task_data = toml.load(f)
+
+		template_path = task_data['task'].get('template', None)	
+
+		template_code = ""
+
+		if template_path:
+			if os.path.exists(template_path):
+				with open(template_path) as f:
+					template_code = f.read()
 
 		return render_template('submit.html', task_name=task_name, sessions=session, submission_code=submission_code, template_code=template_code)
 	
@@ -370,6 +384,8 @@ def task(task_id):
 	scores.sort(key=lambda x: x[1])
 
 	latest_score = None if latest_score is None else latest_score[1]
+
+	time = None if time is None else time.strftime('%d.%m. %Y %H:%M:%S')
 
 	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, scores=scores, time=time, submission_found=submission_found, score=score)
 

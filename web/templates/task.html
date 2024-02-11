@@ -34,7 +34,7 @@
 
 			<!-- Loop for task inputs -->
 			{% for i in task.inputs %}
-				<h6>Input {{ loop.index }}: {{ i.description }}</h6>
+				<h6>Input: {{ i.description }}</h6>
 				<div>
 					<span>In:</span>  <code>{{ i.data_in }}</code> <br />
 				</div>
@@ -76,6 +76,10 @@
 								<span style="color: green;">Accepted</span>
 							{% elif result == 2 %}
 								<span style="color: red;">Timeout</span>
+							{% elif result == 3 %}
+								<span style="color: red;">Cache error</span>
+							{% elif result == 4 %}
+								<span style="color: red;">Make error</span>
 							{% else %}
 								<span style="color: red;">Rejected</span>
 							{% endif %}

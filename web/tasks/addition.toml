@@ -1,5 +1,6 @@
 [task]
-name = "Sample task"
+name = "Simple value addition"
+template = "S_templates/addition.S"
 
 description = '''
 # Simple value addition
