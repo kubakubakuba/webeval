@@ -46,22 +46,26 @@ def evaluate_submissions(num_submissions = 10):
 		was_accepted = 1 #was not accepted
 		cache_exit = False
 		make_exit = False
-
-		#get PID of the running evaluator
-		pid = os.getpid()
-		#save file into /tmp/qtrvsim_web_eval/_job_PID/submission.S
-		filepath = f"/tmp/qtrvsim_web_eval/_job_{pid}/submission.S"
-		#make the directory if it does not exist
-		os.makedirs(os.path.dirname(filepath), exist_ok=True)
-		#save the file from s[2] to filepath
-		with open(filepath, 'w') as f:
-			f.write(s[2])
+		filepath = ""
 
 		with open(task_filenames[task_id]) as f:
 			task_data = toml.load(f)
-			arguments = task_data['arguments']['run']
 
 			cache_max_size = task_data["task"].get("cache_max_size", -1)
+			is_c_solution = task_data["task"].get("c_solution", False)
+
+			#get PID of the running evaluator
+			pid = os.getpid()
+			#save file into /tmp/qtrvsim_web_eval/_job_PID/submission.S
+			filepath = f"/tmp/qtrvsim_web_eval/_job_{pid}/submission.S"
+			#make the directory if it does not exist
+			if is_c_solution:
+				filepath = f"/tmp/qtrvsim_web_eval/_job_{pid}/submission.c"
+
+			os.makedirs(os.path.dirname(filepath), exist_ok=True)
+			#save the file from s[2] to filepath
+			with open(filepath, 'w') as f:
+				f.write(s[2])
 
 			error_log = ""
 			if cache_max_size > 0:
@@ -127,6 +131,11 @@ def evaluate_submissions(num_submissions = 10):
 			timed_out = False
 			makefile_present = False
 
+			if task_data.get("files", None) != None:
+				
+				for file in task_data["files"]:
+					sim.create_file(file["name"], file["code"])
+
 			if task_data.get("make", None) != None:
 				makefile_present = True
 				Makefile = task_data["make"].get("Makefile", None)
@@ -158,9 +167,19 @@ def evaluate_submissions(num_submissions = 10):
 
 					sim.set_starting_memory(mem)
 
+				if task_data["testcases"][i].get("do_compare_uart", False) or task_data["testcases"][i].get("reference_uart", None) != None:
+					sim.set_do_compare_uart(True)
+					uart = task_data["testcases"][i]["reference_uart"][0]
+					uart_string = uart.get("uart", None)
+					sim.set_reference_ending_uart(uart_string, "__uart.out")
+
+				if task_data["testcases"][i].get("do_set_input_uart", False) or task_data["testcases"][i].get("input_uart", None) != None:
+					uart = task_data["testcases"][i]["input_uart"][0]
+					uart_string = uart.get("uart", None)
+					sim.set_input_uart(uart_string, "__uart.in")
+
 				if task_data["testcases"][i].get("private", False):
 					sim.set_private()
-
 
 				#run the evaluation
 				sim.log_test_name(task_data["testcases"][i]["name"])

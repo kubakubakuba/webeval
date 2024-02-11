@@ -13,13 +13,20 @@ class QtRVSim:
 		#self.log += f"Submission file: {submission_file}\n\n"
 		self.log += f"Error log:"
 
+		self.working_dir = working_dir
+
 		self.args = args
 		self.mem_arg = ""
 		self.dump_mem_arg = ""
+		self.uart_arg = ""
+		self.uart_file = ""
+		self.custom_files = []
 		self.submission_file = submission_file
 
 		self.compare_registes = defaultdict(str) # list of registers to compare
 		self.reference_memory = defaultdict(list) # list of memory to compare
+		self.reference_uart = ""
+		self.input_uart = ""
 		self.starting_memory_addresses = []
 
 		self.reference_ending_memory_addr = 0
@@ -28,6 +35,8 @@ class QtRVSim:
 		self.do_compare_registers = False
 		self.do_compare_memory = False
 		self.do_set_starting_memory = False
+		self.do_set_compare_uart = False
+		self.do_set_input_uart = False
 
 		self.cycles = -1
 		self.result = -1
@@ -39,6 +48,7 @@ class QtRVSim:
 
 		self.regs = defaultdict(int)
 		self.mem = defaultdict(list)
+		self.uart = ""
 
 		self.verbose = False
 
@@ -96,9 +106,19 @@ class QtRVSim:
 			self.mem_arg = ""
 			self.dump_mem_arg = ""
 
+	def set_do_compare_uart(self, val=True):
+		'''Set whether to compare uart or not.'''
+		self.do_set_compare_uart = val
+
 	def set_reference_ending_regs(self, reg_dict):
 		'''Pass a dict of values to compare against.'''
 		self.compare_registes = reg_dict
+
+	def set_reference_ending_uart(self, uart, uart_file):
+		'''Set the reference uart output.'''
+		self.reference_uart = uart
+		self.uart_file = f"{self.working_dir}/{uart_file}"
+		self.uart_arg += f" --serout {self.uart_file}"
 
 	def set_starting_memory(self, mem):
 		'''Set the starting memory. Pass an array of pairs (address, value).'''
@@ -146,9 +166,38 @@ class QtRVSim:
 					mem_val = line.strip()
 					self.mem[address].append(int(mem_val, 16))
 
+	def read_uart_file(self):
+		'''Read the uart file and set the self.uart dictionary.'''
+		self.uart = ""
+		with open(f"{self.mem_output_files_prefix}__uart.out", 'r') as file:
+			self.uart = file.read()
+
+	def set_input_uart(self, uart, uart_file):
+		'''Save the uart file.'''
+		self.input_uart = f"{self.working_dir}/{uart_file}"
+		with open(f"{self.input_uart}", 'w') as file:
+			file.write(uart)
+		self.uart_arg += f" --serin {self.input_uart}"
+
+	def string_diff_and_hex(self, original: str, comparison: str):
+		bytes1 = bytes(original, 'utf-8')
+		bytes2 = bytes(comparison, 'utf-8')
+		log = []
+
+		for i in range(max(len(bytes1), len(bytes2))):
+			byte1 = bytes1[i] if i < len(bytes1) else None
+			byte2 = bytes2[i] if i < len(bytes2) else None
+
+			if byte1 != byte2:
+				byte1_hex = f'{byte1:02x}' if byte1 is not None else 'None'
+				byte2_hex = f'{byte2:02x}' if byte2 is not None else 'None'
+				log.append(f"position {i}: expected {byte1_hex}, got {byte2_hex}")
+
+		return '\n'.join(log)
+
 	def clear_files(self):
 		'''Clear the memory and starting memory files.'''
-		for file in self.mem_output_files + self.starting_memory_files:
+		for file in self.mem_output_files + self.starting_memory_files + [self.uart_file] + [self.input_uart] + self.custom_files:
 			try:
 				os.remove(file)
 			except:
@@ -164,6 +213,13 @@ class QtRVSim:
 	def set_private(self):
 		'''Set the evaluation to private.'''
 		self.is_private = True
+
+	def create_file(self, file_name, content):
+		'''Create a file in the working directory.'''
+		with open(f"{self.working_dir}/{file_name}", 'w') as file:
+			file.write(content)
+
+		self.custom_files.append(f"{self.working_dir}/{file_name}")
 
 	def reset(self):
 		self.do_compare_memory = False
@@ -284,7 +340,7 @@ class QtRVSim:
 	def run(self, test_name):
 		'''Run qtrvsim with the current configuration.'''
 		#run qtrvsim with the given arguments, dump the output into the log string
-		arguments = self.args + self.mem_arg + self.dump_mem_arg
+		arguments = self.args + self.mem_arg + self.dump_mem_arg + self.uart_arg
 		#print(self.args)
 		#print(self.mem_arg)
 		#print(self.dump_mem_arg)
@@ -295,7 +351,7 @@ class QtRVSim:
 			command = ["qtrvsim_cli"] + arguments + [self.submission_file.split(".")[0]]
 
 		if self.verbose:
-			print("Running command: ", command, "\n\n\n")
+			print("Running command: ", ' '.join(command), "\n\n\n")
 		
 		killed = False
 
@@ -341,6 +397,18 @@ class QtRVSim:
 						if not self.is_private:
 							self.log += f"\nmemory at {addr} does not match, \nexpected: {value},\ngot: {self.mem[addr]}\n"
 
+			if self.do_set_compare_uart:
+				self.read_uart_file()
+				differece = self.string_diff_and_hex(self.reference_uart, self.uart)
+
+				if differece != '':
+					was_accepted = 1
+
+					if not self.is_private:
+						self.log += f"\nUART does not match, \nexpected:\n{self.reference_uart}\ngot:\n{self.uart}\n"
+						self.log += f"\nDifference:\n{differece}\n"
+
+
 		if killed:
 			self.result = 2
 		else:
@@ -354,6 +422,7 @@ class QtRVSim:
 
 		self.mem_arg = ""
 		self.dump_mem_arg = ""
+		self.uart_arg = ""
 
 		if self.verbose:
 			print(self.get_log())
