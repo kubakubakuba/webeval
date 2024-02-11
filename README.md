@@ -24,10 +24,9 @@ Public version is running [here](http://omega.swpelc.eu:5000).
 - [x] Basic app functionality Done?
 - [x] Users can view their last submissions (before it gets overwritten by new one of the same task)
 - [x] User will see their best score and the their latest submission score in the leaderboard
-- [ ] Change user id from the internal database id to some arbitrary hash
 - [ ] Move qtrsvim into docker container, for security reasons / into an isolate utility
 - [ ] Delete old, not needed submissions (not the latest and the best for each task and user, other can be deleted)
-- [ ] Split submission table into pure submissions and results
+- [X] Split submission table into pure submissions and results
 - [X] Add the starting template file to each task (instead of one template for all tasks)
 - [X] Remove the explicit declaration of do_comapare_registers and do_compare_memory, and implicitly set them to True, if the reference registers or memory are set
 - [X] Move database info into .env file
@@ -36,7 +35,7 @@ Public version is running [here](http://omega.swpelc.eu:5000).
 - [ ] Migrate database into PostgreSQL
 - [ ] Implement database trigger for evaluator
 - [ ] Write tasks, same as these: [b35apo](https://cw.fel.cvut.cz/b222/courses/b35apo/homeworks/bonus/start)
-- [ ] Implement cache settings (first line of the submission code)
+- [X] Implement cache settings (first line of the submission code)
 - [ ] Implement uart communication
 - [ ] Implement c file submission
 
