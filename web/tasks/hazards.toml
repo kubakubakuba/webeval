@@ -6,7 +6,7 @@ template = "S_templates/hazards.S"
 description = '''
 # Data hazard prevention
 
-Implement a Fibonacci series computation algorithm for pipelined processors without a hazard unit.
+**Implement a Fibonacci series computation algorithm for pipelined processors without a hazard unit.**
 
 Program will load the length of the Fibonacci series from `fibo_limit`, and should save it into
 an array of 32-bit integer words starting at the address `fibo_series`.
@@ -32,7 +32,7 @@ fibo_limit = [5]
 fibo_series = [0, 1, 1, 2, 3]
 
 [[testcases]]
-name = "10 numbers"
+name = "10 Fibonacci numbers"
 
 [[testcases.starting_mem]]
 fibo_limit = [10]

@@ -1,0 +1,53 @@
+
+[task]
+name = "Print hexadecimal number to serial port"
+template = "S_templates/uart.S"
+
+
+description = '''
+# Print hexadecimal number to serial port
+Write a program that reads a number from `input_val`, converts it to
+ASCII character array and prints those characters to the serial port.
+
+The complete task description can also be found [here](https://cw.fel.cvut.cz/b222/courses/b35apo/en/homeworks/bonus/start), Makefile and template files for your own testing can be found on [GitLab](https://gitlab.fel.cvut.cz/b35apo/stud-support/-/tree/master/seminaries/qtrvsim/print-hex-to-uart).
+'''
+
+[arguments]
+run = "--dump-cycles --pipelined --cycle-limit 2500"
+
+[[inputs]]
+data_in = "Input number located at input_val."
+data_out = "Input number printed as ASCII characters to UART."
+description = "Print hex to uart."
+
+[[testcases]]
+name = "number 111"
+
+[[testcases.starting_mem]]
+input_val = [111]
+
+[[testcases.reference_uart]]
+uart = "0000006f\n"
+
+[[testcases]]
+name = "number 17111989"
+
+[[testcases.starting_mem]]
+input_val = [17111989]
+
+[[testcases.reference_uart]]
+uart = "01051bb5\n"
+
+[[testcases]]
+name = "scoring testcase"
+private = true
+
+[[testcases.starting_mem]]
+input_val = [123456789]
+
+[[testcases.reference_uart]]
+uart = "075bcd15\n"
+
+[score]
+description = "Runtime of the program in cycles."
+testcase = "scoring testcase"
