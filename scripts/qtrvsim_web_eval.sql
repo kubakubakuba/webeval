@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 16.1 (Ubuntu 16.1-1.pgdg22.04+1)
+-- Dumped from database version 16.2 (Ubuntu 16.2-1.pgdg22.04+1)
 -- Dumped by pg_dump version 16.1 (Ubuntu 16.1-1.pgdg22.04+1)
 
 SET statement_timeout = 0;
@@ -17,7 +17,41 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: update_best_score(); Type: FUNCTION; Schema: public; Owner: qtrvsim
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+--
+-- Name: delete_evaluated_submission(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.delete_evaluated_submission() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.evaluated = TRUE THEN
+    DELETE FROM submissions WHERE id = NEW.id;
+    RETURN NULL;
+  ELSE
+    RETURN NEW;
+  END IF;
+END;
+$$;
+
+
+ALTER FUNCTION public.delete_evaluated_submission() OWNER TO postgres;
+
+--
+-- Name: update_best_score(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
 CREATE FUNCTION public.update_best_score() RETURNS trigger
@@ -33,7 +67,25 @@ END;
 $$;
 
 
-ALTER FUNCTION public.update_best_score() OWNER TO qtrvsim;
+ALTER FUNCTION public.update_best_score() OWNER TO postgres;
+
+--
+-- Name: update_results_timestamp(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.update_results_timestamp() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  UPDATE results
+  SET time = CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Prague'
+  WHERE userid = NEW.userid AND taskid = NEW.taskid;
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.update_results_timestamp() OWNER TO postgres;
 
 SET default_tablespace = '';
 
@@ -181,10 +233,24 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: submissions after_submission_update; Type: TRIGGER; Schema: public; Owner: qtrvsim
+--
+
+CREATE TRIGGER after_submission_update AFTER UPDATE ON public.submissions FOR EACH ROW WHEN (((old.evaluated IS DISTINCT FROM new.evaluated) AND (new.evaluated = true))) EXECUTE FUNCTION public.delete_evaluated_submission();
+
+
+--
 -- Name: results update_best_score_trigger; Type: TRIGGER; Schema: public; Owner: qtrvsim
 --
 
 CREATE TRIGGER update_best_score_trigger BEFORE INSERT OR UPDATE ON public.results FOR EACH ROW EXECUTE FUNCTION public.update_best_score();
+
+
+--
+-- Name: submissions update_results_after_insert; Type: TRIGGER; Schema: public; Owner: qtrvsim
+--
+
+CREATE TRIGGER update_results_after_insert AFTER INSERT ON public.submissions FOR EACH ROW EXECUTE FUNCTION public.update_results_timestamp();
 
 
 --
