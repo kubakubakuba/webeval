@@ -1,4 +1,3 @@
-
 [task]
 name = "Simple Calculator"
 template = "S_templates/calculator.c"

@@ -30,13 +30,11 @@ def list_tasks():
 	db.close()
 	return tasks
 
-TEMPLATE = """
-[task]
+TEMPLATE = """[task]
 name = "Sample Task"
 template = "S_templates/sample.S"
 
 description = '''
-# SUBJECT TO CHANGE! Needs C file and cache settings.
 # Your task description goes here (formatted in markdown).
 ## Use this as a template.
 Starting memory is set by setting testcases.starting_mem, ending memory check is done by
@@ -62,25 +60,42 @@ a1 = 10
 a2 = 15
 
 [[testcases.starting_mem]]
-0x400 = 5
-0x404 = 10
+0x400 = [5, 10]
 
 [[testcases.reference_mem]]
-0x408 = 15
+0x408 = [15]
 
 [[testcases]]
 name = "test02"
 
 [[testcases.starting_mem]]
-0x400 = 150
-0x404 = 200
+0x400 = [150, 200]
 
 [[testcases.reference_mem]]
-0x408 = 350
+0x408 = [350]
+
+[[testcases]]
+name = "test03"
+
+[[testcases.starting_mem]]
+0x400 = [1523, 1459]
+
+[[testcases.reference_mem]]
+0x408 = [2982]
+
+[[testcases]]
+name = "scoring testcase"
+private = true
+
+[[testcases.starting_mem]]
+0x400 = [1711, 1989]
+
+[[testcases.reference_mem]]
+0x408 = [3700]
 
 [score]
 description = "Runtime of the program in cycles."
-testcase = "test01"
+testcase = "scoring testcase"
 """
 
 def create_task():

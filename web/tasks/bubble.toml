@@ -1,4 +1,3 @@
-
 [task]
 name = "Bubble Sort"
 template = "S_templates/bubble.S"

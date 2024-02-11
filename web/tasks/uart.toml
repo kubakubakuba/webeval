@@ -1,8 +1,6 @@
-
 [task]
 name = "Print hexadecimal number to serial port"
 template = "S_templates/uart.S"
-
 
 description = '''
 # Print hexadecimal number to serial port

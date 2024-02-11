@@ -20,9 +20,6 @@ description = "Loading of values from memory."
 
 [[testcases]]
 name = "test01"
-do_compare_registers = true
-do_compare_memory = true
-do_set_starting_memory = true
 
 [[testcases.reference_regs]]
 a0 = 5
@@ -53,6 +50,16 @@ name = "test03"
 [[testcases.reference_mem]]
 0x408 = [2982]
 
+[[testcases]]
+name = "scoring testcase"
+private = true
+
+[[testcases.starting_mem]]
+0x400 = [1711, 1989]
+
+[[testcases.reference_mem]]
+0x408 = [3700]
+
 [score]
 description = "Runtime of the program in cycles."
-testcase = "test01"
+testcase = "scoring testcase"

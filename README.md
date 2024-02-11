@@ -1,8 +1,8 @@
 # QtRVSim online evaluation
 
-The app will be written in Flask and will be using a MySQL database.
+The app is written in Flask and is using a PostgreSQL database.
 
-Public version is running [here](http://omega.swpelc.eu:5000).
+Public version is running [here](https://eval.comparch.edu.cvut.cz).
 
 ## Roadmap:
 - [x] Users are able to register
@@ -25,19 +25,19 @@ Public version is running [here](http://omega.swpelc.eu:5000).
 - [x] Users can view their last submissions (before it gets overwritten by new one of the same task)
 - [x] User will see their best score and the their latest submission score in the leaderboard
 - [ ] Move qtrsvim into docker container, for security reasons / into an isolate utility
-- [ ] Delete old, not needed submissions (not the latest and the best for each task and user, other can be deleted)
+- [X] Delete old, not needed submissions (not the latest and the best for each task and user, other can be deleted)
 - [X] Split submission table into pure submissions and results
 - [X] Add the starting template file to each task (instead of one template for all tasks)
 - [X] Remove the explicit declaration of do_comapare_registers and do_compare_memory, and implicitly set them to True, if the reference registers or memory are set
 - [X] Move database info into .env file
 - [X] Register confirm email
 - [X] Password reset
-- [ ] Migrate database into PostgreSQL
+- [X] Migrate database into PostgreSQL
 - [ ] Implement database trigger for evaluator
-- [ ] Write tasks, same as these: [b35apo](https://cw.fel.cvut.cz/b222/courses/b35apo/homeworks/bonus/start)
+- [X] Write tasks, same as these: [b35apo](https://cw.fel.cvut.cz/b222/courses/b35apo/homeworks/bonus/start)
 - [X] Implement cache settings (first line of the submission code)
-- [ ] Implement uart communication
-- [ ] Implement c file submission
+- [X] Implement uart communication
+- [X] Implement c file submission
 
 ## Database structure
 
@@ -96,146 +96,120 @@ After a task is evaluated, it is marked as evaluated, so it is not evaluated mor
 | path      | varchar | 256    | None           |
 | available | tinyint | 1      | 1              |
 
+### Triggers
 
-Database is running on a remote VPS (omega.swpelc.eu, 158.101.208.70:3306)
-Testing app is running on the same server on port 5000 [here](http://omega.swpelc.eu:5000). 
+Triggers have been added for better database management. The triggers are used to delete old submissions, and to update the results table.
+
+Database is running PostgreSQL 16 on port 5432.
 Release app is running on a Eval-Comarch VPS [https://eval.comarch.edu.cvut.cz](https://eval.comarch.edu.cvut.cz).
 
 ## Task creation
 Tasks will be stored in toml format, with structure similar to this one (rewritten it to make it more readable, user friendly).
 
+Basic structure
 ```toml
 [task]
-name = "Read an save to memory"
+name = "Bubble Sort"
+template = "S_templates/bubble.S"
 
 description = '''
-# Read and save to memory
+# Bubble Sort.
+**Write a program that sorts an array using bubble sort algorithm.**
 
-Write a program that loads 2 values from memory starting at the adress 0x400 into two registers (a0 and a1).
-Then add the values in a0 and a1, and store the result in a2.
-Save the result in memory after the two values that were loaded (0x408).
+The size of the array will be located at the address `array_size`, the integer array (32-bit integer words) will start
+at the address `array_start`.
+
+The program should sort the array in ascending order.
+Your program will be tested with different array sizes and different values in the array.
 '''
 
 [arguments]
-run = "--d-regs --dump-cycles"
+run = "--dump-cycles --cycle-limit 5000"
 
 [[inputs]]
-data_in = "Two values in memory starting at address 0x400."
-data_out = "The values in registers, the sum in register a2, and the sum in memory after the two values."
-description = "Loading of values from memory."
+data_in = "Size of the array located at address array_size, the array start is located at the address array_start."
+data_out = "Sorted array of length array_size"
+description = "Cache optimized sorting."
 
 [[testcases]]
-name = "test01"
-do_compare_registers = true
-do_compare_memory = true
-do_set_starting_memory = true
-
-[[testcases.reference_regs]]
-a0 = 5
-a1 = 10
-a2 = 15
+name = "5 elements"
 
 [[testcases.starting_mem]]
-0x400 = 5
-0x404 = 10
+array_size = [5]
+array_start = [1, 3, 4, 5, 2]
 
 [[testcases.reference_mem]]
-0x408 = 15
+array_start = [1, 2, 3, 4, 5]
 
 [[testcases]]
-name = "test02"
-do_compare_memory = true
-do_set_starting_memory = true
+name = "scoring testcase"
+private = true
 
 [[testcases.starting_mem]]
-0x400 = 150
-0x404 = 200
+array_size = [5]
+array_start = [16, 8, 4, 2, 1]
 
 [[testcases.reference_mem]]
-0x408 = 350
+array_start = [1, 2, 4, 8, 16]
 
 [score]
 description = "Runtime of the program in cycles."
-metric = "cycles"
+testcase = "scoring testcase"
 ```
 Arguments are passed to the `QtRVSim` object, which is used to run the simulator.
 
-Inputs is an array, that will be printed to users. Here, you can specify sample data, which the user can test their program on.
+Note that, in order to use the cycles metric, the simulator needs to be run with the `--dump-cycles` argument.
 
-Testcases is main part of the evaluator.
+The final evaluation (and the score in cycles) is done by referencing the test name in `score.testcase` section of the task file.
 
-In each of the testcases a flag can be set, whether to compare registers (or memory adresses), as well as a dictionary of which of them to compare. We do not need to set the flags at each test (setting them back to `False`) is done automatically at the end of each test.
+Some other variations of the task file (which are currently implemented) are these:
 
-Test name will be displayed to the user, so it can be set to such a name, that users know, why their code is not passing the test. (eg. `name="checkArrayOrder"`).
-
-These are the flags and values that can be set:
 ```toml
-do_compare_registers = true
-do_compare_memory = true
-do_set_starting_memory = true
-
-[[testcases.reference_regs]]
-a0 = 5
-a1 = 10
-a2 = 15
-
-[[testcases.starting_mem]]
-0x400 = 5
-0x404 = 10
-
-[[testcases.reference_mem]]
-0x408 = 350
+[task]
+cache_max_size = 16
 ```
-You can use hex and/or decimal values for the the values set to the registers and memory adresses.
+Sets the maximum size and allows the user to set the cache size in the submission file.
+This is done by adding a line `#cache:policy,sets,words_in_blocks,ways,write_method` to any line of the submission file. If the setting is done incorrectly (or cache size is set in task file but is not present in the submission file), user will get a cache error.
 
-After all necessary tests a score test will be run. This is a "test", which measures the final result based on a metric we provide. Metrics that can be provided as of now are:
 ```toml
-metric = "cycles"
-metric = "cache"
+[make]
+Makefile="""
+your makefile will be here
+"""
 ```
-Note that, in order to use the cache metric, the simulator needs to be run with the `--dump-cache-stats` argument. To use the cycles metric, the simulator needs to be run with the `--dump-cycles` argument.
 
-The scoring metrics are handled at the end of `qtrvsim.py` file. You can add your own metrics there.
+If the task cannot be run with the QtRVSim integrated assembler (`--asm` parameter), it can be compiled with a makefile. The makefile needs to compile the `submission.S` target, the executable need to be named `submission`. Please provide a target `clean` to clean your temporary files (compiled sources and such).
 
-If you need to run a manual evaluation, you can do so by using the `QtRVSim` class from the `qtrvsim.py` file in a following way:
-```python
-from qtrvsim import QtRVSim
+If you require another files to be present during the make process, you can add them to the `files` section of the task file. The files will be copied to the user's submission folder at the time of compilation. They will be deleted after the evaluation ends.
 
-sim = QtRVSim(args="--d-regs --dump-cycles --dump-cache-stats", submission_file="submissions/test/test.S")
-#sim.set_verbose(True)
-staring_memory = {
-	0x400 : 1,
-	0x404 : 2,
-}
+```toml
+[[files]]
+name = "crt0local.S"
+code = """
+"""
+```
 
-sim.set_starting_memory(staring_memory)
+If the solucion should be written in C, add a flag `c_solution = true` to the task file.
+(this also requires custom makefile, which compiles `submission.c` to `submission`)
 
-sim.set_do_compare_registers(True)
-reference_regs = {
-	'a0' : 0x00000001,
-	'a1' : 0x00000002,
-	'a2' : 0x00000003,
-}
-sim.set_reference_ending_regs(reference_regs)
+```toml
+[task]
+c_solution = true
+```
 
-sim.set_do_compare_memory(True)
+For serial port communication, use:
 
-memory = {
-	0x408 : 3,
-}
+```toml
+[[testcases.input_uart]]
+uart = "112233\n445566\n"
 
-sim.set_reference_ending_memory(memory)
-
-sim.run()
-
-print(sim.get_log())
-#print(sim.get_result())
-#print(sim.get_score())
+[[testcases.reference_uart]]
+uart = "557799\n"
 ```
 
 ## Task evaluation log
 
-The log is saved as a plaintext .log file, and is shown to the user. Each log file name is of this format: `username_taskid.log`. (this means that new submission's log overwrites the old one). This file is displayed to the user in this way:
+The log is saved as a text blob in the database and is displayed on the task page for logged users that already submitted their task. This file is displayed to the user in this way:
 
 <img src="rsrc/eval.png" width="750">
 
@@ -246,19 +220,39 @@ The latest score is highlighted in yellow, and the best score is highlighted in 
 A custom styling for CodeMirror has been written to make the log more readable.
 
 ## Database config
-Database configuration is made in a file `db_connect.py`
+Database configuration is made in a file `.env`
 ```python
-db_config = {
-	'user': 'username',
-	'password': 'password',
-	'host': 'ip',
-	'database': 'db_name',
-	'port': 3306
-}
+SECRET_KEY=
+MAIL_SERVER=
+MAIL_PORT=
+MAIL_USE_TLS=False
+MAIL_USE_SSL=True
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_DEFAULT_SENDER=
+DB_USER=
+DB_PASSWORD=
+DB_HOST=localhost
+DB_DATABASE=
+DB_PORT=5432
 ```
+
+## Creating a new task
+
+To create a new task, `cd` into the `scripts/` folder and run `tasks.py --create`. The script will automatically create a taskfile, as well as inserting the new task into the database.
+More options are available, run `tasks.py --help` for more information.
+
+## Dumping the database
+
+To dump the database, run `scripts/pg_dump.py`. The script will create a dump of the database as a `.sql` file.
+
+## Creating a new database
+
+To create a new database, modify and run the `scripts/create_database.py` script. The script will create a new database and the necessary tables, as well as triggers and a new user.
 
 ## Acknowledgements
 - [Flask](https://flask.palletsprojects.com/en/3.0.x/)
+- [PostgreSQL](https://www.postgresql.org/)
 - [CodeMirror](https://codemirror.net/)
 - [Bootstrap](https://getbootstrap.com/)
 - [QtRVSim](https://github.com/cvut/qtrvsim)

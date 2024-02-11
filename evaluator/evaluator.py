@@ -234,8 +234,15 @@ def evaluate_submissions(num_submissions = 10):
 		
 		#remove submission.S and __ending_mem__ and __starting_mem__ files
 		
-		os.remove(filepath)
-		os.rmdir(os.path.dirname(filepath)) #if is notempty will not be deleted
+		try:
+			os.remove(filepath)
+		except OSError as e:
+			print(f"Error: {e.filename} - {e.strerror}.")
+
+		try:
+			os.rmdir(os.path.dirname(filepath))  # if not empty will not be deleted
+		except OSError as e:
+			print(f"Error: {e.filename} - {e.strerror}.")
 
 		#wait for a second
 		time.sleep(1)

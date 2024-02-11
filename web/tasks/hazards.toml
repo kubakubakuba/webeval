@@ -1,4 +1,3 @@
-
 [task]
 name = "Data hazard prevention"
 template = "S_templates/hazards.S"

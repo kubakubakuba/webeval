@@ -1,4 +1,3 @@
-
 [task]
 name = "Cache optimization"
 template = "S_templates/cache.S"
