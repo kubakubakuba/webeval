@@ -9,6 +9,7 @@ flask_mail = "*"
 toml = "*"
 markdown = "*"
 psycopg2-binary = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
