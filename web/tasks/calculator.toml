@@ -12,7 +12,7 @@ adds them together and prints them to the serial port.**
 
 The C language program execution requires at least a minimal startup code sequence,
 even for the simplest bare-metal environment.
-The C code ABI for RISC-V requires at least to set global pointer (gp) register,
+The C code ABI for RISC-V requires at least to set global pointer (`gp`) register,
 see the file [crt0local.S](https://gitlab.fel.cvut.cz/b35apo/stud-support/-/blob/master/seminaries/qtrvsim/uart-calc-add/crt0local.S).
 
 The file `crt0local.S` will be included in the execution directory and linked with your program.
@@ -37,9 +37,28 @@ uart = "111\n222\n"
 [[testcases.reference_uart]]
 uart = "333\n"
 
+[[testcases]]
+name = "test2"
+
+[[testcases.input_uart]]
+uart = "72235\n3254777\n"
+
+[[testcases.reference_uart]]
+uart = "3327012\n"
+
+[[testcases]]
+name = "scoring testcase"
+private = true
+
+[[testcases.input_uart]]
+uart = "112233\n445566\n"
+
+[[testcases.reference_uart]]
+uart = "557799\n"
+
 [score]
 description = "Runtime of the program in cycles."
-testcase = "test1"
+testcase = "scoring testcase"
 
 [make]
 Makefile="""
