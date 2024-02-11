@@ -387,7 +387,7 @@ def task(task_id):
 
 	time = None if time is None else time.strftime('%d.%m. %Y %H:%M:%S')
 
-	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, scores=scores, time=time, submission_found=submission_found, score=score)
+	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name, latest_score=latest_score)
 
 @app.errorhandler(404)
 def page_not_found(e):
