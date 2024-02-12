@@ -12,4 +12,3 @@ web/encode_email.py
 web/old_db.py
 evaluator/__pycache__/
 test
-web/app.wsgi
