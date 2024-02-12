@@ -117,14 +117,19 @@ def create_task():
 
 	filepath = f"tasks/{task_name}.toml"
 	
+	file_exists = False
+
 	if os.path.isfile(f"../web/{filepath}"):
-		print("File already exists!")
-		exit()
+		file_exists = True
 
-	with open(f"../web/{filepath}", "w") as file:
-		file.write(TEMPLATE)
+	if not file_exists:
+		with open(f"../web/{filepath}", "w") as file:
+			file.write(TEMPLATE)
 
-	print("Task file created!")
+		print("Task file created!")
+
+	else:
+		print("New task file not created! File already exists.")
 
 	#add the task to the database
 	(db, cursor) = connect()
