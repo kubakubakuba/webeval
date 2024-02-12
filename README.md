@@ -43,6 +43,7 @@ Public version is running [here](https://eval.comparch.edu.cvut.cz).
 - [ ] Implement admin view for the submissions (permission override)
 - [ ] Add profile settings page
 - [ ] Add about page
+- [ ] Move the whole evaluation into try - catch, if something goes (for some reason) horribly wrong
 
 ## Database structure
 
