@@ -38,6 +38,11 @@ Public version is running [here](https://eval.comparch.edu.cvut.cz).
 - [X] Implement cache settings (first line of the submission code)
 - [X] Implement uart communication
 - [X] Implement c file submission
+- [ ] Correctly implement c syntax highlighting (fix submission.S appearing instead of submission.c)
+- [ ] Implement submission viewer
+- [ ] Implement admin view for the submissions (permission override)
+- [ ] Add profile settings page
+- [ ] Add about page
 
 ## Database structure
 
