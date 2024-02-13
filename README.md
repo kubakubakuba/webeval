@@ -39,8 +39,8 @@ Public version is running [here](https://eval.comparch.edu.cvut.cz).
 - [X] Implement uart communication
 - [X] Implement c file submission
 - [ ] Correctly implement c syntax highlighting (fix submission.S appearing instead of submission.c)
-- [ ] Implement submission viewer
-- [ ] Implement admin view for the submissions (permission override)
+- [X] Implement submission viewer
+- [X] Implement admin view for the submissions (permission override)
 - [ ] Add profile settings page
 - [ ] Add about page
 - [ ] Move the whole evaluation into try - catch, if something goes (for some reason) horribly wrong
