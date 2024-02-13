@@ -184,7 +184,7 @@ your makefile will be here
 """
 ```
 
-If the task cannot be run with the QtRVSim integrated assembler (`--asm` parameter), it can be compiled with a makefile. The makefile needs to compile the `submission.S` target, the executable need to be named `submission`. Please provide a target `clean` to clean your temporary files (compiled sources and such).
+If the task cannot be run with the QtRVSim integrated assembler (`--asm` parameter), it can be compiled with a makefile. The makefile needs to compile the `submission.S` target, the executable needs to be named `submission`. Please provide a target `clean` to clean your temporary files (compiled sources and such).
 
 If you require another files to be present during the make process, you can add them to the `files` section of the task file. The files will be copied to the user's submission folder at the time of compilation. They will be deleted after the evaluation ends.
 
