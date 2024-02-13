@@ -63,6 +63,15 @@ def is_admin(username):
 	db.close()
 	return admin
 
+def is_admin_by_id(userid):
+	"""Check if user is admin"""
+	(db, cursor) = connect()
+	cursor.execute('SELECT admin FROM users WHERE id = %s', (userid,))
+	admin = cursor.fetchone()
+	cursor.close()
+	db.close()
+	return admin
+
 def get_task(task_id):
 	"""Get a task."""
 	(db, cursor) = connect()
@@ -76,6 +85,15 @@ def get_task_path(task_id):
 	"""Get the path to a task."""
 	(db, cursor) = connect()
 	cursor.execute('SELECT path FROM tasks WHERE id = %s AND available = true', (task_id,))
+	task = cursor.fetchone()
+	cursor.close()
+	db.close()
+	return task
+
+def get_task_name(task_id):
+	"""Get the name of a task."""
+	(db, cursor) = connect()
+	cursor.execute('SELECT name FROM tasks WHERE id = %s AND available = true', (task_id,))
 	task = cursor.fetchone()
 	cursor.close()
 	db.close()
@@ -184,3 +202,15 @@ def get_username(userid):
 	cursor.close()
 	db.close()
 	return username
+
+def get_user_code(taskid, userid, is_latest):
+	"""Get a user's code for a task."""
+	(db, cursor) = connect()
+	if is_latest:
+		cursor.execute('SELECT last_source FROM results WHERE taskid = %s AND userid = %s', (taskid, userid))
+	else:
+		cursor.execute('SELECT best_source FROM results WHERE taskid = %s AND userid = %s', (taskid, userid))
+	code = cursor.fetchone()
+	cursor.close()
+	db.close()
+	return code

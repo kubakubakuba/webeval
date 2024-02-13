@@ -387,7 +387,37 @@ def task(task_id):
 
 	time = None if time is None else time.strftime('%d.%m. %Y %H:%M:%S')
 
-	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name, latest_score=latest_score)
+	is_admin = db.is_admin_by_id(session['user_id'])
+	is_admin = is_admin[0] if is_admin else False
+
+	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name, latest_score=latest_score, is_admin=is_admin)
+
+@app.route('/view/<int:task_id>/<int:user_id>/<int:is_latest>')
+def view_latest_for_user(task_id, user_id, is_latest):
+	#check if the current user is admin or the userid is the same as the session user id
+	if 'logged_in' not in session:
+		return redirect(url_for('login'))
+	
+	curr_is_admin = db.is_admin_by_id(session['user_id'])
+	curr_is_admin = curr_is_admin[0] if curr_is_admin else False
+
+	if session['user_id'] != user_id and not curr_is_admin:
+		#throw 403
+		return render_template('403.html'), 403
+	
+	code = db.get_user_code(task_id, user_id, is_latest)
+	code = code[0] if code else ""
+
+	best_or_latest = "Latest" if is_latest else "Best"
+
+	task_name = db.get_task_name(task_id)
+	task_name = task_name[0] if task_name else ""
+
+	return render_template('view.html', submission_code=code, task_id=task_id, user_id=user_id, is_latest=is_latest, sessions=session, best_or_latest=best_or_latest, task_name=task_name)
+
+@app.errorhandler(403)
+def page_forbidden(e):
+	return render_template('403.html'), 403
 
 @app.errorhandler(404)
 def page_not_found(e):

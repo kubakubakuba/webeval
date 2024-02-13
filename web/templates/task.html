@@ -123,6 +123,10 @@
 									</div>
 									<div class="col-sm-4 border-left">
 										{{ score }}
+										{% if session['user_id'] == userid or is_admin == 1 %}
+											<a href="/view/{{ task.id }}/{{ userid }}/{% if is_best == 1 %}0{% elif is_best == 0 %}1{% endif %}">view</a>
+										{% endif %}
+
 									</div>
 								</div>
 							</li>

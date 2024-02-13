@@ -1,0 +1,42 @@
+{% extends "codemirror.html" %}
+
+{% block title %}
+	{{ task_name }}
+{% endblock title %}
+
+{% block content %}
+	<style>
+		.card-btn:hover {
+			background-color: #f8f9fa;
+		}
+	</style>
+
+	<h2>{{ best_or_latest }} for task: {{ task_name }}</h2>
+	<div class="card">
+		<div class="card-body">
+			<form method="post" id="codeForm">
+				<div class="mb-3">
+					<textarea class="form-control" id="code" name="code" style="width:600px; display:none;"></textarea>
+					<div id="codeMirror"></div>
+				</div>
+			</form>
+		</div>
+	</div>
+{% endblock content %}
+
+{% block cmirror %}
+	<script>
+		let submissionContent = {{submission_code|tojson}};
+
+		let editor = CodeMirror(document.getElementById("codeMirror"), {
+			lineNumbers: true,
+			mode: "gas",
+			lineWrapping: true,
+			viewportMargin: Infinity,
+			value: submissionContent,
+			readOnly: true
+		});
+
+		editor.setSize("800px", "750px");
+	</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}
+Forbidden
+{% endblock title %}
+
+{% block content %}
+	<div class="card text-center">
+		<div class="card-body">
+			<h1 class="card-title">403</h1>
+			<p class="card-text">Sorry, the page you are trying to access is forbidden.</p>
+			<div class="card card-btn col-sm-4 mx-auto mt-4" onclick="location.href='/'">
+				<div class="card-body text-center">
+					Go Home
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock content %}
