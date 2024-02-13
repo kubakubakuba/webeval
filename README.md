@@ -107,7 +107,7 @@ After a task is evaluated, it is marked as evaluated, so it is not evaluated mor
 Triggers have been added for better database management. The triggers are used to delete old submissions, and to update the results table.
 
 Database is running PostgreSQL 16 on port 5432.
-Release app is running on a Eval-Comarch VPS [https://eval.comarch.edu.cvut.cz](https://eval.comarch.edu.cvut.cz).
+Release app is running on a Eval-Comparch VPS [https://eval.comparch.edu.cvut.cz](https://eval.comparch.edu.cvut.cz).
 
 ## Task creation
 Tasks will be stored in toml format, with structure similar to this one (rewritten it to make it more readable, user friendly).
