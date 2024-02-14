@@ -10,6 +10,7 @@ import toml
 import db as db
 import random
 import string
+import re
 
 load_dotenv("../.env")
 
@@ -387,18 +388,27 @@ def task(task_id):
 
 	time = None if time is None else time.strftime('%d.%m. %Y %H:%M:%S')
 
-	is_admin = db.is_admin_by_id(session['user_id'])
+	userid = session['user_id'] if 'user_id' in session else -1
+	is_admin = db.is_admin_by_id(userid)
 	is_admin = is_admin[0] if is_admin else False
 
-	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name, latest_score=latest_score, is_admin=is_admin)
+	issue_url = None
+
+	if result == 99:
+		#parse GitlabIssue url from result file
+		issue_url = re.findall("https:\/\/gitlab\.fel\.cvut\.cz\/.+", result_file, flags = re.MULTILINE)
+		issue_url = issue_url[0] if issue_url else None
+
+	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name, latest_score=latest_score, is_admin=is_admin, issue_url=issue_url)
 
 @app.route('/view/<int:task_id>/<int:user_id>/<int:is_latest>')
 def view_latest_for_user(task_id, user_id, is_latest):
 	#check if the current user is admin or the userid is the same as the session user id
 	if 'logged_in' not in session:
 		return redirect(url_for('login'))
-	
-	curr_is_admin = db.is_admin_by_id(session['user_id'])
+
+	userid = session['user_id'] if 'user_id' in session else -1	
+	curr_is_admin = db.is_admin_by_id(userid)
 	curr_is_admin = curr_is_admin[0] if curr_is_admin else False
 
 	if session['user_id'] != user_id and not curr_is_admin:

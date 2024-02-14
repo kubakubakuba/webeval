@@ -80,6 +80,8 @@
 								<span style="color: red;">Cache error</span>
 							{% elif result == 4 %}
 								<span style="color: red;">Make error</span>
+							{% elif result == 99 %}
+								<span style="color: red;">Internal evaluator error</span>
 							{% else %}
 								<span style="color: red;">Rejected</span>
 							{% endif %}
@@ -96,12 +98,18 @@
 							</div>
 						{% endif %}
 
+						{% if issue_url %}
+							<div>
+								<b>Please report this issue on <a href="{{ issue_url }}">GitLab</a></b>
+							</div>
+						{% endif %}
+
 						{% if result_file %}
 							<div class="card">
 								<div class="card-body" id="resultFileCodeMirror"></div>
 							</div>
 						{% endif %}
-						
+
 					</div>
 				{% endif %}
 			{% endif %}
