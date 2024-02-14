@@ -304,7 +304,14 @@ def submit(task_id):
 				with open(template_path) as f:
 					template_code = f.read()
 
-		return render_template('submit.html', task_name=task_name, sessions=session, submission_code=submission_code, template_code=template_code)
+		is_c_solution = task_data['task'].get('c_solution', False)
+
+		language = "riscv"
+
+		if is_c_solution:
+			language = "c"
+
+		return render_template('submit.html', task_name=task_name, sessions=session, submission_code=submission_code, template_code=template_code, language=language)
 	
 @app.route('/task/<int:task_id>')
 def task(task_id):
@@ -336,6 +343,9 @@ def task(task_id):
 	task_name = task_data['task']['name']
 	task_description = task_data['task']['description']
 	task_arguments = task_data['arguments']['run'] + " --asm submission.S"
+	if 'c_solution' in task_data['task']:
+		if task_data['task']['c_solution']:
+			task_arguments = task_data['arguments']['run'] + " submission"
 	#parse task description as markdown
 	task_description = markdown(task_description)
 	task_scoring = task_data['score']['description']

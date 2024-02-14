@@ -53,7 +53,7 @@
 
 		let editor = CodeMirror(document.getElementById("codeMirror"), {
 			lineNumbers: true,
-			mode: "gas",
+			mode: "{% if language == 'c' %}text/x-csrc{% else %}gas{% endif %}",
 			lineWrapping: true,
 			viewportMargin: Infinity,
 			value: textarea.value
