@@ -250,11 +250,11 @@ More options are available, run `tasks.py --help` for more information.
 
 ## Dumping the database
 
-To dump the database, run `scripts/pg_dump.py`. The script will create a dump of the database as a `.sql` file.
+To dump the database, run `scripts/pg_dump.sh`. The script will create a dump of the database as a `.sql` file.
 
 ## Creating a new database
 
-To create a new database, modify and run the `scripts/create_database.py` script. The script will create a new database and the necessary tables, as well as triggers and a new user.
+To create a new database, modify and run the `scripts/create_database.sh` script. The script will create a new database and the necessary tables, as well as triggers and a new user.
 
 ## Acknowledgements
 - [Flask](https://flask.palletsprojects.com/en/3.0.x/)
