@@ -306,12 +306,17 @@ def submit(task_id):
 
 		is_c_solution = task_data['task'].get('c_solution', False)
 
+		task_description = task_data['task']['description']
+		task_description = markdown(task_description)
+		#cut the first line of the description
+		task_description = task_description.split('\n', 1)[1]
+
 		language = "riscv"
 
 		if is_c_solution:
 			language = "c"
 
-		return render_template('submit.html', task_name=task_name, sessions=session, submission_code=submission_code, template_code=template_code, language=language)
+		return render_template('submit.html', task_name=task_name, sessions=session, submission_code=submission_code, template_code=template_code, language=language, task_description=task_description)
 	
 @app.route('/task/<int:task_id>')
 def task(task_id):

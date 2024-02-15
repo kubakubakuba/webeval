@@ -6,7 +6,7 @@ c_solution = true
 description = '''
 # Simple Calculator
 
-**Implement a program, that loads two numbers from te serial port,
+**Implement a program, that loads two numbers from the serial port,
 adds them together and prints them to the serial port.**
 
 The C language program execution requires at least a minimal startup code sequence,

@@ -12,6 +12,10 @@
 	</style>
 
 	<h2>Submission for task: {{ task_name }}</h2>
+	<details>
+		<summary>Task description (click)</summary>
+		{{ task_description | safe}}
+	</details>
 	<div class="card">
 		<div class="card-body">
 			<form method="post" id="codeForm">
