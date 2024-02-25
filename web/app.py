@@ -440,6 +440,17 @@ def view_latest_for_user(task_id, user_id, is_latest):
 
 	return render_template('view.html', submission_code=code, task_id=task_id, user_id=user_id, is_latest=is_latest, sessions=session, best_or_latest=best_or_latest, task_name=task_name)
 
+@app.route('/about')
+def about():
+	#read description.md from templates/
+	description = None
+	if os.path.exists("templates/description.md"):
+		with open("templates/description.md") as f:
+			description = f.read()
+		description = markdown(description)
+
+	return render_template('about.html', sessions=session, description=description)
+
 @app.errorhandler(403)
 def page_forbidden(e):
 	return render_template('403.html'), 403
