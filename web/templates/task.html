@@ -25,10 +25,10 @@
 
 
 </style>
-<div class="container">
+<div class="container-fluid">
 	<div class="row">
 		<!-- Main Content Column -->
-		<div class="col-md-8">
+		<div class="col-md-4">
 			<!-- Preformatted markdown for task description -->
 			{{ task.description | safe}}
 
@@ -62,13 +62,18 @@
 			For interactive solution, you can use <a href="https://github.com/cvut/qtrvsim">QtRvSim</a>. The web version of the simulator is located <a href="https://comparch.edu.cvut.cz/qtrvsim/app/" target="_blank">here</a>.
 			<hr />
 
-			<!-- Submission section for logged-in users -->
 			{% if 'logged_in' in sessions %}
 				<div class="card card-btn">
 					<a href="/submit/{{ task.id }}" class="card-body text-center text-decoration-none">
 						Submit a solution
 					</a>
 				</div>
+
+			{% endif %}
+		</div>
+			<!-- Submission section for logged-in users -->
+		<div class="col-md-4">
+			{% if 'logged_in' in sessions %}
 				{% if submission_found %}
 					<h5>Your latest submission:</h5>
 					<div>
