@@ -12,7 +12,7 @@ at the address `array_start`.
 The program should sort the array in ascending order.
 Your program will be tested with different array sizes and different values in the array.
 
-The complete task description can also be found [here](https://cw.fel.cvut.cz/b222/courses/b35apo/en/homeworks/bonus/start), Makefile and template files for your own testing can be found on [GitLab](https://gitlab.fel.cvut.cz/b35apo/stud-support/-/tree/master/seminaries/qtrvsim/buble-sort).
+The complete task description can also be found [here](https://cw.fel.cvut.cz/wiki/courses/b35apo/en/homeworks/bonus/start), Makefile and template files for your own testing can be found on [GitLab](https://gitlab.fel.cvut.cz/b35apo/stud-support/-/tree/master/seminaries/qtrvsim/buble-sort).
 '''
 
 [arguments]

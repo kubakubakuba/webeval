@@ -1,6 +1,6 @@
 ## About
 
-This web application was originally written to allow student to submit [bonus tasks](https://cw.fel.cvut.cz/b222/courses/b35apo/en/homeworks/bonus/start) for the course [B35APO](https://cw.fel.cvut.cz/b222/courses/b35apo/en/start),
+This web application was originally written to allow student to submit [bonus tasks](https://cw.fel.cvut.cz/wiki/courses/b35apo/en/homeworks/bonus/start) for the course [B35APO](https://cw.fel.cvut.cz/wiki/courses/b35apo/en/start),
 but to also allow smaller hackathons to be organized.
 
 The application is written in Python, using the Flask framework. Database is running on a PostgreSQL server. The evaluation system is using [QtRvSim](https://github.com/cvut/qtrvsim), which can be used for [interactive solution](https://comparch.edu.cvut.cz/qtrvsim/app/) of the tasks.

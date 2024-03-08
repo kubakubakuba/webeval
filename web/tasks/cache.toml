@@ -23,7 +23,7 @@ This parameter will be passed to qtrvsim_cli as the `--d-cache` parameter.
 - The initial main memory memory access latency is set to 10 cycles.
 - The burst latency 2 is configured for the following consecutive accesses.
 
-The complete task description can also be found [here](https://cw.fel.cvut.cz/b222/courses/b35apo/en/homeworks/bonus/start), Makefile and template files for your own testing can be found on [GitLab](https://gitlab.fel.cvut.cz/b35apo/stud-support/-/tree/master/seminaries/qtrvsim/apo-sort).
+The complete task description can also be found [here](https://cw.fel.cvut.cz/wiki/courses/b35apo/en/homeworks/bonus/start), Makefile and template files for your own testing can be found on [GitLab](https://gitlab.fel.cvut.cz/b35apo/stud-support/-/tree/master/seminaries/qtrvsim/apo-sort).
 '''
 
 [arguments]
