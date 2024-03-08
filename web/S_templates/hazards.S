@@ -1,4 +1,3 @@
-// fibo-hazards.S file template, rename and implement the algorithm
 // Test algorithm in qtrvsim_gui program
 // Select the CPU core configuration to
 //    Pipelined without hazard unit and cache
@@ -7,11 +6,6 @@
 // instruction execution according to the pipeline structure
 // (classical 5-stage RISC-V) such way, that no dependency results
 // in a hazard
-
-// copy directory with the project to your repository to
-// the directory work/fibo-hazards
-// critical is location of the file work/fibo-hazards/fibo-hazards.S
-// which is checked by the scripts
 
 // The script loads number of the last Fibonacci series element to compute
 // into fibo_limit variable and expects computed series in memory starting

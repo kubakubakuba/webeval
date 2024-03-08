@@ -14,9 +14,6 @@ in the qtrvsim_cli simulator variant. To run ELF binary in qtrvsim_gui
 use make to compile binary or run on command line
   riscv64-unknown-elf-gcc -ggdb -nostartfiles -nostdlib -static -mabi=ilp32 -march=rv32i -fno-lto -o uart-calc-add crt0local.S uart-calc-add.c -lgcc
 
-Place file on path work/uart-calc-add/uart-calc-add.c in your
-subject personal GIT repository.
-
 Licence: Public Domain
  *******************************************************************/
 

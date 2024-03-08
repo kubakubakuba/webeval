@@ -1,22 +1,11 @@
-// apo-sort.S file template, rename and implement the algorithm
 // Test algorithm in qtrvsim_gui program
 // Select the CPU core configuration with delay-slot
 // This setups requires (for simplicity) one NOP instruction after
 // each branch and jump instruction (more during lecture about pipelining)
-// The code will be compiled and tested by external riscv64-unknown-elf-gcc
-// compiler by teachers, you can try make in addition, but testing
-// by internal assembler should be enough
 
-// copy directory with the project to your repository to
-// the directory work/apo-sort
-// critical is location of the file work/apo-sort/apo-sort.S
-// and cache parameters work/apo-sort/d-cache.par
-// which is checked by the scripts
-
-// The file d-cache.par specifies D cache parameters in the form
-//   <policy>,<#sets>,<#words in block>,<#ways>,<write method>
-// The example is
-//   lru,1,1,1,wb
+//Set the parameters of the cache by using #cache:policy,sets,words_in_blocks,ways,write_method
+// on a separate line in your task submission.
+//For example: #cache:lru,1,1,1,wb
 // The cache size is limited to 16 words maximum.
 
 // Directives to make interesting windows visible

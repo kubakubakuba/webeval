@@ -1,4 +1,3 @@
-// print-hex-to-uart.S file template, rename and implement the algorithm
 // The task is to process random value value injected into input_val
 // unsigned integer variable and print corresponding hexadecimal value
 // terminated by line feed (LF, '\n', 0x0a) character to the serial
@@ -8,11 +7,6 @@
 // Every CPU configuration conforming RISC-V architecture can be chosen.
 // Test script select pipelined configuration with hazard unit but without
 // cache.
-
-// Copy directory with the project to your repository to
-// the directory work/print-hex-to-uart
-// critical is location of the file work/print-hex-to-uart/print-hex-to-uart.S
-// which is checked by the scripts
 
 // The script loads number to print into input_val global variable
 // and the implemented algorithm converts it to series of 8 hexadecimal

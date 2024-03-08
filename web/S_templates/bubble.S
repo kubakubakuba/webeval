@@ -1,16 +1,7 @@
-// bubble-sort.S file template, rename and implement the algorithm
 // Test algorithm in qtrvsim_gui program
 // Select the CPU core configuration with delay-slot
 // This setups requires (for simplicity) one NOP instruction after
 // each branch and jump instruction (more during lecture about pipelining)
-// The code will be compiled and tested by external riscv64-unknown-elf-gcc
-// compiler by teachers, you can try make in addition, but testing
-// by internal assembler should be enough
-
-// copy directory with the project to your repository to
-// the directory work/bubble-sort
-// critical is location of the file work/bubble-sort/bubble-sort.S
-// which is checked by the scripts
 
 // Directives to make interesting windows visible
 #pragma qtrvsim show registers
