@@ -269,8 +269,10 @@ def logout():
 
 @app.route('/submit/<int:task_id>', methods=['GET', 'POST'])
 def submit(task_id):
-	if os.path.exists(".submit.disable"):
-		return render_template('disabled.html'), 403
+	if os.path.exists("config/.submit.disable"):
+		with open("config/.submit.disable", "r") as f:
+			if f.read() == "true":
+				return render_template('disabled.html'), 403
 
 	if 'logged_in' not in session:
 			return redirect(url_for('login'))
@@ -538,7 +540,10 @@ def admin():
 	users = sorted(users, key=lambda x: x[0])
 
 	#check if submissions are disabled
-	submit_disabled = os.path.exists(".submit.disable")
+	submit_disabled = False
+	if os.path.exists("config/.submit.disable"):
+		with open("config/.submit.disable", "r") as f:
+			submit_disabled = f.read() == "true"
 		
 	return render_template('admin.html', sessions=session, users=users, submissions=results, submit_disabled=submit_disabled)
 
@@ -554,13 +559,20 @@ def toggle_submit():
 	if not is_admin:
 		return render_template('403.html'), 403
 
-	#create or remove the .submit.disable file
+	#if the file is empty, write "true" in in, else clear the file content
 
-	if os.path.exists(".submit.disable"):
-		os.remove(".submit.disable")
-	else:
-		with open(".submit.disable", "w") as f:
-			pass
+	disabled = False
+	if os.path.exists("config/.submit.disable"):
+		with open("config/.submit.disable", "r") as f:
+			if f.read() == "true":
+				disabled = True
+
+	if os.path.exists("config/.submit.disable"):
+			with open("config/.submit.disable", "w") as f:
+				if disabled:
+					f.write("false")
+				else:
+					f.write("true")
 
 	return redirect('/admin')
 
