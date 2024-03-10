@@ -269,6 +269,9 @@ def logout():
 
 @app.route('/submit/<int:task_id>', methods=['GET', 'POST'])
 def submit(task_id):
+	if os.path.exists(".submit.disable"):
+		return render_template('disabled.html'), 403
+
 	if 'logged_in' not in session:
 			return redirect(url_for('login'))
 	
@@ -533,8 +536,33 @@ def admin():
 	#order users by id
 
 	users = sorted(users, key=lambda x: x[0])
+
+	#check if submissions are disabled
+	submit_disabled = os.path.exists(".submit.disable")
 		
-	return render_template('admin.html', sessions=session, users=users, submissions=results)
+	return render_template('admin.html', sessions=session, users=users, submissions=results, submit_disabled=submit_disabled)
+
+@app.route('/admin/toggle/submit/')
+def toggle_submit():
+	if 'logged_in' not in session:
+		return redirect(url_for('login'))
+
+	userid = session['user_id'] if 'user_id' in session else -1
+	is_admin = db.is_admin_by_id(userid)
+	is_admin = is_admin[0] if is_admin else False
+
+	if not is_admin:
+		return render_template('403.html'), 403
+
+	#create or remove the .submit.disable file
+
+	if os.path.exists(".submit.disable"):
+		os.remove(".submit.disable")
+	else:
+		with open(".submit.disable", "w") as f:
+			pass
+
+	return redirect('/admin')
 
 @app.route('/scoreboard/')
 def scoreboard():

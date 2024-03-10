@@ -82,6 +82,15 @@ Admin panel
 					Unban user
 				</div>
 			</div>
+
+			<!-- if submit_disabled render red text disabled, else green-->
+			Submissions are currently: {% if submit_disabled %}<span style="color: red;">disabled</span>{% else %}<span style="color: green;">enabled</span>{% endif %}
+
+			<div class="card card-btn" onclick="location.href='/admin/toggle/submit/'">
+				<div class="card-body text-center">
+					{% if submit_disabled %}Enable{% else %}Disable{% endif %} submissions
+				</div>
+			</div>
 		</div>
 	</div>
 
