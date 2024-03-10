@@ -48,7 +48,7 @@ def register(username, hashed_password, email, salt, token):
 def get_user(username):
 	"""Get user info"""
 	(db, cursor) = connect()
-	cursor.execute('SELECT id, password, salt, username, verified, email FROM users WHERE username = %s', (username,))
+	cursor.execute('SELECT id, password, salt, username, verified, email, token FROM users WHERE username = %s', (username,))
 	user = cursor.fetchone()
 	cursor.close()
 	db.close()
@@ -154,8 +154,37 @@ def set_new_password(username, hashed_password, token):
 
 def get_best_scores(taskid):
 	"""Get the best scores for a task."""
+	return get_best_scores_for_verified(taskid)
+	
 	(db, cursor) = connect()
 	cursor.execute('SELECT users.username, results.score_best, results.result_file, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s ORDER BY results.score_last ASC', (taskid,))
+	scores = cursor.fetchall()
+	cursor.close()
+	db.close()
+	return scores
+
+def get_best_scores_for_verified(taskid):
+	"""Get the best scores for a task for only verified users."""
+	(db, cursor) = connect()
+	cursor.execute('SELECT users.username, results.score_best, results.result_file, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true ORDER BY results.score_last ASC', (taskid,))
+	scores = cursor.fetchall()
+	cursor.close()
+	db.close()
+	return scores
+
+def get_active_tasks():
+	"""Get all active tasks."""
+	(db, cursor) = connect()
+	cursor.execute('SELECT id, name FROM tasks WHERE available = true')
+	tasks = cursor.fetchall()
+	cursor.close()
+	db.close()
+	return tasks
+
+def get_best_only_scores(taskid):
+	"""Get the best scores for a task."""
+	(db, cursor) = connect()
+	cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true ORDER BY results.score_last ASC', (taskid,))
 	scores = cursor.fetchall()
 	cursor.close()
 	db.close()
@@ -203,6 +232,15 @@ def get_username(userid):
 	db.close()
 	return username
 
+def get_users():
+	"""Get all users."""
+	(db, cursor) = connect()
+	cursor.execute('SELECT id, username, email, verified, token FROM users')
+	users = cursor.fetchall()
+	cursor.close()
+	db.close()
+	return users
+
 def get_user_code(taskid, userid, is_latest):
 	"""Get a user's code for a task."""
 	(db, cursor) = connect()
@@ -214,3 +252,33 @@ def get_user_code(taskid, userid, is_latest):
 	cursor.close()
 	db.close()
 	return code
+
+def ban_user(userid):
+	"""Ban a user."""
+	#set a verified to false and token to "_banned_"
+	(db, cursor) = connect()
+	cursor.execute('UPDATE users SET verified = false, token = %s WHERE id = %s', ("_banned_", userid))
+	db.commit()
+	cursor.close()
+	db.close()
+	return True
+
+def unban_user(userid):
+	"""Unban a user."""
+	#set a verified to true and token to NULL
+	(db, cursor) = connect()
+	cursor.execute('UPDATE users SET verified = true, token = NULL WHERE id = %s', (userid,))
+	db.commit()
+	cursor.close()
+	db.close()
+	return True
+
+def is_user_banned(userid):
+	"""Check if a user is banned."""
+	#if user is not verified and token is "_banned_" then user is banned
+	(db, cursor) = connect()
+	cursor.execute('SELECT verified, token FROM users WHERE id = %s', (userid,))
+	user = cursor.fetchone()
+	cursor.close()
+	db.close()
+	return user[0] == False and user[1] == "_banned_"

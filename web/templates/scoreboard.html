@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}
+Scoreboard
+{% endblock title %}
+
+{% block content %}
+	<style>
+		.card-btn{
+			margin-bottom: 15px;
+		}
+
+		.main-content{
+			margin: auto;
+		}
+	</style>
+
+	<div class="row justify-content-center">
+		<div class="col-md-12 text-center">
+			<h2>Scoreboard</h2>
+			{% for task, submissions in submissions.items() %}
+				<h3>{{ task }}</h3>
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th scope="col">Userid</th>
+							<th scope="col">Username</th>
+							<th scope="col">Cycles</th>
+							<th scope="col">Score</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for submission in submissions[:6] %}
+							<tr>
+								<td>{{ submission[2] }}</td>
+								<td>{{ submission[0] }}</td>
+								<td>{{ submission[1] }}</td>
+								<td>{{ submission[3] }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+				<hr />
+			{% endfor %}
+		</div>
+	</div>
+
+{% endblock content %}

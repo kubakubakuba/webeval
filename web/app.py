@@ -11,6 +11,7 @@ import db as db
 import random
 import string
 import re
+from util import score_results
 
 load_dotenv("../.env")
 
@@ -110,6 +111,9 @@ def verify_manual():
 		token += request.form.get('verification2')
 		token += request.form.get('verification3')
 
+		if token == "_banned_":
+			token = None
+
 		username = request.form.get('username')
 		
 		success = db.verify_manual(token, username)
@@ -122,6 +126,9 @@ def verify_manual():
 
 @app.route('/verify/<token>/<user>/<email>', methods=['GET'])
 def verify_auto(token, user, email):
+	if token == "_banned_":
+		token = None
+
 	success = db.verify_auto(token, user, email)
 	if success:
 		reset_token(user)
@@ -140,10 +147,12 @@ def reset():
 
 		user = db.get_user(username)
 
-		if user is None:
+		is_banned = db.is_banned(user[0])
+
+		if user is None or is_banned:
 			return redirect('/reset')
 
-		user_id, hashed_password, salt, username, verified, email_hashed = user
+		user_id, hashed_password, salt, username, verified, email_hashed, token = user
 
 		if sha512((email + salt).encode()).hexdigest() != email_hashed:
 			return redirect('/reset')
@@ -202,10 +211,12 @@ def newpassword():
 
 		user = db.get_user(username)
 
-		if user is None:
+		is_banned = db.is_banned(user[0])
+
+		if user is None or is_banned: #if user is banned prohibit the password change
 			return redirect('/newpassword')
 
-		user_id, hashed_password, salt, username, verified, email_hashed = user
+		user_id, hashed_password, salt, username, verified, email_hashed, token = user
 
 		new_hashed_password = sha512((password + salt).encode()).hexdigest()
 
@@ -233,10 +244,12 @@ def login():
 		if user is None:
 			return render_template('invalid.html', redirect_url='/login')
 
-		user_id, hashed_password, salt, username, verified, email = user
+		user_id, hashed_password, salt, username, verified, email, token = user
 
 		if sha512((password + salt).encode()).hexdigest() == hashed_password:
 			if verified == 0:
+				if token == "_banned_":
+					return render_template('banned.html', sessions=session)	
 				return redirect('/verify')
 			
 			session['logged_in'] = True
@@ -450,6 +463,84 @@ def about():
 		description = markdown(description)
 
 	return render_template('about.html', sessions=session, description=description)
+
+@app.route('/admin/ban/<int:user_id>/')
+def ban(user_id):
+	if 'logged_in' not in session:
+		return redirect(url_for('login'))
+
+	userid = session['user_id'] if 'user_id' in session else -1
+	is_admin = db.is_admin_by_id(userid)
+	is_admin = is_admin[0] if is_admin else False
+
+	if not is_admin:
+		return render_template('403.html'), 403
+
+	db.ban_user(user_id)
+
+	return redirect('/admin')
+
+@app.route('/admin/unban/<int:user_id>/')
+def unban(user_id):
+	if 'logged_in' not in session:
+		return redirect(url_for('login'))
+
+	userid = session['user_id'] if 'user_id' in session else -1
+	is_admin = db.is_admin_by_id(userid)
+	is_admin = is_admin[0] if is_admin else False
+
+	if not is_admin:
+		return render_template('403.html'), 403
+
+	db.unban_user(user_id)
+
+	return redirect('/admin')
+
+@app.route('/admin/')
+def admin():
+	if 'logged_in' not in session:
+		return redirect(url_for('login'))
+
+	userid = session['user_id'] if 'user_id' in session else -1
+	is_admin = db.is_admin_by_id(userid)
+	is_admin = is_admin[0] if is_admin else False
+
+	if not is_admin:
+		return render_template('403.html'), 403
+
+	users = db.get_users()
+	#remove the current user from the list
+	users = [user for user in users if user[0] != userid]
+
+	active_tasks = db.get_active_tasks()
+
+	results = {}
+
+	for task in active_tasks:
+		task_id, task_name = task
+
+		results[task_name] = db.get_best_only_scores(task_id)
+
+	#for each task, mark the first 5 scores from 5 to 1 points, if some have same score, mark them with the same number
+		
+	results = score_results(results)
+		
+	return render_template('admin.html', sessions=session, users=users, submissions=results)
+
+@app.route('/scoreboard/')
+def scoreboard():
+	active_tasks = db.get_active_tasks()
+
+	results = {}
+
+	for task in active_tasks:
+		task_id, task_name = task
+
+		results[task_name] = db.get_best_only_scores(task_id)
+		
+	results = score_results(results)
+
+	return render_template('scoreboard.html', sessions=session, submissions=results)
 
 @app.errorhandler(403)
 def page_forbidden(e):

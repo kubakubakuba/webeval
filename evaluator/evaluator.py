@@ -156,11 +156,11 @@ def evaluate_submissions(num_submissions = 10):
 						break
 					#if flag is set or reference_regs are not empty, compare registers
 					if task_data["testcases"][i].get("do_compare_registers", False) or task_data["testcases"][i].get("reference_regs", None) != None:
-						sim.set_do_compare_registers(True)
+						#sim.set_do_compare_registers(True)
 						sim.set_reference_ending_regs(task_data["testcases"][i]["reference_regs"][0])
 
 					if task_data["testcases"][i].get("do_compare_memory", False) or task_data["testcases"][i].get("reference_mem", None) != None:
-						sim.set_do_compare_memory(True)
+						#sim.set_do_compare_memory(True)
 
 						mem = task_data["testcases"][i]["reference_mem"][0]
 						sim.set_reference_ending_memory(mem)
@@ -171,7 +171,7 @@ def evaluate_submissions(num_submissions = 10):
 						sim.set_starting_memory(mem)
 
 					if task_data["testcases"][i].get("do_compare_uart", False) or task_data["testcases"][i].get("reference_uart", None) != None:
-						sim.set_do_compare_uart(True)
+						#sim.set_do_compare_uart(True)
 						uart = task_data["testcases"][i]["reference_uart"][0]
 						uart_string = uart.get("uart", None)
 						sim.set_reference_ending_uart(uart_string, "__uart.out")

@@ -112,10 +112,12 @@ class QtRVSim:
 
 	def set_reference_ending_regs(self, reg_dict):
 		'''Pass a dict of values to compare against.'''
+		self.set_do_compare_registers(True) #compare registers
 		self.compare_registes = reg_dict
 
 	def set_reference_ending_uart(self, uart, uart_file):
 		'''Set the reference uart output.'''
+		self.set_do_compare_uart(True) #compare uart
 		self.reference_uart = uart
 		self.uart_file = f"{self.working_dir}/{uart_file}"
 		self.uart_arg += f" --serout {self.uart_file}"
@@ -136,6 +138,7 @@ class QtRVSim:
 
 	def set_reference_ending_memory(self, mem):
 		'''Pass an array of pairs (address, value) to compare against.'''
+		self.set_do_compare_memory(True) #compare memory
 
 		for address in mem.keys():
 			curr_mem_output_file = f"{self.mem_output_files_prefix}{address}.out"
