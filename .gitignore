@@ -7,8 +7,7 @@ web/.env
 web/__ending_mem__
 web/__starting_mem__
 .env
-web/__pycache__/
 web/encode_email.py
 web/old_db.py
-evaluator/__pycache__/
+**/__pycache__/
 test
