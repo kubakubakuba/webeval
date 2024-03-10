@@ -529,6 +529,10 @@ def admin():
 	#for each task, mark the first 5 scores from 5 to 1 points, if some have same score, mark them with the same number
 		
 	results = score_results(results)
+
+	#order users by id
+
+	users = sorted(users, key=lambda x: x[0])
 		
 	return render_template('admin.html', sessions=session, users=users, submissions=results)
 
