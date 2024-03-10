@@ -7,6 +7,8 @@ in pkgs.mkShell rec{
   venvDir = "./.venv";
   buildInputs = [
     pp.pip
+    pkgs.zlib
+    pkgs.qtrvsim
   ];
 
   shellHook = ''
@@ -19,6 +21,9 @@ in pkgs.mkShell rec{
     . $venvDir/bin/activate
 
     pip install -r requirements.txt
+
+    export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath buildInputs}:$LD_LIBRARY_PATH"
+    export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib.outPath}/lib:$LD_LIBRARY_PATH"
   '';
 
   FLASK_APP = "app.py";
