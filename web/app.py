@@ -273,6 +273,11 @@ def submit(task_id):
 			return redirect(url_for('login'))
 	
 	if request.method == 'POST':
+
+		is_banned = db.is_user_banned(session['user_id'])
+		if is_banned: #logout user
+			return redirect('/logout')
+		
 		user_id = session['user_id']
 		code = request.form['code'].replace('\r\n', '\n')
 
