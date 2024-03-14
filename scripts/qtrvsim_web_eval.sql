@@ -148,7 +148,8 @@ CREATE TABLE public.tasks (
     id integer NOT NULL,
     name character varying(64) NOT NULL,
     path character varying(256) NOT NULL,
-    available boolean DEFAULT true
+    available boolean DEFAULT true,
+    sequence integer DEFAULT 0
 );
 
 
