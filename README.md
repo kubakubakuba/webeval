@@ -57,6 +57,7 @@ Public version is running [here](https://eval.comparch.edu.cvut.cz).
 | salt               | varchar | 128    | None           |
 | verification_code  | varchar | 128    | None           |
 | user_verified      | tinyint | 1      | 0              |
+| admin              | boolean | 1      | false          |
 
 Email is a hash of the email adress, so it allows users to send a password to their email adress.
 
@@ -67,11 +68,8 @@ Email is a hash of the email adress, so it allows users to send a password to th
 | id           | int        | 64     | AUTO_INCREMENT      |
 | userid       | int        | 64     | None                |
 | taskid       | int        | 64     | None                |
-| filepath     | varchar    | 64     | None                |
-| evaluated    | tinyint    | 1      | 0                   |
-| result       | smallint   | 2      | -1                  |
-| result_file  | varchar    | 64     | NULL                |
-| score        | int        | 32     | -1                  |
+| file         | text       |        | None                |
+| evaluated    | boolean    | 1      | false               |
 | time         | datetime   | None   | current_timestamp() |
 
 User submits a task -> a submission is created. An evaluator evaluates the tasks in the order they came in the database.
@@ -87,8 +85,11 @@ Result file
 | taskid       | int        | 64     | PRIMARY             |
 | result_file  | text       | 64     | NULL                |
 | last_source  | text       |        | NULL                |
+| best_source  | text       |        | NULL                |
 | score_best   | int        | 32     |                     |
 | score_last   | int        | 32     |                     |
+| time         | datetime   | None   | current_timestamp() |
+| result       | smallint   | 16     | -1                  |
 
 User submits a task -> a submission is created. An evaluator evaluates the tasks in the order they came in the database.
 After a task is evaluated, it is marked as evaluated, so it is not evaluated more than one time. An evaluation log is created.
@@ -101,6 +102,7 @@ After a task is evaluated, it is marked as evaluated, so it is not evaluated mor
 | name      | varchar | 64     | None           |
 | path      | varchar | 256    | None           |
 | available | tinyint | 1      | 1              |
+| sequence  | int     | 64     | 0              |
 
 ### Triggers
 
@@ -255,6 +257,10 @@ To dump the database, run `scripts/pg_dump.sh`. The script will create a dump of
 ## Creating a new database
 
 To create a new database, modify and run the `scripts/create_database.sh` script. The script will create a new database and the necessary tables, as well as triggers and a new user.
+
+## Examples and other info
+
+Slides for Installfest 2024 with Flask examples can be found on [GitHub](https://github.com/kubakubakuba/if24-flask-web-eval). An example for QtRvSim task confguration is in [example 5](https://github.com/kubakubakuba/if24-flask-web-eval/tree/main/examples/5).
 
 ## Acknowledgements
 - [Flask](https://flask.palletsprojects.com/en/3.0.x/)
