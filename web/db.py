@@ -23,7 +23,16 @@ def connect():
 def list_tasks():
 	"""List all tasks."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT id, name FROM tasks WHERE available = true')
+	cursor.execute('SELECT id, name FROM tasks WHERE available = true ORDER BY sequence ASC')
+	tasks = cursor.fetchall()
+	cursor.close()
+	db.close()
+	return tasks
+
+def list_tasks_with_filepath():
+	"""List all tasks with their file path."""
+	(db, cursor) = connect()
+	cursor.execute('SELECT id, name, path, available FROM tasks ORDER BY sequence ASC')
 	tasks = cursor.fetchall()
 	cursor.close()
 	db.close()
@@ -175,7 +184,7 @@ def get_best_scores_for_verified(taskid):
 def get_active_tasks():
 	"""Get all active tasks."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT id, name FROM tasks WHERE available = true')
+	cursor.execute('SELECT id, name FROM tasks WHERE available = true ORDER BY sequence ASC')
 	tasks = cursor.fetchall()
 	cursor.close()
 	db.close()
@@ -282,3 +291,60 @@ def is_user_banned(userid):
 	cursor.close()
 	db.close()
 	return user[0] == False and user[1] == "_banned_"
+
+def reorder_tasks(order):
+	"""Reorder tasks."""
+	#order is the list of which the ids should be placed
+	#for each id, set the sequence to the order[i]
+	#ids start from 1, but the list starts from 0 index
+
+	(db, cursor) = connect()
+	for i in range(len(order)):
+		cursor.execute('UPDATE tasks SET sequence = %s WHERE id = %s', (i+1, order[i]))
+	
+	db.commit()
+	cursor.close()
+	db.close()
+
+def rename_task(taskid, newname):
+	"""Rename a task."""
+	(db, cursor) = connect()
+	cursor.execute('UPDATE tasks SET name = %s WHERE id = %s', (newname, taskid))
+	db.commit()
+	cursor.close()
+	db.close()
+
+def task_change_path(taskid, newpath):
+	"""Change the path of a task."""
+	(db, cursor) = connect()
+	cursor.execute('UPDATE tasks SET path = %s WHERE id = %s', (newpath, taskid))
+	db.commit()
+	cursor.close()
+	db.close()
+
+def get_unavailable_tasks():
+	"""Get all unavailable tasks."""
+	(db, cursor) = connect()
+	cursor.execute('SELECT id, name FROM tasks WHERE available = false ORDER BY sequence ASC')
+	tasks = cursor.fetchall()
+	cursor.close()
+	db.close()
+	return tasks
+
+def set_task_availability(taskid, available):
+	"""Set the availability of a task."""
+	assert available == True or available == False
+
+	(db, cursor) = connect()
+	cursor.execute('UPDATE tasks SET available = %s WHERE id = %s', (available, taskid))
+	db.commit()
+	cursor.close()
+	db.close()
+
+def create_new_task(path):
+	"""Create a new task."""
+	(db, cursor) = connect()
+	cursor.execute('INSERT INTO tasks (name, path, available) VALUES (%s, %s, true)', (path, path))
+	db.commit()
+	cursor.close()
+	db.close()

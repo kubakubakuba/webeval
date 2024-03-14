@@ -29,6 +29,16 @@ URL = "https://eval.comparch.edu.cvut.cz"
 
 mail = Mail(app)
 
+def check_admin() -> bool:
+	if 'logged_in' not in session:
+		return redirect(url_for('login'))
+
+	userid = session['user_id'] if 'user_id' in session else -1
+	is_admin = db.is_admin_by_id(userid)
+	is_admin = is_admin[0] if is_admin else False
+
+	return is_admin
+
 def send_email(subject, recipient, body, html):
 	msg = Message(subject, recipients=recipient)
 	msg.body = body
@@ -442,12 +452,7 @@ def task(task_id):
 @app.route('/view/<int:task_id>/<int:user_id>/<int:is_latest>')
 def view_latest_for_user(task_id, user_id, is_latest):
 	#check if the current user is admin or the userid is the same as the session user id
-	if 'logged_in' not in session:
-		return redirect(url_for('login'))
-
-	userid = session['user_id'] if 'user_id' in session else -1	
-	curr_is_admin = db.is_admin_by_id(userid)
-	curr_is_admin = curr_is_admin[0] if curr_is_admin else False
+	curr_is_admin = check_admin()
 
 	if session['user_id'] != user_id and not curr_is_admin:
 		#throw 403
@@ -476,12 +481,8 @@ def about():
 
 @app.route('/admin/ban/<int:user_id>/')
 def ban(user_id):
-	if 'logged_in' not in session:
-		return redirect(url_for('login'))
-
-	userid = session['user_id'] if 'user_id' in session else -1
-	is_admin = db.is_admin_by_id(userid)
-	is_admin = is_admin[0] if is_admin else False
+	
+	is_admin = check_admin()
 
 	if not is_admin:
 		return render_template('403.html'), 403
@@ -492,12 +493,8 @@ def ban(user_id):
 
 @app.route('/admin/unban/<int:user_id>/')
 def unban(user_id):
-	if 'logged_in' not in session:
-		return redirect(url_for('login'))
-
-	userid = session['user_id'] if 'user_id' in session else -1
-	is_admin = db.is_admin_by_id(userid)
-	is_admin = is_admin[0] if is_admin else False
+	
+	is_admin = check_admin()
 
 	if not is_admin:
 		return render_template('403.html'), 403
@@ -508,18 +505,16 @@ def unban(user_id):
 
 @app.route('/admin/')
 def admin():
-	if 'logged_in' not in session:
-		return redirect(url_for('login'))
-
 	userid = session['user_id'] if 'user_id' in session else -1
-	is_admin = db.is_admin_by_id(userid)
-	is_admin = is_admin[0] if is_admin else False
+	
+	is_admin = check_admin()
 
 	if not is_admin:
 		return render_template('403.html'), 403
 
 	users = db.get_users()
 	#remove the current user from the list
+
 	users = [user for user in users if user[0] != userid]
 
 	active_tasks = db.get_active_tasks()
@@ -544,17 +539,15 @@ def admin():
 	if os.path.exists("config/.submit.disable"):
 		with open("config/.submit.disable", "r") as f:
 			submit_disabled = f.read() == "true"
+
+	tasks = db.list_tasks_with_filepath()
 		
-	return render_template('admin.html', sessions=session, users=users, submissions=results, submit_disabled=submit_disabled)
+	return render_template('admin.html', sessions=session, users=users, submissions=results, submit_disabled=submit_disabled, tasks=tasks)
 
 @app.route('/admin/toggle/submit/')
 def toggle_submit():
-	if 'logged_in' not in session:
-		return redirect(url_for('login'))
-
-	userid = session['user_id'] if 'user_id' in session else -1
-	is_admin = db.is_admin_by_id(userid)
-	is_admin = is_admin[0] if is_admin else False
+	
+	is_admin = check_admin()
 
 	if not is_admin:
 		return render_template('403.html'), 403
@@ -573,6 +566,74 @@ def toggle_submit():
 					f.write("false")
 				else:
 					f.write("true")
+
+	return redirect('/admin')
+
+@app.route('/admin/reorder/<string:order>/')
+def reorder(order):
+	
+	is_admin = check_admin()
+
+	if not is_admin:
+		return render_template('403.html'), 403
+
+	order_list = order.split(';')
+
+	db.reorder_tasks(order_list)
+
+	return redirect('/admin')
+
+@app.route('/admin/rename/<int:id>/<string:name>')
+def rename(id, name):
+	
+	is_admin = check_admin()
+
+	if not is_admin:
+		return render_template('403.html'), 403
+
+	db.rename_task(id, name)
+
+	return redirect('/admin')
+
+@app.route('/admin/repath/<int:id>/<string:name>')
+def repath(id, name):
+	
+	is_admin = check_admin()
+
+	if not is_admin:
+		return render_template('403.html'), 403
+
+	name = "tasks/" + name
+
+	db.task_change_path(id, name)
+
+	return redirect('/admin')
+
+@app.route('/admin/available/<int:id>/<int:available>')
+def change_available(id, available):
+	
+	is_admin = check_admin()
+
+	if not is_admin:
+		return render_template('403.html'), 403
+
+	available = False if available == 0 else True
+
+	db.set_task_availability(id, available)
+
+	return redirect('/admin')
+
+@app.route('/admin/new/<string:path>/')
+def new_task(path):
+	
+	is_admin = check_admin()
+
+	if not is_admin:
+		return render_template('403.html'), 403
+
+	path = "tasks/" + path
+
+	db.create_new_task(path)
 
 	return redirect('/admin')
 

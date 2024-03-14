@@ -5,6 +5,13 @@ Admin panel
 {% endblock title %}
 
 {% block content %}
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/TableDnD/1.0.5/jquery.tablednd.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/bootstrap-table.min.js"></script>
+	<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/extensions/reorder-rows/bootstrap-table-reorder-rows.min.js"></script>
+
 	<style>
 
 		.form-select{
@@ -12,12 +19,21 @@ Admin panel
 		}
 
 		.card-btn{
-			margin-bottom: 15px;
+			margin: 15px 0px 15px 0px;
 		}
 
 		.main-content{
 			max-width: 5000px!important;
 		}
+
+		table{
+			margin: 15px 0px 15px 0px;
+		}
+
+		#create-new-task{
+			margin-top: 15px;
+		}
+
 	</style>
 
 	<!--
@@ -67,6 +83,8 @@ Admin panel
 					Ban user
 				</div>
 			</div>
+
+			<hr />
 			
 			Unban a user:
 			<select id="unban-user-selector" class="form-select" aria-label="Unban user selector">
@@ -83,6 +101,8 @@ Admin panel
 				</div>
 			</div>
 
+			<hr />
+
 			<!-- if submit_disabled render red text disabled, else green-->
 			Submissions are currently: {% if submit_disabled %}<span style="color: red;">disabled</span>{% else %}<span style="color: green;">enabled</span>{% endif %}
 
@@ -91,7 +111,164 @@ Admin panel
 					{% if submit_disabled %}Enable{% else %}Disable{% endif %} submissions
 				</div>
 			</div>
+
+			<hr />
+
+			Change the task order (drag):
+
+			<table id="reorderable-table" class="table table-striped" data-toggle="table" data-reorderable-rows="true">
+				<thead>
+					<tr>
+						<th scope="col">Task ID</th>
+						<th scope="col">Name</th>
+						<th scope="col">Filepath</th>
+						<th scope="col">Available</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for task in tasks %}
+						<tr>
+							<td>{{ task[0] }}</td>
+							<td>{{ task[1] }}</td>
+							<td>{{ task[2] }}</td>
+							<td>{{ task[3] }}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
+			<div id="confirm-reorder" class="card card-btn" onclick="location.href='/admin/reorder/'">
+				<div class="card-body text-center">
+					Confirm new task order
+				</div>
+			</div>
+
+			<hr />
+
+			Rename a task:
+
+			<div class="row">
+				<div class="col-md-6">
+					<select id="rename-task-selector" class="form-select" aria-label="Rename task selector">
+						<option value="-">-</option>
+						{% for task in tasks %}
+							<option value="{{ task[0] }}">{{ task[1] }}</option>
+						{% endfor %}
+
+					</select>
+
+					<input type="text" id="rename-task-input" class="form-control" placeholder="New name" aria-label="New name">
+				</div>
+
+				<div class="card card-btn col-md-6" onclick="location.href='/admin/rename/' + document.getElementById('rename-task-selector').value + '/' + document.getElementById('rename-task-input').value;">
+					<div class="card-body text-center">
+						Rename task
+					</div>
+				</div>
+
+			</div>
+
+			<hr />
+
+			Change task path (without tasks/):
+			
+			<div class="row">
+				<div class="col-md-6">
+					<select id="change-task-selector" class="form-select" aria-label="Change task selector">
+						<option value="-">-</option>
+						{% for task in tasks %}
+							<option value="{{ task[0] }}">{{ task[1] }}: {{ task[2] }}</option>
+						{% endfor %}
+					</select>
+
+					<input type="text" id="change-task-input" class="form-control" placeholder="config.toml" aria-label="New path">
+				</div>
+
+				<div class="card card-btn col-md-6" onclick="location.href='/admin/repath/' + document.getElementById('change-task-selector').value + '/' + document.getElementById('change-task-input').value;">
+					<div class="card-body text-center">
+						Change task path
+					</div>
+				</div>
+			</div>
+
+			<hr />
+
+			Disable task:
+
+			<div class="row">
+				<div class="col-md-6">
+					<select id="disable-task-selector" class="form-select" aria-label="Disable task selector">
+						<option value="-">-</option>
+						{% for task in tasks %}
+							{% if task[3] == True %}
+								<option value="{{ task[0] }}">{{ task[1] }}</option>
+							{% endif %}
+						{% endfor %}
+					</select>
+				</div>
+
+				<div class="card card-btn col-md-6" onclick="location.href='/admin/available/' + document.getElementById('disable-task-selector').value + '/0';">
+					<div class="card-body text-center">
+						Disable task
+					</div>
+				</div>
+			</div>
+
+			<hr />
+
+			Enable task:
+
+			<div class="row">
+				<div class="col-md-6">
+					<select id="enable-task-selector" class="form-select" aria-label="Enable task selector">
+						<option value="-">-</option>
+						{% for task in tasks %}
+							{% if task[3] == False %}
+								<option value="{{ task[0] }}">{{ task[1] }}</option>
+							{% endif %}
+						{% endfor %}
+					</select>
+				</div>
+	
+				<div class="card card-btn col-md-6" onclick="location.href='/admin/available/' + document.getElementById('enable-task-selector').value + '/1';">
+					<div class="card-body text-center">
+						Enable task
+					</div>
+				</div>
+			</div>
+
+			<hr />
+			
+			Create a new task:
+
+			<div class="row">
+				<div class="col-md-6">
+					<input type="text" id="create-new-task" class="form-control" placeholder="config.toml" aria-label="New path">
+				</div>
+
+				<div class="card card-btn col-md-6" onclick="location.href='/admin/new/' + document.getElementById('create-new-task').value;">
+					<div class="card-body text-center">
+						Create new task
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
+
+	<script>
+		$(function() {
+			$('#reorderable-table').bootstrapTable({
+				reorderableRows: true
+			});
+	
+			$('#confirm-reorder').click(function() {
+				var newOrder = $('#reorderable-table tbody tr').map(function() {
+					return $(this).find('td:first').text();
+				}).get().join(';');
+	
+				window.location.href = '/admin/reorder/' + newOrder;
+			});
+		});
+	</script>
 
 {% endblock content %}
