@@ -40,8 +40,8 @@ Admin panel
 		{'Simple addition': [('test2', 6, 2), ('test', 6, 1)], 'Memory read and write': [('test', 5, 1)], 'Bubble sort': [('test', 1293, 1)], 'Cache optimization': [('test', 886, 1)], 'Data hazard prevention': [('test', 469, 1)], 'Print hexadecimal to serial port': [('test', 168, 1)], 'Simple calculator': [('test', 458, 1)]}
 		create a table for each task, and in each task, create a table for the first 6 users
 	-->
-
 	<div class="row">
+		<!--
 		<div class="col-md-6">
 			<h2>Top 6 submissions for each task:</h2>
 			{% for task, submissions in submissions.items() %}
@@ -68,6 +68,7 @@ Admin panel
 				</table>
 			{% endfor %}
 		</div>
+		-->
 		<div class="col-md-6">
 			Ban a user:
 			<select id="ban-user-selector" class="form-select" aria-label="Ban user selector">
@@ -114,6 +115,52 @@ Admin panel
 
 			<hr />
 
+			Disable task:
+
+			<div class="row">
+				<div class="col-md-6">
+					<select id="disable-task-selector" class="form-select" aria-label="Disable task selector">
+						<option value="-">-</option>
+						{% for task in tasks %}
+							{% if task[3] == True %}
+								<option value="{{ task[0] }}">{{ task[1] }}</option>
+							{% endif %}
+						{% endfor %}
+					</select>
+				</div>
+
+				<div class="card card-btn col-md-6" onclick="location.href='/admin/available/' + document.getElementById('disable-task-selector').value + '/0';">
+					<div class="card-body text-center">
+						Disable task
+					</div>
+				</div>
+			</div>
+
+			<hr />
+
+			Enable task:
+
+			<div class="row">
+				<div class="col-md-6">
+					<select id="enable-task-selector" class="form-select" aria-label="Enable task selector">
+						<option value="-">-</option>
+						{% for task in tasks %}
+							{% if task[3] == False %}
+								<option value="{{ task[0] }}">{{ task[1] }}</option>
+							{% endif %}
+						{% endfor %}
+					</select>
+				</div>
+	
+				<div class="card card-btn col-md-6" onclick="location.href='/admin/available/' + document.getElementById('enable-task-selector').value + '/1';">
+					<div class="card-body text-center">
+						Enable task
+					</div>
+				</div>
+			</div>
+			
+		</div>
+		<div class="col-md-6">
 			Change the task order (drag):
 
 			<table id="reorderable-table" class="table table-striped" data-toggle="table" data-reorderable-rows="true">
@@ -193,49 +240,7 @@ Admin panel
 
 			<hr />
 
-			Disable task:
-
-			<div class="row">
-				<div class="col-md-6">
-					<select id="disable-task-selector" class="form-select" aria-label="Disable task selector">
-						<option value="-">-</option>
-						{% for task in tasks %}
-							{% if task[3] == True %}
-								<option value="{{ task[0] }}">{{ task[1] }}</option>
-							{% endif %}
-						{% endfor %}
-					</select>
-				</div>
-
-				<div class="card card-btn col-md-6" onclick="location.href='/admin/available/' + document.getElementById('disable-task-selector').value + '/0';">
-					<div class="card-body text-center">
-						Disable task
-					</div>
-				</div>
-			</div>
-
-			<hr />
-
-			Enable task:
-
-			<div class="row">
-				<div class="col-md-6">
-					<select id="enable-task-selector" class="form-select" aria-label="Enable task selector">
-						<option value="-">-</option>
-						{% for task in tasks %}
-							{% if task[3] == False %}
-								<option value="{{ task[0] }}">{{ task[1] }}</option>
-							{% endif %}
-						{% endfor %}
-					</select>
-				</div>
-	
-				<div class="card card-btn col-md-6" onclick="location.href='/admin/available/' + document.getElementById('enable-task-selector').value + '/1';">
-					<div class="card-body text-center">
-						Enable task
-					</div>
-				</div>
-			</div>
+			
 
 			<hr />
 			
