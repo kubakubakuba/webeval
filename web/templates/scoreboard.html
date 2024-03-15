@@ -19,7 +19,6 @@ Scoreboard
 				<table class="table table-striped">
 					<thead>
 						<tr>
-							<th scope="col">Userid</th>
 							<th scope="col">Username</th>
 							<th scope="col">Cycles</th>
 							<th scope="col">Score</th>
@@ -28,10 +27,9 @@ Scoreboard
 					<tbody>
 						{% for submission in submissions %}
 							<tr>
-								<td>{{ submission[2] }}</td>
-								<td>{{ submission[0] }}</td>
-								<td>{{ submission[1] }}</td>
-								<td>{{ submission[3] }}</td>
+								<td {% if submission[2] == session['user_id'] %} style="background: rgba(100, 203, 153, 0.6);" {% endif %}>{{ submission[0] }}</td>
+								<td {% if submission[2] == session['user_id'] %} style="background: rgba(100, 203, 153, 0.6);" {% endif %}>{{ submission[1] }}</td>
+								<td {% if submission[2] == session['user_id'] %} style="background: rgba(100, 203, 153, 0.6);" {% endif %}>{{ submission[3] }}</td>
 							</tr>
 						{% endfor %}
 					</tbody>
@@ -52,8 +50,8 @@ Scoreboard
 				<tbody>
 					{% for username, points in total_score %}
 						<tr>
-							<td>{{ username }}</td>
-							<td>{{ points }}</td>
+							<td {% if user_ids[username] == session['user_id'] %} style="background: rgba(100, 203, 153, 0.6);" {% endif %}>{{ username }}</td>
+							<td {% if user_ids[username] == session['user_id'] %} style="background: rgba(100, 203, 153, 0.6);" {% endif %}>{{ points }}</td>
 						</tr>
 					{% endfor %}
 				</tbody>

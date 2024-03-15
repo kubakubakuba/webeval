@@ -647,9 +647,22 @@ def scoreboard():
 
 	results = score_results(results)
 
+	#get user ids from results
+
+	#TODO: rewrite this later
+	#('test0', 10, 1) the 3rd argument is the user id
+	user_ids = {}
+	for task in results:
+		for result in results[task]:
+			if result[0] not in user_ids:
+				user_ids[result[0]] = 0
+			user_ids[result[0]] = result[2]
+
 	total_score = user_total_score(results)
 
-	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score)
+	print(user_ids)
+
+	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids)
 
 @app.errorhandler(403)
 def page_forbidden(e):
