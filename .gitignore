@@ -12,3 +12,4 @@ web/old_db.py
 **/__pycache__/
 test
 web/*.disable
+reference
