@@ -9,14 +9,10 @@ Scoreboard
 		.card-btn{
 			margin-bottom: 15px;
 		}
-
-		.main-content{
-			margin: auto;
-		}
 	</style>
 
 	<div class="row justify-content-center">
-		<div class="col-md-12 text-center">
+		<div class="col-md-8 text-center">
 			<h2>Scoreboard</h2>
 			{% for task, submissions in submissions.items() %}
 				<h3>{{ task }}</h3>
@@ -30,7 +26,7 @@ Scoreboard
 						</tr>
 					</thead>
 					<tbody>
-						{% for submission in submissions[:6] %}
+						{% for submission in submissions %}
 							<tr>
 								<td>{{ submission[2] }}</td>
 								<td>{{ submission[0] }}</td>
@@ -42,6 +38,26 @@ Scoreboard
 				</table>
 				<hr />
 			{% endfor %}
+		</div>
+
+		<div class="col-md-4 text-center">
+			<h2>Users total points</h2>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th scope="col">Username</th>
+						<th scope="col">Points</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for username, points in total_score %}
+						<tr>
+							<td>{{ username }}</td>
+							<td>{{ points }}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
 		</div>
 	</div>
 

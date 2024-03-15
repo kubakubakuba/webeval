@@ -80,18 +80,18 @@ def evaluate_submissions(num_submissions = 10):
 					#policy,sets,words_in_block,ways,write_method, where policy is either random, lru, lfu
 					#for example:
 					#lru,1,1,1,wb
-					#the line should be in exact format #cache:lru,1,1,1,wb
+					#the line should be in exact format #pragma cache:lru,1,1,1,wb
 					
 					d_cache_par = None
 
 					for line in lines:
-						if line.startswith('#cache:'):
-							d_cache_par = line.replace('#cache:', '').strip()
+						if line.startswith('#pragma cache:'):
+							d_cache_par = line.replace('#pragma cache:', '').strip()
 							break
 
 					# Check if the cache parameters line was found
 					if d_cache_par == None:
-						error_log += "Error: cache parameters line not found\nUse:\n\n#cache:policy,sets,words_in_block,ways,write_method\n\nsomewhere in your file to set these parameters.\n"
+						error_log += "Error: cache parameters line not found\nUse:\n\n#pragma cache:policy,sets,words_in_block,ways,write_method\n\nsomewhere in your file to set these parameters.\n"
 						error_log += "policy is either random, lru, lfu\n"
 						error_log += f"maximum cache size for this task is {cache_max_size} bytes\n"
 						cache_exit = True
@@ -101,7 +101,7 @@ def evaluate_submissions(num_submissions = 10):
 						match = re.match(r'^(lru|lfu|random),\d+,\d+,\d+,(wb|wt)$', d_cache_par)
 						if not match:
 							error_log += f"Error: cache parameters line not in the correct format {d_cache_par}\n"
-							error_log += "Use:\n\n#cache:policy,sets,words_in_block,ways,write_method\n\n"
+							error_log += "Use:\n\n#pragma cache:policy,sets,words_in_block,ways,write_method\n\n"
 							error_log += "policy is either random, lru, lfu\n"
 							error_log += f"maximum cache size for this task is {cache_max_size} bytes\n"
 							cache_exit = True
@@ -251,15 +251,31 @@ def evaluate_submissions(num_submissions = 10):
 			time.sleep(1)
 
 		except Exception as e:
-			print(f"Error: {e}")
-			error_log = f"An error occurred during evaluation:\n"
-			error_log += f"{type(e).__name__}\n"
-			error_log += f"Message: {e}\n"
-			error_log += f"Traceback: {traceback.format_exc()}\n"
-			error_log += f"Please create an issue with this error on GitLab: https://gitlab.fel.cvut.cz/b35apo/qtrvsim-eval-web/-/issues/new?issue[title]=Error%20in%20evaluator%20uid%20{s[4]}%20tid{s[1]}&issue[description]={type(e).__name__}%0A{urllib.parse.quote(str(traceback.format_exc()), safe='')}%0A{urllib.parse.quote(str(e), safe='')}"
+			#if exception is of type file FileNotFoundError, and the message has a file ending in .out
 
-			db.update_submission(s[0])
-			db.update_result(s[4], s[1], -1, 99, error_log)
+			if type(e) == FileNotFoundError and e.filename.endswith(".out"):
+				#get the filename
+				filename = os.path.basename(e.filename)
+
+				print(f"Error: {e}")
+				error_log = f"An error occurred during evaluation:\n"
+				error_log += f"File {filename} not found.\n"
+				error_log += f"Did you include all necessary memory ranges in your submission?\nThere should be\n{filename.replace('.out', '')}:\n\nin the .data section of your submission.\n"
+				error_log += f"There may be other memory ranges missing, other than {filename}.\nPlease check the .data section of the template file for this task.\n"
+
+				db.update_submission(s[0])
+				db.update_result(s[4], s[1], -1, 5, error_log)
+			else:
+				
+				print(f"Error: {e}")
+				error_log = f"An error occurred during evaluation:\n"
+				error_log += f"{type(e).__name__}\n"
+				error_log += f"Message: {e}\n"
+				error_log += f"Traceback: {traceback.format_exc()}\n"
+				error_log += f"Please create an issue with this error on GitLab: https://gitlab.fel.cvut.cz/b35apo/qtrvsim-eval-web/-/issues/new?issue[title]=Error%20in%20evaluator%20uid%20{s[4]}%20tid{s[1]}&issue[description]={type(e).__name__}%0A{urllib.parse.quote(str(traceback.format_exc()), safe='')}%0A{urllib.parse.quote(str(e), safe='')}"
+
+				db.update_submission(s[0])
+				db.update_result(s[4], s[1], -1, 99, error_log)
 
 
 def evaluator_thread(num_submissions = 10, interval = 60):

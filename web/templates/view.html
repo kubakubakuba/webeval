@@ -14,12 +14,7 @@
 	<h2>{{ best_or_latest }} for task: {{ task_name }}</h2>
 	<div class="card">
 		<div class="card-body">
-			<form method="post" id="codeForm">
-				<div class="mb-3">
-					<textarea class="form-control" id="code" name="code" style="width:600px; display:none;"></textarea>
-					<div id="codeMirror"></div>
-				</div>
-			</form>
+			<div id="codeMirror"></div>
 		</div>
 	</div>
 {% endblock content %}
@@ -37,6 +32,6 @@
 			readOnly: true
 		});
 
-		editor.setSize("800px", "750px");
+		editor.setSize("auto", "auto");
 	</script>
 {% endblock %}

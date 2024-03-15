@@ -5,12 +5,15 @@
 
 //Set the parameters of the cache by using #cache:policy,sets,words_in_blocks,ways,write_method
 // on a separate line in your task submission.
-//For example: #cache:lru,1,1,1,wb
+//For example: #pragma cache:lru,1,1,1,wb
 // The cache size is limited to 16 words maximum.
 
 // Directives to make interesting windows visible
 #pragma qtrvsim show registers
 #pragma qtrvsim show memory
+
+//cache pragma
+#pragma cache:lru,1,1,1,wb
 
 .option norelax
 

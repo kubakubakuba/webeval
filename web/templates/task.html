@@ -89,8 +89,10 @@
 								<span style="color: red;">Cache error</span>
 							{% elif result == 4 %}
 								<span style="color: red;">Make error</span>
+							{% elif result == 5 %}
+								<span style="color: red;">Missing files</span>
 							{% elif result == 99 %}
-								<span style="color: red;">Internal evaluator error</span>
+								<span style="color: maroon;">Internal evaluator error</span>
 							{% else %}
 								<span style="color: red;">Rejected</span>
 							{% endif %}

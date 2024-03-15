@@ -4,14 +4,9 @@ from markdown import markdown
 from datetime import datetime
 from hashlib import sha512
 from dotenv import load_dotenv
-import secrets
-import os
-import toml
+import secrets, os, toml, random, string, re
 import db as db
-import random
-import string
-import re
-from util import score_results
+from util import score_results, user_total_score
 
 load_dotenv("../.env")
 
@@ -647,10 +642,14 @@ def scoreboard():
 		task_id, task_name = task
 
 		results[task_name] = db.get_best_only_scores(task_id)
-		
+	
+	# for testing: results["Simple addition"] = [('test0', 10, 1), ('test1', 10, 2), ('test2', 11, 3), ('test3', 12, 4), ('test4', 12, 5), ('test5', 12, 6), ('test6', 12, 7), ('test7', 12, 8), ('test8', 12, 9), ('test9', 20, 10)]
+
 	results = score_results(results)
 
-	return render_template('scoreboard.html', sessions=session, submissions=results)
+	total_score = user_total_score(results)
+
+	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score)
 
 @app.errorhandler(403)
 def page_forbidden(e):
