@@ -10,7 +10,7 @@ Then, add the values and store the result in register a3.
 '''
 
 [arguments]
-run = "--d-regs --dump-cycles --dump-cache-stats"
+run = "--d-regs --dump-cycles --cycle-limit 100"
 
 [[inputs]]
 data_in = "None"

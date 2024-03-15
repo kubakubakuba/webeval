@@ -11,7 +11,7 @@ Save the result in memory after the two values that were loaded.
 '''
 
 [arguments]
-run = "--d-regs --dump-cycles"
+run = "--d-regs --dump-cycles --cycle-limit 100"
 
 [[inputs]]
 data_in = "Two values in memory starting at address 0x400."
