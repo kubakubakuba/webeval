@@ -13,8 +13,8 @@ at the address `array_start`.
 The program should sort the array in ascending order.
 Your program will be tested with different array sizes and different values in the array.
 
-Set the parameters of the cache by using `#cache:policy,sets,words_in_blocks,ways,write_method` on a separate line in your task submission.
-For example: `#cache:lru,1,1,1,wb`
+Set the parameters of the cache by using `#pragma cache:policy,sets,words_in_blocks,ways,write_method` on a separate line in your task submission.
+For example: `#pragma cache:lru,1,1,1,wb`
 
 This parameter will be passed to qtrvsim_cli as the `--d-cache` parameter.
 
