@@ -13,3 +13,4 @@ web/old_db.py
 test
 web/*.disable
 reference
+**/.venv/
