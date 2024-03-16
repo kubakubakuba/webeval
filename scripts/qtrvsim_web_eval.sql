@@ -57,7 +57,7 @@ ALTER FUNCTION public.delete_evaluated_submission() OWNER TO postgres;
 CREATE FUNCTION public.update_best_score() RETURNS trigger
     LANGUAGE plpgsql
     AS $$BEGIN
-  IF NEW.score_best = -1 OR (NEW.score_last <= NEW.score_best AND NEW.result = 0) THEN
+  IF NEW.score_best = -1 OR NEW.score_best = 0 OR (NEW.score_last <= NEW.score_best AND NEW.result = 0) THEN
     NEW.score_best := NEW.score_last;
     NEW.best_source := NEW.last_source;
     RETURN NEW;
