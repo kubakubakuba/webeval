@@ -23,7 +23,7 @@ Register
 				<div class="form-group text-muted" style="font-size: 0.8em;">
 					Your email address is not being saved. It is only used for registration confirmation and password reset (it is stored as a salted sha-512 hash, so are the passwords).
 				</div>
-				<div class="card card-btn col-sm-4 mx-auto mt-4" onclick="document.getElementById('registerForm').submit();">
+				<div class="card card-btn col-sm-4 mx-auto mt-4" onclick="validateForm();">
 					<div class="card-body text-center">
 						Register
 					</div>
@@ -31,4 +31,21 @@ Register
 			</form>
 		</div>
 	</div>
+
+	<script>
+		function validateForm() {
+			var form = document.getElementById('registerForm');
+			var username = form.elements['username'].value;
+			var password = form.elements['password'].value;
+			var email = form.elements['email'].value;
+		
+			if (username === '' || password === '' || email === '') {
+				alert('Please fill out all fields.');
+				return false;
+			}
+		
+			form.submit();
+			return true;
+		}
+		</script>
 {% endblock content %}
