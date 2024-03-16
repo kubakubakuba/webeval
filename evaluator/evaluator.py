@@ -232,9 +232,6 @@ def evaluate_submissions(num_submissions = 10):
 			#TODO: commit changes to database
 			db.update_submission(s[0])
 
-			if score == 0:
-				score = -2
-				
 			db.update_result(s[4], s[1], score, was_accepted, sim.get_log())
 			
 			#TODO: remove the directory after evaluation
