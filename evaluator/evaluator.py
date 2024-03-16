@@ -260,8 +260,10 @@ def evaluate_submissions(num_submissions = 10):
 				print(f"Error: {e}")
 				error_log = f"An error occurred during evaluation:\n"
 				error_log += f"File {filename} not found.\n"
-				error_log += f"Did you include all necessary memory ranges in your submission?\nThere should be\n{filename.replace('.out', '')}:\n\nin the .data section of your submission.\n"
-				error_log += f"There may be other memory ranges missing, other than {filename}.\nPlease check the .data section of the template file for this task.\n"
+				error_log += f"You probably have an error in your assembly code.\n"
+				
+				#error_log += f"Did you include all necessary memory ranges in your submission?\nThere should be\n{filename.replace('.out', '')}:\n\nin the .data section of your submission.\n"
+				#error_log += f"There may be other memory ranges missing, other than {filename}.\nPlease check the .data section of the template file for this task.\n"
 
 				db.update_submission(s[0])
 				db.update_result(s[4], s[1], -1, 5, error_log)
