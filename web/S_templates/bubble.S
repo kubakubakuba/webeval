@@ -21,7 +21,7 @@ _start:
 	la   a1, array_size
 	lw   a1, 0(a1) // number of elements in the array
 
-//Insert your code there
+//Insert your code here
 
 //Final infinite loop
 end_loop:

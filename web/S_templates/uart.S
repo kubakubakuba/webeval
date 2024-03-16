@@ -52,7 +52,7 @@ _start:
 	la   a0, input_val
 	lw   a0, 0(a0) // number to print in hexadecimal to serial port
 
-//Insert your code there
+//Insert your code here
 
 //Final infinite loop
 end_loop:
