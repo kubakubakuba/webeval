@@ -70,6 +70,8 @@ class QtRVSim:
 		self.makefile_present = False
 		self.makefile_successfull = True
 		self.makefile_log = ""
+
+		self.error_log = ""
 	
 	def get_result(self):
 		'''Return the result of the evaluation.'''
@@ -208,7 +210,6 @@ class QtRVSim:
 
 	def end_eval(self, testcase):
 		self.log += f"\n\nEvaluation ended on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-		print(self.results)
 		score = self.results[testcase][1] if self.results[testcase][0] == 0 else -1
 		self.log += f"Result: {score}\n"
 		self.clear_files()
@@ -361,6 +362,11 @@ class QtRVSim:
 		try:
 			process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			stdout, stderr = process.communicate(timeout=self.timeout_time)
+			return_code = process.returncode
+
+			if return_code != 0:
+				self.error_log = stdout.decode('utf-8') + stderr.decode('utf-8')
+				self.result = 6 #set error flag as a response to the error thrown by qtrvsim_cli
 
 		except subprocess.TimeoutExpired:
 			process.kill()
@@ -372,8 +378,9 @@ class QtRVSim:
 		stderr_text = f'Killed after {self.timeout_time} seconds.' if killed else stderr.decode('utf-8')
 
 		if self.verbose:
-			print(stdout_text)
+			print(f"stdout: {stdout_text}")
 			print(stderr_text)
+			print(f"error: {self.error_log}")
 
 		was_accepted = 0 #TODO: check if the output is correct
 
@@ -428,4 +435,4 @@ class QtRVSim:
 		self.uart_arg = ""
 
 		if self.verbose:
-			print(self.get_log())
+			print(f"log: {self.get_log()}")

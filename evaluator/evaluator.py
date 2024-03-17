@@ -254,8 +254,36 @@ def evaluate_submissions(num_submissions = 10):
 		except Exception as e:
 			#if exception is of type file FileNotFoundError, and the message has a file ending in .out
 
-			if type(e) == FileNotFoundError and e.filename.endswith(".out"):
-				#get the filename
+			if sim.get_result() == 6: #qtrvsim.py error code for integrated assembly error
+				print(f"Error in integrated assembly")
+				error_log = f"An error occurred during evaluation:\n"
+				error_log += f"Error in integrated assembly.\n"
+				error_log += f"{sim.error_log}\n"
+				#/tmp/qtrvsim_web_eval/_job_19596/submission.S:17:error:unknown instruction
+
+				#parsing the error line number
+				error_line_num = re.match(r'.*:(\d+):.*', sim.error_log)
+				error_line_num = error_line_num.group(1) if error_line_num else "?"
+
+				error_lines = []
+				if os.path.exists(filepath):
+					with open(filepath, 'r') as f:
+						lines = f.readlines()
+						error_line_num = int(error_line_num)
+						error_lines = lines[max(0, error_line_num-2):min(len(lines), error_line_num+1)]
+
+				error_log += f"On line {error_line_num} in your code:\n"
+				error_log += error_lines[0] if len(error_lines) > 0 else "\n"
+				error_log += "here -->" + error_lines[1] if len(error_lines) > 1 else "\n"
+				error_log += error_lines[2] if len(error_lines) > 2 else "\n"
+
+				error_log += f"\nPlease check your code and try again.\n"
+
+				db.update_submission(s[0])
+				db.update_result(s[4], s[1], -1, 6, error_log)
+
+			elif type(e) == FileNotFoundError and e.filename.endswith(".out"):
+				#TODO: this may now be obsolete, complete more checks if this is really necessary
 				filename = os.path.basename(e.filename)
 
 				print(f"Error: {e}")
