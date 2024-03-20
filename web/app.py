@@ -466,7 +466,7 @@ def view_latest_for_user(task_id, user_id, is_latest):
 		result, result_file, score, time = submission
 
 	if is_latest == 2 and curr_is_admin: #allow this feature only in admin view
-		submission_code = result_file
+		code = result_file
 
 	return render_template('view.html', submission_code=code, task_id=task_id, user_id=user_id, is_latest=is_latest, sessions=session, best_or_latest=best_or_latest, task_name=task_name)
 
