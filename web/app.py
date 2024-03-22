@@ -379,6 +379,12 @@ def task(task_id):
 	if 'c_solution' in task_data['task']:
 		if task_data['task']['c_solution']:
 			task_arguments = task_data['arguments']['run'] + " submission"
+
+	makefile = task_data.get('make', None)
+	makefile = None if makefile is None else makefile.get('Makefile', None)
+	files = task_data.get('files', None)
+
+
 	#parse task description as markdown
 	task_description = markdown(task_description)
 	task_scoring = task_data['score']['description']
@@ -442,7 +448,9 @@ def task(task_id):
 		issue_url = re.findall("https:\/\/gitlab\.fel\.cvut\.cz\/.+", result_file, flags = re.MULTILINE)
 		issue_url = issue_url[0] if issue_url else None
 
-	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data, scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name, latest_score=latest_score, is_admin=is_admin, issue_url=issue_url)
+	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data,
+						scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name,
+						latest_score=latest_score, is_admin=is_admin, issue_url=issue_url, makefile=makefile, files=files)
 
 @app.route('/view/<int:task_id>/<int:user_id>/<int:is_latest>')
 def view_latest_for_user(task_id, user_id, is_latest):
@@ -667,8 +675,6 @@ def scoreboard():
 			user_ids[result[0]] = result[2]
 
 	total_score = user_total_score(results)
-
-	print(user_ids)
 
 	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids)
 

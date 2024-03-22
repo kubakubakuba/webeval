@@ -54,8 +54,7 @@ description = "Runtime of the program in cycles."
 testcase = "scoring testcase"
 
 [make]
-Makefile="""
-ARCH=riscv64-unknown-elf
+Makefile="""ARCH=riscv64-unknown-elf
 
 SOURCES = submission.S
 TARGET_EXE = submission

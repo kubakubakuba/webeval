@@ -32,6 +32,28 @@
 			<!-- Preformatted markdown for task description -->
 			{{ task.description | safe}}
 
+			{% if makefile %}
+				<details>
+					<summary>Makefile (click)</summary>
+					<pre><code>
+						{{ makefile }}
+					</code></pre>
+				</details>
+			{% endif %}
+
+			{% if files %}
+				<h6>Additional files present at compile time:</h6>
+			
+				{% for file in files %}
+					<details>
+						<summary>{{ file["name"] }} (click)</summary>
+						<pre><code>
+							{{ file["code"] }}
+						</code></pre>
+					</details>
+				{% endfor %}
+			{% endif %}
+
 			<!-- Loop for task inputs -->
 			{% for i in task.inputs %}
 				<h6>Input: {{ i.description }}</h6>

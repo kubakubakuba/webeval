@@ -60,8 +60,7 @@ description = "Runtime of the program in cycles."
 testcase = "scoring testcase"
 
 [make]
-Makefile="""
-ARCH=riscv64-unknown-elf
+Makefile="""ARCH=riscv64-unknown-elf
 #ARCH=riscv64-linux-gnu
 
 SOURCES = submission.c crt0local.S
@@ -144,8 +143,7 @@ clean:
 
 [[files]]
 name = "crt0local.S"
-code = """
-/* minimal replacement of crt0.o which is else provided by C library */
+code = """/* minimal replacement of crt0.o which is else provided by C library */
 
 .globl main
 .globl _start

@@ -358,15 +358,17 @@ class QtRVSim:
 			print("Running command: ", ' '.join(command), "\n\n\n")
 		
 		killed = False
+		assembly_error = False
 
 		try:
 			process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			stdout, stderr = process.communicate(timeout=self.timeout_time)
 			return_code = process.returncode
 
-			if return_code != 0:
+			if return_code != 0 or "error" in stderr.decode('utf-8') or "error" in stdout.decode('utf-8'):
 				self.error_log = stdout.decode('utf-8') + stderr.decode('utf-8')
-				self.result = 6 #set error flag as a response to the error thrown by qtrvsim_cli
+				self.result = 5 #set error flag as a response to the error thrown by qtrvsim_cli
+				assembly_error = True
 
 		except subprocess.TimeoutExpired:
 			process.kill()
@@ -418,9 +420,10 @@ class QtRVSim:
 						self.log += f"\nUART does not match, \nexpected:\n{self.reference_uart}\ngot:\n{self.uart}\n"
 						self.log += f"\nDifference:\n{differece}\n"
 
-
 		if killed:
 			self.result = 2
+		elif assembly_error:
+			self.result = 5
 		else:
 			self.result = was_accepted
 

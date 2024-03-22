@@ -132,6 +132,7 @@ def evaluate_submissions(num_submissions = 10):
 				score = 0
 				tests_passed = 0
 				timed_out = False
+				assembly_error = False
 				makefile_present = False
 
 				if task_data.get("files", None) != None:
@@ -189,11 +190,16 @@ def evaluate_submissions(num_submissions = 10):
 					sim.run(task_data["testcases"][i]["name"])
 					sim.log_test_result(task_data["testcases"][i]["name"])
 
+
 					if sim.get_result() == 0:
 						tests_passed += 1
 
 					if sim.get_result() == 2: #do not evaluate further testcases if one timed out
 						timed_out = True
+						break
+
+					if sim.get_result() == 5: #qtrvsim.py error code for integrated assembly error
+						assembly_error = True
 						break
 
 					sim.reset()
@@ -207,6 +213,9 @@ def evaluate_submissions(num_submissions = 10):
 				if timed_out:
 					score = -1
 					was_accepted = 2
+
+				if assembly_error:
+					raise Exception("Error in integrated assembly")
 
 				if not cache_exit and not make_exit:
 					sim.end_eval(task_data["score"]["testcase"])
@@ -252,52 +261,45 @@ def evaluate_submissions(num_submissions = 10):
 			time.sleep(1)
 
 		except Exception as e:
-			#if exception is of type file FileNotFoundError, and the message has a file ending in .out
-
-			if sim.get_result() == 6: #qtrvsim.py error code for integrated assembly error
-				print(f"Error in integrated assembly")
+			if sim.get_result() == 5: #qtrvsim.py error code for integrated assembly error
 				error_log = f"An error occurred during evaluation:\n"
 				error_log += f"Error in integrated assembly.\n"
-				error_log += f"{sim.error_log}\n"
-				#/tmp/qtrvsim_web_eval/_job_19596/submission.S:17:error:unknown instruction
+				
+				#TODO: enable this line to show the stdout to the user
+				#error_log += f"{sim.error_log}\n"
+				
+				#/_job_19596/submission.S:17:error:unknown instruction
 
-				#parsing the error line number
-				error_line_num = re.match(r'.*:(\d+):.*', sim.error_log)
-				error_line_num = error_line_num.group(1) if error_line_num else "?"
+				#parsing the error line numbers
+				#error_line_num = re.match(r'.*:(\d+):.*', sim.error_log)
+				#error_line_num = error_line_num.group(1) if error_line_num else "?"
+
+				error_line_nums = re.findall(r'.*:(\d+):error:.*', sim.error_log)
+				error_line_nums = [int(num) for num in error_line_nums]
 
 				error_lines = []
 				if os.path.exists(filepath):
 					with open(filepath, 'r') as f:
 						lines = f.readlines()
-						error_line_num = int(error_line_num)
-						error_lines = lines[max(0, error_line_num-2):min(len(lines), error_line_num+1)]
+						for num in error_line_nums:
+							error_lines.append(lines[num-1].strip())
 
-				error_log += f"On line {error_line_num} in your code:\n"
-				error_log += error_lines[0] if len(error_lines) > 0 else "\n"
-				error_log += "here -->" + error_lines[1] if len(error_lines) > 1 else "\n"
-				error_log += error_lines[2] if len(error_lines) > 2 else "\n"
+				for i, err in enumerate(error_lines):
+					error_log += f"On line {error_line_nums[i]} in your code:\n"
+					error_log += "here -->" + err + "\n"
+
+				#error_log += f"On line {error_line_num} in your code:\n"
+				#error_log += error_lines[0] if len(error_lines) > 0 else "\n"
+				#error_log += "here -->" + error_lines[1] if len(error_lines) > 1 else "\n"
+				#error_log += error_lines[2] if len(error_lines) > 2 else "\n"
 
 				error_log += f"\nPlease check your code and try again.\n"
-
-				db.update_submission(s[0])
-				db.update_result(s[4], s[1], -1, 6, error_log)
-
-			elif type(e) == FileNotFoundError and e.filename.endswith(".out"):
-				#TODO: this may now be obsolete, complete more checks if this is really necessary
-				filename = os.path.basename(e.filename)
-
-				print(f"Error: {e}")
-				error_log = f"An error occurred during evaluation:\n"
-				error_log += f"File {filename} not found.\n"
-				error_log += f"You probably have an error in your assembly code.\n"
-				
-				#error_log += f"Did you include all necessary memory ranges in your submission?\nThere should be\n{filename.replace('.out', '')}:\n\nin the .data section of your submission.\n"
-				#error_log += f"There may be other memory ranges missing, other than {filename}.\nPlease check the .data section of the template file for this task.\n"
+				error_log += f"\nPlease note, that %lo and %hi are not yet supported in the integrated assembly, and will thus throw an assembly error when no Makefile for compilation is present at the task.\n"
 
 				db.update_submission(s[0])
 				db.update_result(s[4], s[1], -1, 5, error_log)
+
 			else:
-				
 				print(f"Error: {e}")
 				error_log = f"An error occurred during evaluation:\n"
 				error_log += f"{type(e).__name__}\n"
