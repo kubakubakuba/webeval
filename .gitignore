@@ -14,3 +14,4 @@ test
 web/*.disable
 reference
 **/.venv/
+**/organizations.json

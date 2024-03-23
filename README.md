@@ -268,3 +268,4 @@ Slides for Installfest 2024 with Flask examples can be found on [GitHub](https:/
 - [CodeMirror](https://codemirror.net/)
 - [Bootstrap](https://getbootstrap.com/)
 - [QtRVSim](https://github.com/cvut/qtrvsim)
+- [University Domains and Names Data List](https://github.com/Hipo/university-domains-list)

@@ -6,7 +6,13 @@ import os
 
 class QtRVSim:
 	def __init__(self, args="", submission_file="", working_dir=""):
-		'''Initialize the evaluator with the submission file, arguments, and registers and memory to compare.'''
+		'''Create the QtRvSim evaluator object.
+
+		Args:
+			args (str): The arguments to pass to qtrvsim.
+			submission_file (str): The submission file to evaluate.
+			working_dir (str): The working directory to store the files.
+		'''
 
 		self.log = f"Evaluation started on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
 		self.log += f"Arguments: {args}\n"
@@ -73,28 +79,36 @@ class QtRVSim:
 
 		self.error_log = ""
 	
-	def get_result(self):
+	def get_result(self) -> int:
 		'''Return the result of the evaluation.'''
 		return self.result
 	
-	def get_cycles(self):
+	def get_cycles(self) -> int:
 		'''Return the cycles of the evaluation.'''
 		return self.cycles
 	
-	def get_scores(self):
+	def get_scores(self) -> dict:
 		'''Return the scores of the evaluation.'''
 		return self.scores
 	
-	def get_log(self):
+	def get_log(self) -> str:
 		'''Return the log of the evaluation.'''
 		return self.log
 	
 	def set_args(self, args):
-		'''Set the arguments to pass to qtrvsim.'''
+		'''Set the arguments to pass to qtrvsim.
+		
+		Args:
+			args (str): The arguments to pass to qtrvsim.
+		'''
 		self.args = args
 
 	def set_submission_file(self, submission_file):
-		'''Set the submission file to evaluate.'''
+		'''Set the submission file to evaluate.
+		
+		Args:
+			submission_file (str): The submission file to evaluate.
+		'''
 		self.submission_file = submission_file
 
 	def set_do_compare_registers(self, val=True):
@@ -113,19 +127,29 @@ class QtRVSim:
 		self.do_set_compare_uart = val
 
 	def set_reference_ending_regs(self, reg_dict):
-		'''Pass a dict of values to compare against.'''
+		'''Pass a dict of values to compare against.
+		
+		Args:
+			reg_dict (dict): A dictionary of the form {register_name: value}.'''
 		self.set_do_compare_registers(True) #compare registers
 		self.compare_registes = reg_dict
 
 	def set_reference_ending_uart(self, uart, uart_file):
-		'''Set the reference uart output.'''
+		'''Set the reference uart output.
+		
+		Args:
+			uart (str): The reference uart output.
+			uart_file (str): The file to save the uart output to.'''
 		self.set_do_compare_uart(True) #compare uart
 		self.reference_uart = uart
 		self.uart_file = f"{self.working_dir}/{uart_file}"
 		self.uart_arg += f" --serout {self.uart_file}"
 
 	def set_starting_memory(self, mem):
-		'''Set the starting memory. Pass an array of pairs (address, value).'''
+		'''Set the starting memory. Pass an array of pairs (address, value).
+		
+		Args:
+			mem (dict): A dictionary of the form {address: [values]}.'''
 
 		for address in mem.keys():
 			self.starting_memory_addresses.append(address)
@@ -139,7 +163,10 @@ class QtRVSim:
 			self.mem_arg += f" --load-range {address},{curr_starting_memory_file}"
 
 	def set_reference_ending_memory(self, mem):
-		'''Pass an array of pairs (address, value) to compare against.'''
+		'''Pass an array of pairs (address, value) to compare against.
+		
+		Args:
+			mem (dict): A dictionary of the form {address: [values]}.'''
 		self.set_do_compare_memory(True) #compare memory
 
 		for address in mem.keys():
@@ -153,7 +180,7 @@ class QtRVSim:
 				self.reference_memory[address].append(val)
 
 	def rgx_get_cycles(self, log):
-		'''Get the number of cycles from the stdout of qtrvsim.'''
+		'''Get the number of cycles from the stdout of qtrvsim_cli.'''
 		match = re.search(r"^cycles: (\d+)$", log, re.MULTILINE)
 		if match is not None:
 			self.cycles = int(match.group(1))
@@ -178,13 +205,18 @@ class QtRVSim:
 			self.uart = file.read()
 
 	def set_input_uart(self, uart, uart_file):
-		'''Save the uart file.'''
+		'''Save the uart file.
+		
+		Args:
+			uart (str): The uart input.
+			uart_file (str): The file to save the uart input to.'''
 		self.input_uart = f"{self.working_dir}/{uart_file}"
 		with open(f"{self.input_uart}", 'w') as file:
 			file.write(uart)
 		self.uart_arg += f" --serin {self.input_uart}"
 
 	def string_diff_and_hex(self, original: str, comparison: str):
+		'''Compare two strings and return the differences in hex.'''
 		bytes1 = bytes(original, 'utf-8')
 		bytes2 = bytes(comparison, 'utf-8')
 		log = []
@@ -209,23 +241,32 @@ class QtRVSim:
 				pass
 
 	def end_eval(self, testcase):
+		'''End the evaluation and log the results.
+		
+		Args:
+			testcase (str): The name of the testcase.'''
 		self.log += f"\n\nEvaluation ended on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
 		score = self.results[testcase][1] if self.results[testcase][0] == 0 else -1
 		self.log += f"Result: {score}\n"
 		self.clear_files()
 
 	def set_private(self):
-		'''Set the evaluation to private.'''
+		'''Set the current evaluation to private.'''
 		self.is_private = True
 
 	def create_file(self, file_name, content):
-		'''Create a file in the working directory.'''
+		'''Create a file in the working directory.
+		
+		Args:
+			file_name (str): The name of the file.
+			content (str): The content of the file.'''
 		with open(f"{self.working_dir}/{file_name}", 'w') as file:
 			file.write(content)
 
 		self.custom_files.append(f"{self.working_dir}/{file_name}")
 
 	def reset(self):
+		'''Reset the evaluator.'''
 		self.do_compare_memory = False
 		self.do_compare_registers = False
 		self.is_private = False
@@ -289,12 +330,18 @@ class QtRVSim:
 		self.verbose = val
 
 	def log_test_name(self, test_name):
-		'''Log the name of the test.'''
+		'''Adds the name of the test to the log.
+		
+		Args:
+			test_name (str): The name of the test.'''
 		
 		self.log += f"\nRunning: '{test_name}'\n"
 
 	def log_test_result(self, test_name):
-		'''Log the name of the test.'''
+		'''Adds the result of the test to the log.
+		
+		Args:
+			test_name (str): The name of the test.'''
 		failed = self.result != 0
 
 		if failed:
@@ -303,7 +350,10 @@ class QtRVSim:
 			self.log += f"\n{test_name} - PASSED\n"
 
 	def create_makefile(self, makefile):
-		'''Create a makefile in the working directory.'''
+		'''Create a makefile in the working directory.
+		
+		Args:
+			makefile (str): The makefile to create.'''
 		self.makefile_present = True
 		with open(self.mem_output_files_prefix + "Makefile", 'w') as f:
 			f.write(makefile)
@@ -342,7 +392,11 @@ class QtRVSim:
 			print(stderr.decode('utf-8'))
 
 	def run(self, test_name):
-		'''Run qtrvsim with the current configuration.'''
+		'''Run qtrvsim with the current configuration.
+		
+		Args:
+			test_name (str): The name of the test.'''
+		
 		#run qtrvsim with the given arguments, dump the output into the log string
 		arguments = self.args + self.mem_arg + self.dump_mem_arg + self.uart_arg
 		#print(self.args)

@@ -277,6 +277,8 @@ def evaluate_submissions(num_submissions = 10):
 				error_line_nums = re.findall(r'.*:(\d+):error:.*', sim.error_log)
 				error_line_nums = [int(num) for num in error_line_nums]
 
+				error_types = re.findall(r'.*:\d+:error:(.*)$', sim.error_log)
+
 				error_lines = []
 				if os.path.exists(filepath):
 					with open(filepath, 'r') as f:
@@ -286,7 +288,7 @@ def evaluate_submissions(num_submissions = 10):
 
 				for i, err in enumerate(error_lines):
 					error_log += f"On line {error_line_nums[i]} in your code:\n"
-					error_log += "here -->" + err + "\n"
+					error_log += f"{error_types[0]} here -->" + err + "\n"
 
 				#error_log += f"On line {error_line_num} in your code:\n"
 				#error_log += error_lines[0] if len(error_lines) > 0 else "\n"

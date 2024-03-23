@@ -4,7 +4,7 @@ from markdown import markdown
 from datetime import datetime
 from hashlib import sha512
 from dotenv import load_dotenv
-import secrets, os, toml, random, string, re
+import secrets, os, toml, random, string, re, json
 import db as db
 from util import score_results, user_total_score
 
@@ -677,6 +677,37 @@ def scoreboard():
 	total_score = user_total_score(results)
 
 	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids)
+
+@app.route('/profile/')
+def profile():
+	userid = session['user_id'] if 'user_id' in session else -1
+
+	if userid == -1:
+		return redirect('/login')
+
+	username = db.get_username(userid)
+	username = None if username is None else username[0]
+
+	return render_template('profile.html', sessions=session, username=username)
+
+@app.route('/profile/org/<string:country>/<string:org>')
+def change_org(country, org):
+	userid = session['user_id'] if 'user_id' in session else -1
+
+	if userid == -1:
+		return redirect('/login')
+
+	organizations = None
+
+	with app.open_resource('static/organizations.json') as f:
+		organizations = json.load(f)
+
+	if not any(o['name'] == org and o['country'] == country for o in organizations):
+		return "Invalid country or organization", 400
+
+	#db.change_org(userid, country, org)
+
+	return redirect('/profile')
 
 @app.errorhandler(403)
 def page_forbidden(e):
