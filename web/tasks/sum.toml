@@ -45,7 +45,7 @@ vect_max = [46368]
 name = "reverse"
 
 [[testcases.starting_mem]]
-vect_len = [5]
+vect_len = [6]
 vect_start = [22445, 1214, 123145, 0, 555555, 1]
 
 [[testcases.reference_mem]]
@@ -58,7 +58,7 @@ name = "scoring testcase"
 private = true
 
 [[testcases.starting_mem]]
-vect_len = [50]
+vect_len = [52]
 vect_start = [100, 50, 99, 49, 98, 48, 97, 47, 96, 46, 95, 45, 94, 44, 93, 43, 92, 42, 91, 41, 90, 40, 89, 39, 88, 38, 87, 37, 86, 36, 85, 35, 84, 34, 83, 33, 82, 32, 81, 31, 80, 30, 79, 29, 78, 28, 77, 27, 76, 26, 75, 25]
 
 [[testcases.reference_mem]]
