@@ -4,8 +4,6 @@ The app is written in Flask and is using a PostgreSQL database.
 
 Public version is running [here](https://eval.comparch.edu.cvut.cz).
 
-<details>
-<summary>Roadmap</summary>
 ## Roadmap:
 - [x] Users are able to register
 - [x] Users are able to login
@@ -45,7 +43,6 @@ Public version is running [here](https://eval.comparch.edu.cvut.cz).
 - [X] Add profile settings page
 - [X] Add about page
 - [X] Move the whole evaluation into try - catch, if something goes (for some reason) horribly wrong
-</details>
 
 ## Database structure
 
