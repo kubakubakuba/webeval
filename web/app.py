@@ -393,8 +393,11 @@ def task(task_id):
 
 	latest_score = None
 
+	user = None
+
 	if 'user_id' in session:
 		user_id = session['user_id']
+		user = db.get_user_by_id(user_id)
 		submission = db.get_last_user_submission(task_id, user_id)
 		if submission:
 			submission_found = True
@@ -417,7 +420,12 @@ def task(task_id):
 	}
 
 	# Get the best scores of all users for a specific task
-	best_scores = db.get_best_scores(task_id)
+	#best_scores = db.get_best_scores(task_id)
+	organization = user[9] if user is not None else "___none__"
+	group = user[10] if user is not None else "___none__"
+	curr_user = user[0] if user is not None else -1
+
+	best_scores = db.get_best_scores_for_verified_grouporg(task_id, group, organization, curr_user)
 	#add flag 1 (best) to the third argument of the tuple
 	best_scores = [(score[3], score[1], score[0], 1) for score in best_scores]
 
@@ -448,9 +456,12 @@ def task(task_id):
 		issue_url = re.findall("https:\/\/gitlab\.fel\.cvut\.cz\/.+", result_file, flags = re.MULTILINE)
 		issue_url = issue_url[0] if issue_url else None
 
+	displaynames = db.get_user_displaynames()
+	displaynames = {user[0]: user[1] for user in displaynames}
+	
 	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data,
 						scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name,
-						latest_score=latest_score, is_admin=is_admin, issue_url=issue_url, makefile=makefile, files=files)
+						latest_score=latest_score, is_admin=is_admin, issue_url=issue_url, makefile=makefile, files=files, displaynames=displaynames)
 
 @app.route('/view/<int:task_id>/<int:user_id>/<int:is_latest>')
 def view_latest_for_user(task_id, user_id, is_latest):

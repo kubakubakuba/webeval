@@ -190,6 +190,24 @@ def get_best_scores_for_verified(taskid):
 	db.close()
 	return scores
 
+def get_user_displaynames():
+	"""Get all user display names."""
+	(db, cursor) = connect()
+	cursor.execute('SELECT username, display_name FROM users')
+	displaynames = cursor.fetchall()
+	cursor.close()
+	db.close()
+	return displaynames
+
+def get_best_scores_for_verified_grouporg(taskid, group, organization, curr_user):
+	"""Get the best scores for a task for only verified users, that have visibility set to public (0) or are at the same group or the same organization."""
+	(db, cursor) = connect()
+	cursor.execute('SELECT users.username, results.score_best, results.result_file, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND (users.visibility = 0 OR (users."group" = %s AND users.visibility = 2) OR (users.organization = %s AND users.visibility = 1) OR (users.id = %s)) ORDER BY results.score_last ASC', (taskid, group, organization, curr_user))
+	scores = cursor.fetchall()
+	cursor.close()
+	db.close()
+	return scores
+
 def get_active_tasks():
 	"""Get all active tasks."""
 	(db, cursor) = connect()

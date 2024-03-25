@@ -23,7 +23,6 @@
 	.cm-provided-number-value { color: #DC143C; }
 	.cm-error-value { color: #B22222; }
 
-
 </style>
 <div class="container-fluid">
 	<div class="row">
@@ -160,7 +159,11 @@
 							<li class="list-group-item {% if userid == session['user_id'] and is_best == 1 %}highlight-green{% elif userid == session['user_id'] and is_best == 0 %}highlight-yellow{% endif %}">
 								<div class="row">
 									<div class="col-sm-8">
-										{{ name }}
+										{% if name is not none and name in displaynames %}
+											{{displaynames[name]}} ({{ name }})
+										{% else %}
+											{{ name }}
+										{% endif %}
 									</div>
 									<div class="col-sm-4 border-left">
 										{{ score }}
