@@ -104,6 +104,49 @@ Admin panel
 
 			<hr />
 
+			Reset user organization and country:
+
+			<select id="reset-user-selector" class="form-select" aria-label="Reset user selector">
+				<option value="-">-</option>
+				{% for user in all_users[::-1] %}
+					<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}</option>
+				{% endfor %}
+			</select>
+			<div class="card card-btn" onclick="location.href='/admin/resetorg/' + document.getElementById('reset-user-selector').value;">
+				<div class="card-body text-center">
+					Reset user organization and country
+				</div>
+			</div>
+
+			Set group for user:
+			
+			<div class="row">
+				<div class="col-md-6">
+					<select id="set-group-selector" class="form-select" aria-label="Set group selector">
+						<option value="-">-</option>
+						{% for user in all_users %}
+							<option value="{{ user[0] }}">
+								{% if user[8] is not none %}
+									{{ user[8] }}({{user[1]}}): {{ user[7] }}@{{ user[6] }}
+								{% else %}
+									{{user[1]}}: {{ user[7] }}@{{ user[6] }}
+								{% endif %}
+							</option>
+						{% endfor %}
+
+					</select>
+
+					<input type="text" id="set-group-input" class="form-control" placeholder="Group name" aria-label="Group name">
+				</div>
+
+				<div class="card card-btn col-md-6" onclick="location.href='/admin/setgroup/' + document.getElementById('set-group-selector').value + '/' + document.getElementById('set-group-input').value;">
+					<div class="card-body text-center">
+						Set group for user
+					</div>
+				</div>
+
+			</div>
+
 			<!-- if submit_disabled render red text disabled, else green-->
 			Submissions are currently: {% if submit_disabled %}<span style="color: red;">disabled</span>{% else %}<span style="color: green;">enabled</span>{% endif %}
 

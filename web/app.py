@@ -157,7 +157,7 @@ def reset():
 		if user is None or is_banned:
 			return redirect('/reset')
 
-		user_id, hashed_password, salt, username, verified, email_hashed, token = user
+		user_id, hashed_password, salt, username, verified, email_hashed, token, display_name, country, organization, group, visibility = user
 
 		if sha512((email + salt).encode()).hexdigest() != email_hashed:
 			return redirect('/reset')
@@ -221,7 +221,7 @@ def newpassword():
 		if user is None or is_banned: #if user is banned prohibit the password change
 			return redirect('/newpassword')
 
-		user_id, hashed_password, salt, username, verified, email_hashed, token = user
+		user_id, hashed_password, salt, username, verified, email_hashed, token, display_name, country, organization, group, visibility = user
 
 		new_hashed_password = sha512((password + salt).encode()).hexdigest()
 
@@ -249,7 +249,7 @@ def login():
 		if user is None:
 			return render_template('invalid.html', redirect_url='/login')
 
-		user_id, hashed_password, salt, username, verified, email, token = user
+		user_id, hashed_password, salt, username, verified, email, token, display_name, country, organization, group, visibility = user
 
 		if sha512((password + salt).encode()).hexdigest() == hashed_password:
 			if verified == 0:
@@ -526,6 +526,8 @@ def admin():
 	users = db.get_users()
 	#remove the current user from the list
 
+	all_users = [user for user in users]
+
 	users = [user for user in users if user[0] != userid]
 
 	active_tasks = db.get_active_tasks()
@@ -553,7 +555,7 @@ def admin():
 
 	tasks = db.list_tasks_with_filepath()
 		
-	return render_template('admin.html', sessions=session, users=users, submissions=results, submit_disabled=submit_disabled, tasks=tasks)
+	return render_template('admin.html', sessions=session, users=users, submissions=results, submit_disabled=submit_disabled, tasks=tasks, all_users=all_users)
 
 @app.route('/admin/toggle/submit/')
 def toggle_submit():
@@ -648,6 +650,28 @@ def new_task(path):
 
 	return redirect('/admin')
 
+@app.route('/admin/resetorg/<int:user_id>/')
+def reset_org(user_id):
+	is_admin = check_admin()
+
+	if not is_admin:
+		return render_template('403.html'), 403
+
+	db.reset_org(user_id)
+
+	return redirect('/admin')
+
+@app.route('/admin/setgroup/<int:user_id>/<string:group>/')
+def set_group(user_id, group):
+	is_admin = check_admin()
+
+	if not is_admin:
+		return render_template('403.html'), 403
+
+	db.set_group(user_id, group)
+
+	return redirect('/admin')
+
 @app.route('/scoreboard/')
 def scoreboard():
 	active_tasks = db.get_active_tasks()
@@ -685,10 +709,21 @@ def profile():
 	if userid == -1:
 		return redirect('/login')
 
-	username = db.get_username(userid)
-	username = None if username is None else username[0]
+	user = db.get_user_by_id(userid)
 
-	return render_template('profile.html', sessions=session, username=username)
+	#id, password, salt, username, verified, email, token, display_name, country, organization, group, visibility
+
+	user_dict = {
+		'id': user[0],
+		'username': user[3],
+		'display_name': user[7],
+		'country': user[8],
+		'organization': user[9],
+		'group': user[10],
+		'visibility': user[11]
+	}
+
+	return render_template('profile.html', sessions=session, user=user_dict)
 
 @app.route('/profile/org/<string:country>/<string:org>')
 def change_org(country, org):
@@ -703,11 +738,43 @@ def change_org(country, org):
 		organizations = json.load(f)
 
 	if not any(o['name'] == org and o['country'] == country for o in organizations):
-		return "Invalid country or organization", 400
+		return render_template('400.html'), 400
 
-	#db.change_org(userid, country, org)
+	db.set_org(userid, country, org)
 
 	return redirect('/profile')
+@app.route('/profile/displayname/<string:displayname>')
+def change_displayname(displayname):
+	userid = session['user_id'] if 'user_id' in session else -1
+
+	if userid == -1:
+		return redirect('/login')
+	
+	displayname = displayname[:32]
+	
+	db.change_displayname(userid, displayname)
+
+	return redirect('/profile')
+
+@app.route('/profile/privacy/<int:visibility>')
+def change_privacy(visibility):
+	userid = session['user_id'] if 'user_id' in session else -1
+
+	if userid == -1:
+		return redirect('/login')
+	
+	#check if visibility is in range 0-3
+
+	if visibility < 0 or visibility > 3:
+		return render_template('400.html'), 400
+
+	db.change_privacy(userid, visibility)
+
+	return redirect('/profile')
+
+@app.errorhandler(400)
+def page_bad_request(e):
+	return render_template('400.html'), 400
 
 @app.errorhandler(403)
 def page_forbidden(e):

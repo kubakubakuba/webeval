@@ -57,7 +57,16 @@ def register(username, hashed_password, email, salt, token):
 def get_user(username):
 	"""Get user info"""
 	(db, cursor) = connect()
-	cursor.execute('SELECT id, password, salt, username, verified, email, token FROM users WHERE username = %s', (username,))
+	cursor.execute('SELECT id, password, salt, username, verified, email, token, display_name, country, organization, "group", visibility FROM users WHERE username = %s', (username,))
+	user = cursor.fetchone()
+	cursor.close()
+	db.close()
+	return user
+
+def get_user_by_id(userid):
+	"""Get user info"""
+	(db, cursor) = connect()
+	cursor.execute('SELECT id, password, salt, username, verified, email, token, display_name, country, organization, "group", visibility FROM users WHERE id = %s', (userid,))
 	user = cursor.fetchone()
 	cursor.close()
 	db.close()
@@ -244,7 +253,7 @@ def get_username(userid):
 def get_users():
 	"""Get all users."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT id, username, email, verified, token FROM users')
+	cursor.execute('SELECT id, username, email, verified, token, country, organization, "group", display_name FROM users')
 	users = cursor.fetchall()
 	cursor.close()
 	db.close()
@@ -345,6 +354,46 @@ def create_new_task(path):
 	"""Create a new task."""
 	(db, cursor) = connect()
 	cursor.execute('INSERT INTO tasks (name, path, available) VALUES (%s, %s, true)', (path, path))
+	db.commit()
+	cursor.close()
+	db.close()
+
+def reset_org(user_id):
+	"""Reset the organization and country of a user."""
+	(db, cursor) = connect()
+	cursor.execute('UPDATE users SET organization = NULL, country = NULL WHERE id = %s', (user_id,))
+	db.commit()
+	cursor.close()
+	db.close()
+
+def set_org(user_id, country, org):
+	"""Set the organization and country of a user."""
+	(db, cursor) = connect()
+	cursor.execute('UPDATE users SET organization = %s, country = %s WHERE id = %s', (org, country, user_id))
+	db.commit()
+	cursor.close()
+	db.close()
+
+def change_displayname(user_id, displayname):
+	"""Change the display name of a user."""
+	(db, cursor) = connect()
+	cursor.execute('UPDATE users SET display_name = %s WHERE id = %s', (displayname, user_id))
+	db.commit()
+	cursor.close()
+	db.close()
+
+def set_group(user_id, group):
+	"""Change the group of a user."""
+	(db, cursor) = connect()
+	cursor.execute('UPDATE users SET "group" = %s WHERE id = %s', (group, user_id))
+	db.commit()
+	cursor.close()
+	db.close()
+
+def change_privacy(user_id, privacy):
+	"""Change the privacy of a user."""
+	(db, cursor) = connect()
+	cursor.execute('UPDATE users SET visibility = %s WHERE id = %s', (privacy, user_id))
 	db.commit()
 	cursor.close()
 	db.close()

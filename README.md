@@ -58,8 +58,15 @@ Public version is running [here](https://eval.comparch.edu.cvut.cz).
 | verification_code  | varchar | 128    | None           |
 | user_verified      | tinyint | 1      | 0              |
 | admin              | boolean | 1      | false          |
+| display_name	     | varchar | 64     | None           |
+| country            | varchar | 128    | None           |
+| organization       | varchar | 256    | None           |
+| group			     | varchar | 128    | None           |
+| visibility         | int     | 32     | 0              |
 
 Email is a hash of the email adress, so it allows users to send a password to their email adress.
+
+Visibility is either 0 (private) or 1 (visible to the same group and organization members) or 2 (visible to the whole organization) or 3 (visible to everyone).
 
 ### Submissions table
 
