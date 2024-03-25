@@ -12,7 +12,7 @@
 _start:
 
 	la   a0, vect_start
-	la   a1, vect_size
+	la   a1, vect_len
 	lw   a1, 0(a1) // number of elements in the array
 
 //Insert your code here
