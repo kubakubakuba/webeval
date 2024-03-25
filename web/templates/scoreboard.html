@@ -57,7 +57,7 @@ Scoreboard
 						{% for submission in submissions %}
 							<tr>
 								<td {% if submission[2] == session['user_id'] %} style="background: rgba(100, 203, 153, 0.6);" {% endif %}>
-									{% if submission[0] is not none and submission[0] in displaynames %}
+									{% if submission[0] is not none and submission[0] in displaynames and displaynames[submission[0]] is not none %}
 										{{displaynames[submission[0]]}}({{ submission[0] }})
 									{% else %}
 										{{ submission[0] }}
@@ -86,7 +86,7 @@ Scoreboard
 					{% for username, points in total_score %}
 						<tr>
 							<td {% if user_ids[username] == session['user_id'] %} style="background: rgba(100, 203, 153, 0.6);" {% endif %}>
-								{% if username is not none and username in displaynames %}
+								{% if username is not none and username in displaynames and displaynames[username] is not none %}
 									{{displaynames[username]}}({{ username }})
 								{% else %}
 									{{ username }}

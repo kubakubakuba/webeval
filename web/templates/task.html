@@ -159,7 +159,7 @@
 							<li class="list-group-item {% if userid == session['user_id'] and is_best == 1 %}highlight-green{% elif userid == session['user_id'] and is_best == 0 %}highlight-yellow{% endif %}">
 								<div class="row">
 									<div class="col-sm-8">
-										{% if name is not none and name in displaynames %}
+										{% if name is not none and name in displaynames and displaynames[name] is not none %}
 											{{displaynames[name]}} ({{ name }})
 										{% else %}
 											{{ name }}
