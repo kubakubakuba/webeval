@@ -9,11 +9,40 @@ Scoreboard
 		.card-btn{
 			margin-bottom: 15px;
 		}
+
+		a{
+			text-decoration: none;
+		}
 	</style>
+
+	{% if user is not none %}
+
+		{% if user.organization is not none %}
+			<a href="/scoreboard/grouporg/1/{{ user.organization }}">
+				<div class="alert alert-info" role="alert">
+					<h4>Scoreboard of your organization.</h4>
+				</div>
+			</a>
+		{% endif %}
+
+		{% if user.group is not none %}
+			<a href="/scoreboard/grouporg/0/{{ user.group }}">
+				<div class="alert alert-info" role="alert">
+					<h4>Scoreboard of your study group.</h4>
+				</div>
+			</a>
+		{% endif %}
+
+	{% endif %}
 
 	<div class="row justify-content-center">
 		<div class="col-md-8 text-center">
-			<h2>Scoreboard</h2>
+			{% if grouporg is not none %}
+				<h2>Scoreboard of {{ grouporg }}</h2>
+			{% else %}
+				<h2>Scoreboard</h2>
+			{% endif %}
+			
 			{% for task, submissions in submissions.items() %}
 				<h3>{{ task }}</h3>
 				<table class="table table-striped">

@@ -681,7 +681,7 @@ def scoreboard():
 	for task in active_tasks:
 		task_id, task_name = task
 
-		results[task_name] = db.get_best_only_scores(task_id)
+		results[task_name] = db.get_best_only_scores_for_public(task_id)
 	
 	# for testing: results["Simple addition"] = [('test0', 10, 1), ('test1', 10, 2), ('test2', 11, 3), ('test3', 12, 4), ('test4', 12, 5), ('test5', 12, 6), ('test6', 12, 7), ('test7', 12, 8), ('test8', 12, 9), ('test9', 20, 10)]
 
@@ -700,7 +700,71 @@ def scoreboard():
 
 	total_score = user_total_score(results)
 
-	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids)
+	user_dict = None
+	if 'user_id' in session:
+		user_id = session['user_id']
+		user = db.get_user_by_id(user_id)
+
+		user_dict = {
+			'id': user[0],
+			'username': user[3],
+			'display_name': user[7],
+			'country': user[8],
+			'organization': user[9],
+			'group': user[10],
+			'visibility': user[11]
+		}
+
+	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids, user=user_dict, grouporg=None)
+
+@app.route('/scoreboard/grouporg/<int:type>/<string:grouporg>/')
+def scoreboard_group(type, grouporg):
+	active_tasks = db.get_active_tasks()
+
+	is_admin = check_admin()
+
+	results = {}
+
+	user_id = session['user_id'] if 'user_id' in session else -1
+
+	user = db.get_user_by_id(user_id)
+	user_group = user[10] if user else None
+	user_org = user[9] if user else None
+
+	results = {}
+	group_text = None
+
+	if type == 0: #group
+		if user_group != grouporg or not is_admin:
+			return render_template('403.html'), 403
+		
+		group_text = "study group " + grouporg
+		for task in active_tasks:
+			task_id, task_name = task
+			results[task_name] = db.get_best_only_scores_for_group(task_id, grouporg)
+
+	else: #organization
+		if user_org != grouporg or not is_admin:
+			return render_template('403.html'), 403
+		
+		group_text = grouporg
+		
+		for task in active_tasks:
+			task_id, task_name = task
+			results[task_name] = db.get_best_only_scores_for_org(task_id, grouporg)
+
+	results = score_results(results)
+
+	user_ids = {}
+	for task in results:
+		for result in results[task]:
+			if result[0] not in user_ids:
+				user_ids[result[0]] = 0
+			user_ids[result[0]] = result[2]
+
+	total_score = user_total_score(results)
+
+	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids, user=None, grouporg=group_text)
 
 @app.route('/profile/')
 def profile():
