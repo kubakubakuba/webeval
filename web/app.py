@@ -458,7 +458,7 @@ def task(task_id):
 
 	displaynames = db.get_user_displaynames()
 	displaynames = {user[0]: user[1] for user in displaynames}
-	
+
 	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data,
 						scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name,
 						latest_score=latest_score, is_admin=is_admin, issue_url=issue_url, makefile=makefile, files=files, displaynames=displaynames)
@@ -726,7 +726,10 @@ def scoreboard():
 			'visibility': user[11]
 		}
 
-	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids, user=user_dict, grouporg=None)
+	displaynames = db.get_user_displaynames()
+	displaynames = {user[0]: user[1] for user in displaynames}
+
+	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids, user=user_dict, grouporg=None, displaynames=displaynames)
 
 @app.route('/scoreboard/grouporg/<int:type>/<string:grouporg>/')
 def scoreboard_group(type, grouporg):
@@ -741,9 +744,6 @@ def scoreboard_group(type, grouporg):
 	user = db.get_user_by_id(user_id)
 	user_group = user[10] if user else None
 	user_org = user[9] if user else None
-
-	print(f"user group: {user_group}, userorg: {user_org}")
-	print(f"grouporg: {grouporg}")
 
 	results = {}
 	group_text = None
@@ -781,7 +781,10 @@ def scoreboard_group(type, grouporg):
 
 	total_score = user_total_score(results)
 
-	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids, user=None, grouporg=group_text)
+	displaynames = db.get_user_displaynames()
+	displaynames = {user[0]: user[1] for user in displaynames}
+
+	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids, user=None, grouporg=group_text, displaynames=displaynames)
 
 @app.route('/profile/')
 def profile():
