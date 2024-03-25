@@ -731,11 +731,14 @@ def scoreboard_group(type, grouporg):
 	user_group = user[10] if user else None
 	user_org = user[9] if user else None
 
+	print(f"user group: {user_group}, userorg: {user_org}")
+	print(f"grouporg: {grouporg}")
+
 	results = {}
 	group_text = None
 
 	if type == 0: #group
-		if user_group != grouporg or not is_admin:
+		if user_group != grouporg and not is_admin:
 			return render_template('403.html'), 403
 		
 		group_text = "study group " + grouporg
@@ -743,8 +746,8 @@ def scoreboard_group(type, grouporg):
 			task_id, task_name = task
 			results[task_name] = db.get_best_only_scores_for_group(task_id, grouporg)
 
-	else: #organization
-		if user_org != grouporg or not is_admin:
+	elif type == 1: #organization
+		if user_org != grouporg and not is_admin:
 			return render_template('403.html'), 403
 		
 		group_text = grouporg
@@ -752,6 +755,9 @@ def scoreboard_group(type, grouporg):
 		for task in active_tasks:
 			task_id, task_name = task
 			results[task_name] = db.get_best_only_scores_for_org(task_id, grouporg)
+
+	else:
+		return render_template('400.html'), 400
 
 	results = score_results(results)
 

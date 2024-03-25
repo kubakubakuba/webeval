@@ -220,7 +220,7 @@ def get_best_only_scores_for_public(taskid):
 def get_best_only_scores_for_group(taskid, group):
 	"""Get the best scores for a task for a group."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND users."group" = %s AND users.visibility = 2 AND results.score_best > 0 ORDER BY results.score_last ASC', (taskid, group))
+	cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND users."group" = %s AND users.visibility IN (2, 0) AND results.score_best > 0 ORDER BY results.score_last ASC', (taskid, group))
 	scores = cursor.fetchall()
 	cursor.close()
 	db.close()
@@ -229,7 +229,7 @@ def get_best_only_scores_for_group(taskid, group):
 def get_best_only_scores_for_org(taskid, org):
 	"""Get the best scores for a task for an organization."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND users.organization = %s AND users.visibility = 1 AND results.score_best > 0 ORDER BY results.score_last ASC', (taskid, org))
+	cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND users.organization = %s AND users.visibility IN (1, 0) AND results.score_best > 0 ORDER BY results.score_last ASC', (taskid, org))
 	scores = cursor.fetchall()
 	cursor.close()
 	db.close()
