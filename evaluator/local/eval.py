@@ -264,7 +264,7 @@ class Evaluator():
 				error_log += f"Please create an issue with this error on GitLab: https://gitlab.fel.cvut.cz/b35apo/qtrvsim-eval-web/-/issues/new?issue[title]=Error%20in%20evaluator%20uid%20{s[4]}%20tid{s[1]}&issue[description]={type(e).__name__}%0A{urllib.parse.quote(str(traceback.format_exc()), safe='')}%0A{urllib.parse.quote(str(e), safe='')}"
 
 				self.log = error_log
-				self.result = 6
+				self.result = 99
 				self.score = -1
 
 	def save_log(self, log_file):
