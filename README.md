@@ -24,7 +24,6 @@ Public version is running [here](https://eval.comparch.edu.cvut.cz).
 - [x] Basic app functionality Done?
 - [x] Users can view their last submissions (before it gets overwritten by new one of the same task)
 - [x] User will see their best score and the their latest submission score in the leaderboard
-- [ ] Move qtrsvim into docker container, for security reasons / into an isolate utility
 - [X] Delete old, not needed submissions (not the latest and the best for each task and user, other can be deleted)
 - [X] Split submission table into pure submissions and results
 - [X] Add the starting template file to each task (instead of one template for all tasks)
@@ -41,7 +40,7 @@ Public version is running [here](https://eval.comparch.edu.cvut.cz).
 - [ ] Correctly implement c syntax highlighting (fix submission.S appearing instead of submission.c)
 - [X] Implement submission viewer
 - [X] Implement admin view for the submissions (permission override)
-- [ ] Add profile settings page
+- [X] Add profile settings page
 - [X] Add about page
 - [X] Move the whole evaluation into try - catch, if something goes (for some reason) horribly wrong
 
