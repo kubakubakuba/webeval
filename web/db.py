@@ -452,7 +452,7 @@ def reset_results_user(user_id):
 	#          4 |          4 |      0 |      1
 	#set the result to 0 for every task
 	(db, cursor) = connect()
-	cursor.execute('UPDATE results SET result = 100, WHERE userid = %s', (user_id,))
+	cursor.execute('UPDATE results SET result = 100 WHERE userid = %s', (user_id,))
 	db.commit()
 	cursor.close()
 	db.close()
