@@ -556,8 +556,9 @@ def admin():
 	results = score_results(results)
 
 	#order users by id
-
 	users = sorted(users, key=lambda x: x[0])
+
+	all_users = sorted(all_users, key=lambda x: x[0])
 
 	#check if submissions are disabled
 	submit_disabled = False
