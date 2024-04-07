@@ -26,7 +26,8 @@ mail = Mail(app)
 
 def check_admin() -> bool:
 	if 'logged_in' not in session:
-		return redirect(url_for('login'))
+		#return redirect(url_for('login'))
+		return False
 
 	userid = session['user_id'] if 'user_id' in session else -1
 	is_admin = db.is_admin_by_id(userid)
