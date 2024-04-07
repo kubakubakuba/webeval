@@ -708,10 +708,7 @@ def scoreboard():
 		task_id, task_name = task
 
 		results[task_name] = db.get_best_only_scores_for_public(task_id)
-
-	#filter user "reference"
- 
-	#results = [result for result in results if result[0] not in USER_FILTER]
+		results[task_name] = [result for result in results[task_name] if result[0] not in USER_FILTER]
 
 	results = score_results(results)
 
@@ -771,6 +768,7 @@ def scoreboard_group(type, grouporg):
 		for task in active_tasks:
 			task_id, task_name = task
 			results[task_name] = db.get_best_only_scores_for_group(task_id, grouporg)
+			results[task_name] = [result for result in results[task_name] if result[0] not in USER_FILTER]
 
 	elif type == 1: #organization
 		if user_org != grouporg and not is_admin:
@@ -781,6 +779,7 @@ def scoreboard_group(type, grouporg):
 		for task in active_tasks:
 			task_id, task_name = task
 			results[task_name] = db.get_best_only_scores_for_org(task_id, grouporg)
+			results[task_name] = [result for result in results[task_name] if result[0] not in USER_FILTER]
 
 	else:
 		return render_template('400.html'), 400
