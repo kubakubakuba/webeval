@@ -229,7 +229,7 @@ def get_best_only_scores(taskid):
 def get_best_only_scores_for_public(taskid):
 	"""Get the best scores for a task for public users."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND users.visibility = 0 AND results.score_best > 0 ORDER BY results.score_last ASC', (taskid,))
+	cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND users.visibility = 0 AND results.score_best > 0 ORDER BY results.score_best ASC', (taskid,))
 	scores = cursor.fetchall()
 	cursor.close()
 	db.close()
