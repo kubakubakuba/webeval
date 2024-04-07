@@ -690,31 +690,12 @@ def scoreboard():
 
 	results = {}
 
-	result_original = {}
-
 	for task in active_tasks:
 		task_id, task_name = task
 
 		results[task_name] = db.get_best_only_scores_for_public(task_id)
-		result_original[task_name] = db.get_best_only_scores_for_public(task_id)
-
-	# {&#39;Simple addition&#39;: [(&#39;nkin&#39;, 4, 11), (&#39;mistrjirka&#39;, 4, 16), (&#39;mlenc&#39;, 4, 17), (&#39;_&#39;, 4, 15), (&#39;maxamart&#39;, 6, 14), (&#39;reference&#39;, 49, 6)], &#39;Read and write into memory&#39;: [(&#39;nkin&#39;, 5, 11), (&#39;mistrjirka&#39;, 5, 16), (&#39;_&#39;, 5, 15), (&#39;maxamart&#39;, 8, 14), (&#39;reference&#39;, 32, 6)], &#39;Bubble sort&#39;: [(&#39;reference&#39;, 8483, 6), (&#39;svehlda2&#39;, 1233, 18), (&#39;julgel-3&#39;, 1467, 26), (&#39;Aspirin_LTU_2023&#39;, 1474, 32), (&#39;_&#39;, 1483, 15), (&#39;nkin&#39;, 1557, 11), (&#39;guswal-1&#39;, 1661, 30), (&#39;joeott-1&#39;, 1781, 24), (&#39;aapkii-3&#39;, 1828, 29), (&#39;emisee-3&#39;, 1956, 21), (&#39;melsth-0&#39;, 1971, 23), (&#39;edvcal-1&#39;, 2129, 27), (&#39;jacras-1&#39;, 2099, 25), (&#39;Filiver&#39;, 2219, 19), (&#39;mlenc&#39;, 2910, 17)], &#39;Vector sum&#39;: [(&#39;jpelc&#39;, 362, 5)], &#39;Cache optimization&#39;: [(&#39;svehlda2&#39;, 664, 18), (&#39;Filiver&#39;, 675, 19), (&#39;reference&#39;, 4535, 6)], &#39;Data hazard prevention&#39;: [(&#39;svehlda2&#39;, 90, 18), (&#39;reference&#39;, 1567, 6)], &#39;Print hexadecimal to serial port&#39;: [(&#39;svehlda2&#39;, 44, 18), (&#39;nkin&#39;, 158, 11), (&#39;reference&#39;, 675, 6)], &#39;Simple calculator&#39;: [(&#39;reference&#39;, 4453, 6)]}
-	results = {
-		"Simple addition" : [("nkin", 4, 11), ("mistrjirka", 4, 16), ("mlenc", 4, 17), ("_", 4, 15), ("maxamart", 6, 14), ("reference", 49, 6)],
-		"Read and write into memory" : [("nkin", 5, 11), ("mistrjirka", 5, 16), ("_", 5, 15), ("maxamart", 8, 14), ("reference", 32, 6)],
-		"Bubble sort" : [("reference", 8483, 6), ("svehlda2", 1233, 18), ("julgel-3", 1467, 26), ("Aspirin_LTU_2023", 1474, 32), ("_", 1483, 15), ("nkin", 1557, 11), ("guswal-1", 1661, 30), ("joeott-1", 1781, 24), ("aapkii-3", 1828, 29), ("emisee-3", 1956, 21), ("melsth-0", 1971, 23), ("edvcal-1", 2129, 27), ("jacras-1", 2099, 25), ("Filiver", 2219, 19), ("mlenc", 2910, 17)],
-		"Vector sum" : [("jpelc", 362, 5)],
-		"Cache optimization" : [("svehlda2", 664, 18), ("Filiver", 675, 19), ("reference", 4535, 6)],
-		"Data hazard prevention" : [("svehlda2", 90, 18), ("reference", 1567, 6)],
-		"Print hexadecimal to serial port" : [("svehlda2", 44, 18), ("nkin", 158, 11), ("reference", 675, 6)],
-		"Simple calculator" : [("reference", 4453, 6)]	
-	}
-
-	print(results["Bubble sort"])
 
 	results = score_results(results)
-
-	print(results["Bubble sort"])
 
 	#get user ids from results
 
@@ -744,11 +725,10 @@ def scoreboard():
 			'visibility': user[11]
 		}
 
-
 	displaynames = db.get_user_displaynames()
 	displaynames = {user[0]: user[1] for user in displaynames}
 
-	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids, user=user_dict, grouporg=None, displaynames=displaynames, result_original=result_original)
+	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids, user=user_dict, grouporg=None, displaynames=displaynames)
 
 @app.route('/scoreboard/grouporg/<int:type>/<string:grouporg>/')
 def scoreboard_group(type, grouporg):
