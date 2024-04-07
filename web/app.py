@@ -697,6 +697,7 @@ def scoreboard():
 	
 	# for testing: results["Simple addition"] = [('test0', 10, 1), ('test1', 10, 2), ('test2', 11, 3), ('test3', 12, 4), ('test4', 12, 5), ('test5', 12, 6), ('test6', 12, 7), ('test7', 12, 8), ('test8', 12, 9), ('test9', 20, 10)]
 
+	result_original = results
 	results = score_results(results)
 
 	#get user ids from results
@@ -730,7 +731,7 @@ def scoreboard():
 	displaynames = db.get_user_displaynames()
 	displaynames = {user[0]: user[1] for user in displaynames}
 
-	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids, user=user_dict, grouporg=None, displaynames=displaynames)
+	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids, user=user_dict, grouporg=None, displaynames=displaynames, result_original=result_original)
 
 @app.route('/scoreboard/grouporg/<int:type>/<string:grouporg>/')
 def scoreboard_group(type, grouporg):
@@ -771,7 +772,6 @@ def scoreboard_group(type, grouporg):
 	else:
 		return render_template('400.html'), 400
 
-	result_original = results
 	results = score_results(results)
 
 	user_ids = {}
@@ -786,7 +786,7 @@ def scoreboard_group(type, grouporg):
 	displaynames = db.get_user_displaynames()
 	displaynames = {user[0]: user[1] for user in displaynames}
 
-	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids, user=None, grouporg=group_text, displaynames=displaynames, result_original=result_original)
+	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids, user=None, grouporg=group_text, displaynames=displaynames)
 
 @app.route('/profile/')
 def profile():
