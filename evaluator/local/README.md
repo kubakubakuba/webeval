@@ -9,7 +9,7 @@ Python packages:
 
 `QtRVSim binary`
 
-You need to have intalled the QtRVSim program. Please follow the instructions at the [QtRVSim repository](https://github.com/cvut/qtrvsim)
+You need to have QtRVSim installed (or have a `qtrvsim_cli` binary, you can change the executable location in `qtrvsim.py`). Please follow the instructions at the [QtRVSim repository](https://github.com/cvut/qtrvsim)
 
 `riscv64-unknown-elf-gcc`
 
