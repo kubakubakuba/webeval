@@ -699,8 +699,6 @@ def scoreboard():
 
 	#get user ids from results
 
-	#TODO: rewrite this later
-	#('test0', 10, 1) the 3rd argument is the user id
 	user_ids = {}
 	for task in results:
 		for result in results[task]:

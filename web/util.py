@@ -7,7 +7,6 @@ def user_total_score(results) -> dict:
 				total_points[result[0]] = 0
 			total_points[result[0]] += result[3]
 
-
 	#sort the total_points
 	total_points = [(k, total_points[k]) for k in sorted(total_points, key=total_points.get, reverse=True)]
 
@@ -24,7 +23,6 @@ def score_task(results) -> list:
 
 	results_bellow_equal_worst = [result for result in results if result[1] <= worst_best_score]
 	rest = [result for result in results if result[1] > worst_best_score]
-
 
 	#get the minimum of the results_bellow_equal_worst and score them with 6 (append), then remove them, get the minimum and so on until possible
 	
