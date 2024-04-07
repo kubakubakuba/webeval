@@ -443,7 +443,7 @@ def change_privacy(user_id, privacy):
 	cursor.close()
 	db.close()
 
-def reset_result_user(user_id):
+def reset_results_user(user_id):
 	"""Reset the results of a user."""
 	# SELECT score_best, score_last, result, taskid FROM results WHERE userid = 4;
 	# score_best | score_last | result | taskid
