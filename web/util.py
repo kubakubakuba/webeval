@@ -23,7 +23,7 @@ def score_task(results) -> list:
 	worst_best_score = results[len(results)-1][1] if len(results) < 5 else results[4][1]
 
 	results_bellow_equal_worst = [result for result in results if result[1] <= worst_best_score]
-	rest = results[len(results_bellow_equal_worst):]
+	rest = [result for result in results if result[1] > worst_best_score]
 
 
 	#get the minimum of the results_bellow_equal_worst and score them with 6 (append), then remove them, get the minimum and so on until possible
