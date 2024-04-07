@@ -684,6 +684,17 @@ def set_group(user_id, group):
 
 	return redirect('/admin')
 
+@app.route('/admin/resetresults/<int:userid>/')
+def reset_results(userid):
+	is_admin = check_admin()
+
+	if not is_admin:
+		return render_template('403.html'), 403
+
+	db.reset_results_user(userid)
+
+	return redirect('/admin')
+
 @app.route('/scoreboard/')
 def scoreboard():
 	active_tasks = db.get_active_tasks()

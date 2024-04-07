@@ -202,6 +202,21 @@ Admin panel
 				</div>
 			</div>
 			
+
+			Reset user scores (only marks the scores as invalid):
+
+			<select id="reset-user-scores-selector" class="form-select" aria-label="Reset user scores selector">
+				<option value="-">-</option>
+				{% for user in all_users[::-1] %}
+					<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}</option>
+				{% endfor %}
+			</select>
+			<div class="card card-btn" onclick="location.href='/admin/resetresults/' + document.getElementById('reset-user-scores-selector').value;">
+				<div class="card-body text-center">
+					Reset user scores
+				</div>
+			</div>
+			
 		</div>
 		<div class="col-md-6">
 			Change the task order (drag):

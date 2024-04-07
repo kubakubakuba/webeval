@@ -442,3 +442,17 @@ def change_privacy(user_id, privacy):
 	db.commit()
 	cursor.close()
 	db.close()
+
+def reset_result_user(user_id):
+	"""Reset the results of a user."""
+	# SELECT score_best, score_last, result, taskid FROM results WHERE userid = 4;
+	# score_best | score_last | result | taskid
+	#------------+------------+--------+--------
+	#          0 |          0 |      1 |      5
+	#          4 |          4 |      0 |      1
+	#set the result to 0 for every task
+	(db, cursor) = connect()
+	cursor.execute('UPDATE results SET result = 100, WHERE userid = %s', (user_id,))
+	db.commit()
+	cursor.close()
+	db.close()
