@@ -22,6 +22,8 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 
 URL = "https://eval.comparch.edu.cvut.cz"
 
+USER_FILTER = ["reference"]
+
 mail = Mail(app)
 
 def check_admin() -> bool:
@@ -706,6 +708,12 @@ def scoreboard():
 		task_id, task_name = task
 
 		results[task_name] = db.get_best_only_scores_for_public(task_id)
+
+	#filter user "reference"
+ 
+	
+
+	results = [result for result in results if result[0] not in USER_FILTER]
 
 	results = score_results(results)
 
