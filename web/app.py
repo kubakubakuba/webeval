@@ -690,14 +690,16 @@ def scoreboard():
 
 	results = {}
 
+	result_original = {}
+
 	for task in active_tasks:
 		task_id, task_name = task
 
 		results[task_name] = db.get_best_only_scores_for_public(task_id)
-	
+		result_original[task_name] = db.get_best_only_scores_for_public(task_id)
+
 	# for testing: results["Simple addition"] = [('test0', 10, 1), ('test1', 10, 2), ('test2', 11, 3), ('test3', 12, 4), ('test4', 12, 5), ('test5', 12, 6), ('test6', 12, 7), ('test7', 12, 8), ('test8', 12, 9), ('test9', 20, 10)]
 
-	result_original = results.copy()
 	results = score_results(results)
 
 	#get user ids from results
