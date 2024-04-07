@@ -711,9 +711,7 @@ def scoreboard():
 
 	#filter user "reference"
  
-	
-
-	results = [result for result in results if result[0] not in USER_FILTER]
+	#results = [result for result in results if result[0] not in USER_FILTER]
 
 	results = score_results(results)
 
