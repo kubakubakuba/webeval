@@ -126,8 +126,10 @@ def evaluate_submissions(num_submissions = 10):
 					
 
 				num_testcases = len(task_data['testcases'])
-				sim = QtRVSim(args=task_data["arguments"]["run"], submission_file=filepath, working_dir=os.path.dirname(filepath))
+				sim = QtRVSim(submission_file=filepath, working_dir=os.path.dirname(filepath))
 				#sim.set_verbose(True)
+	
+				sim.set_args(args=task_data["arguments"]["run"])
 
 				score = 0
 				tests_passed = 0

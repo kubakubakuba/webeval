@@ -5,7 +5,7 @@ from collections import defaultdict
 import os
 
 class QtRVSim:
-	def __init__(self, args="", submission_file="", working_dir=""):
+	def __init__(self, submission_file="", working_dir=""):
 		'''Create the QtRvSim evaluator object.
 
 		Args:
@@ -15,13 +15,12 @@ class QtRVSim:
 		'''
 
 		self.log = f"Evaluation started on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-		self.log += f"Arguments: {args}\n"
 		#self.log += f"Submission file: {submission_file}\n\n"
 		self.log += f"Error log:"
 
 		self.working_dir = working_dir
 
-		self.args = args
+		self.args = ""
 		self.mem_arg = ""
 		self.dump_mem_arg = ""
 		self.uart_arg = ""
@@ -50,7 +49,11 @@ class QtRVSim:
 		self.cache_stats = defaultdict(int)
 		self.scores = defaultdict(int)
 
-		self.timeout_time = 10 #seconds
+		self.timeout_time = 10 	#seconds
+		self.cycle_limit = 0 	#cycles
+
+		self.cycle_limit_set = False
+		self.cycle_limit_exceeded = False
 
 		self.regs = defaultdict(int)
 		self.mem = defaultdict(list)
@@ -102,6 +105,14 @@ class QtRVSim:
 			args (str): The arguments to pass to qtrvsim.
 		'''
 		self.args = args
+
+		#find --cycle-limit <int:value>
+		print(args)
+
+		match = re.search(r"--cycle-limit (\d+)", args)
+		if match:
+			self.cycle_limit = int(match.group(1))
+			self.cycle_limit_set = True
 
 	def set_submission_file(self, submission_file):
 		'''Set the submission file to evaluate.
@@ -246,7 +257,12 @@ class QtRVSim:
 		Args:
 			testcase (str): The name of the testcase.'''
 		self.log += f"\n\nEvaluation ended on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-		score = self.results[testcase][1] if self.results[testcase][0] == 0 else -1
+		
+		if self.results.get(testcase) is not None:
+			score = self.results[testcase][1] if self.results[testcase][0] == 0 else -1
+		else:
+			score = 0
+
 		self.log += f"Result: {score}\n"
 		self.clear_files()
 
@@ -474,7 +490,13 @@ class QtRVSim:
 						self.log += f"\nUART does not match, \nexpected:\n{self.reference_uart}\ngot:\n{self.uart}\n"
 						self.log += f"\nDifference:\n{differece}\n"
 
+		if self.cycles >= self.cycle_limit and self.cycle_limit_set:
+			self.cycle_limit_exceeded = True
+			self.log += f"\nCycle limit exceeded, maximum is: {self.cycle_limit}\n"
+
 		if killed:
+			self.result = 2
+		elif self.cycle_limit_exceeded:
 			self.result = 2
 		elif assembly_error:
 			self.result = 5
