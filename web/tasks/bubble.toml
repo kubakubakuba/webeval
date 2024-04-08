@@ -16,7 +16,7 @@ The complete task description can also be found [here](https://cw.fel.cvut.cz/wi
 '''
 
 [arguments]
-run = "--dump-cycles --cycle-limit 10000"
+run = "--dump-cycles --cycle-limit 100000"
 
 [[inputs]]
 data_in = "Size of the array located at address array_size, the array start is located at the address array_start."
