@@ -4,7 +4,7 @@ template = "S_templates/matrix.S"
 
 description = '''
 # Matrix multiplication.
-**Write a program that multiplies two matrixes with one another.**
+**Write a program that multiplies two matrices with one another.**
 
 The output of the program is a matrix \\( C \\), which is the result of the operation \\( C = A \times B \\), where
 \\( A \in R^{n \times m} \\), \\( B \in R^{m \times p} \\) and \\( C \in R^{n \times p} \\).
@@ -13,13 +13,13 @@ The input matrix dimensions are located at addresses `matrix_a_rows`, `matrix_a_
 
 The data of matrix A is located at the address `matrix_a_start`, and the data of matrix B is located at the address `matrix_b_start`. The matrix data is stored in row-major order (i.e. the first row is stored first, then the second row, and so on).
 
-Calculate the matrix C and store the result at the address `matrix_c_start`. Store the dimensions of the matrix C at the addresses `matrix_c_rows` and `matrix_c_cols`.
+Calculate the matrix C and store the result at the address `matrix_c_start`. Store the dimensions of the matrix \\( C \\) at the addresses `matrix_c_rows` and `matrix_c_cols`.
 
 If the dimensions of the input matrices are not compatible, set the output dimensions to \\( -1 \\).
 ##### Note
 
 Matrix multiplication is defined as:
-\\[ c_{ij} = \sum_{k=1}^{m} a_{ik} \cdot b_{kj} \\] where \\( c_{ij} \\) is the element at the \\( i \\)-th row and \\( j \\)-th column of the matrix C.
+\\[ c_{ij} = \sum_{k=1}^{m} a_{ik} \cdot b_{kj} \\] where \\( c_{ij} \\) is the element at the \\( i \\)-th row and \\( j \\)-th column of the matrix \\( C \\).
 
 This can be graphically represented as:
 
