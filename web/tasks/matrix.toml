@@ -48,6 +48,8 @@ $$
 	a_{m1} \cdot b_{11} + \cdots + a_{mn} \cdot b_{n1} & \cdots & \cdots & a_{m1} \cdot b_{1p} + \cdots + a_{mn} \cdot b_{np}
 \end{bmatrix}
 $$
+
+**This task was not yet properly tested, it may not work as expected. If you find any issues, please report them.**
 '''
 
 [arguments]
