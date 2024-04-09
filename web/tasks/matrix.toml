@@ -13,7 +13,7 @@ The input matrix dimensions are located at addresses `matrix_a_rows`, `matrix_a_
 
 The data of matrix A is located at the address `matrix_a_start`, and the data of matrix B is located at the address `matrix_b_start`. The matrix data is stored in row-major order (i.e. the first row is stored first, then the second row, and so on).
 
-Calculate the matrix C and store the result at the address `matrix_c_start`. Store the dimensions of the matrix \\( C \\) at the addresses `matrix_c_rows` and `matrix_c_cols`.
+Calculate the matrix \\( C \\) and store the result at the address `matrix_c_start`. Store the dimensions of the matrix \\( C \\) at the addresses `matrix_c_rows` and `matrix_c_cols`.
 
 If the dimensions of the input matrices are not compatible, set the output dimensions to \\( -1 \\).
 ##### Note
