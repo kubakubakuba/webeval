@@ -40,14 +40,30 @@ $$
 =
 $$
 $$
-=
 \begin{bmatrix}
-	a_{11} \cdot b_{11} + \cdots + a_{1n} \cdot b_{n1} & \cdots & \cdots & a_{11} \cdot b_{1p} + \cdots + a_{1n} \cdot b_{np}\\\\
-	a_{21} \cdot b_{11} + \cdots + a_{2n} \cdot b_{n1} & \cdots & \cdots & a_{21} \cdot b_{1p} + \cdots + a_{2n} \cdot b_{np}\\\\
-	\vdots & \ddots & \ddots & \vdots\\\\
-	a_{m1} \cdot b_{11} + \cdots + a_{mn} \cdot b_{n1} & \cdots & \cdots & a_{m1} \cdot b_{1p} + \cdots + a_{mn} \cdot b_{np}
+	a_{11} \cdot b_{11} + \cdots + a_{1n} \cdot b_{n1} & \cdots & a_{11} \cdot b_{1p} + \cdots + a_{1n} \cdot b_{np}\\\\
+	a_{21} \cdot b_{11} + \cdots + a_{2n} \cdot b_{n1} & \cdots & a_{21} \cdot b_{1p} + \cdots + a_{2n} \cdot b_{np}\\\\
+	\vdots & \ddots & \vdots\\\\
+	a_{m1} \cdot b_{11} + \cdots + a_{mn} \cdot b_{n1} & \cdots & a_{m1} \cdot b_{1p} + \cdots + a_{mn} \cdot b_{np}
 \end{bmatrix}
 $$
+
+This can be represented by the following code:
+    
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < p; j++) {
+            for (int k = 0; k < m; k++) {
+                C[i][j] += A[i][k] * B[k][j];
+            }
+        }
+    }
+
+In python, you can test matrix multiplication with the following code:
+    
+    import numpy as np
+    A = np.array([[1, 2, 3], [4, 5, 6]])
+    B = np.array([[1, 0], [0, 1], [1, 1]])
+    C = A @ B
 
 **This task was not yet properly tested, it may not work as expected. If you find any issues, please report them.**
 '''
