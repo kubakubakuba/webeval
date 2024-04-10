@@ -387,9 +387,8 @@ def task(task_id):
 	makefile = None if makefile is None else makefile.get('Makefile', None)
 	files = task_data.get('files', None)
 
-
 	#parse task description as markdown
-	task_description = markdown(task_description)
+	task_description = markdown(task_description, extensions=['codehilite'])
 	task_scoring = task_data['score']['description']
 
 	inputs = task_data['inputs']
