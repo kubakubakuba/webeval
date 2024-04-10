@@ -7,7 +7,7 @@ Write a code for the calculation of the N-th Fibonacci number (for N > 2). The F
 
 F(n) = F(n-1) + F(n-2), for n > 2, and F(0) = 0, F(1) = 1.
 
-Here are the first few numbers in the Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144,…
+Here are the first few numbers in the Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144,...
 
 Modify the code in such a way that it does have no hazards (the code produces correct results in the pipelined execution without the hazard unit). Minimize the number of nops in your code. Prefer instruction reordering whenever possible.
 
