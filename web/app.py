@@ -337,7 +337,7 @@ def submit(task_id):
 
 		is_c_solution = task_data['task'].get('c_solution', False)
 
-		task_description = task_data['task']['description']
+		task_description = task_data['task'].get('description', None)
 		task_description = markdown(task_description)
 		#cut the first line of the description
 		task_description = task_description.split('\n', 1)[1]
