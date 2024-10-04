@@ -101,7 +101,21 @@
 						<div>
 							Submission result:
 							{% if result == -1 %}
-								<span style="color: rgb(239, 198, 15);">Pending</span>
+								<span style="color: rgb(239, 198, 15);">
+									Pending
+
+									<!-- Auto refresh the page when the score is pending. -->
+									<script>
+										function autoRefresh() {
+											window.location = window.location.href;
+										}
+
+										setInterval('autoRefresh()', 5000);
+									</script>
+
+									<!-- temporary solution -->
+									 
+								</span>
 							{% elif result == 0 %}
 								<span style="color: green;">Accepted</span>
 							{% elif result == 2 %}
