@@ -3,10 +3,11 @@
 DB_USER="${DB_USER:-defaultuser}"
 DB_NAME="${DB_NAME:-qtrvsim_web_eval}"
 DB_PASSWORD="${DB_PASSWORD:-defaultpassword}"
-DB_HOST="${DB_HOST:-localhost}"
+DB_HOST="${DB_HOST:-db}"
 DB_PORT="${DB_PORT:-5432}"
+POSTGRES_ROOT_PASSWORD="${POSTGRES_ROOT_PASSWORD:-rootpassword}"
 
-DOTENV_FILE=".env"
+DOTENV_FILE="../.env"
 
 ORIGINAL_DATABASE_SQL_FILE="qtrvsim_web_eval.sql"
 MODIFIED_DATABASE_SQL_FILE="database.sql"
@@ -19,13 +20,13 @@ fi
 sed "s/qtrvsim/$DB_USER/g" "$ORIGINAL_DATABASE_SQL_FILE" > "$MODIFIED_DATABASE_SQL_FILE"
 
 echo "Creating user $DB_USER..."
-sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
+PGPASSWORD=$POSTGRES_ROOT_PASSWORD psql -U postgres -h "$DB_HOST" -p "$DB_PORT" -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
 
 echo "Creating database $DB_NAME..."
-sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
+PGPASSWORD=$POSTGRES_ROOT_PASSWORD psql -U postgres -h "$DB_HOST" -p "$DB_PORT" -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
 
 echo "Applying database schema from $MODIFIED_DATABASE_SQL_FILE..."
-sudo -u postgres psql -d $DB_NAME -a -f "$MODIFIED_DATABASE_SQL_FILE"
+PGPASSWORD=$POSTGRES_ROOT_PASSWORD psql -U postgres -h "$DB_HOST" -p "$DB_PORT" -d $DB_NAME -a -f "$MODIFIED_DATABASE_SQL_FILE"
 
 echo "Database and user setup complete."
 
