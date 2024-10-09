@@ -456,3 +456,12 @@ def reset_results_user(user_id):
 	db.commit()
 	cursor.close()
 	db.close()
+
+def is_banned(user_id):
+	"""Check if a user is banned."""
+	(db, cursor) = connect()
+	cursor.execute('SELECT verified, token FROM users WHERE id = %s', (user_id,))
+	user = cursor.fetchone()
+	cursor.close()
+	db.close()
+	return user[0] == False and user[1] == "_banned_"
