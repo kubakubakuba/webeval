@@ -9,6 +9,7 @@ in pkgs.mkShell rec{
     pp.pip
     pkgs.zlib
     pkgs.qtrvsim
+    pkgs.postgresql_16_jit
   ];
 
   shellHook = ''
