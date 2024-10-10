@@ -251,10 +251,37 @@ DB_DATABASE=
 DB_PORT=5432
 ```
 
+## Installation
+
+Install [docker](https://docs.docker.com/engine/install/) and [docker compose](https://docs.docker.com/compose/install/linux/). After this you can build the application from the folder `scripts/docker/` by running:
+
+```bash
+docker compose build
+docker compose up
+```
+
+Set up the necessary variables in the variables.env file provided in the same folder. The default script creates a default user admin with password admin (with email address same as the one in the config file), so you needn't set up an admin account each time you deploy this application.
+
+The docker compose creates three containers - the psql database server, the flask web app server and the evaluator service.
+
+To delete the containers simply run
+```bash
+docker compose down
+```
+
+If you wish to delete the volumes as well, this can be done with
+
+```bash
+docker volume rm <volume_name>
+```
+
 ## Creating a new task
 
-To create a new task, `cd` into the `scripts/` folder and run `tasks.py --create`. The script will automatically create a taskfile, as well as inserting the new task into the database.
-More options are available, run `tasks.py --help` for more information.
+~~To create a new task, `cd` into the `scripts/` folder and run `tasks.py --create`. The script will automatically create a taskfile, as well as inserting the new task into the database.
+More options are available, run `tasks.py --help` for more information.~~
+
+Create a new task in the folder `web/tasks/` and a new template in `web/S_templates/`. After this login as an admin user and go to the admin console of the webpage located at `/admin` (eg. `localhost:8000/admin`). There enter the name of the task without the folder (such as `task.toml` for a file in `web/tasks/task.toml`) and click the create task. In the admin console, you can also change the name of the task displayed on the front page, as well as the order of the tasks.
+
 
 ## Dumping the database
 
