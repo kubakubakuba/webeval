@@ -38,10 +38,16 @@ def check_admin() -> bool:
 	return is_admin
 
 def send_email(subject, recipient, body, html):
-	msg = Message(subject, recipients=recipient)
-	msg.body = body
-	msg.html = html
-	mail.send(msg)
+	try:
+		msg = Message(subject, recipients=recipient)
+		msg.body = body
+		msg.html = html
+		mail.send(msg)
+
+	except Exception as e:
+		return False
+	
+	return True
 
 if __name__ == '__main__':
 	app.run(debug=False)
@@ -100,7 +106,11 @@ def register():
 		</div>
 		"""
 
-		send_email(subject, recipients, body, html)
+		sent = send_email(subject, recipients, body, html)
+		
+		if not sent:
+			return redirect('/register#email_error')
+		
 		register_successful = True
 
 		register_successful = db.register(username, hashed_password, hashed_email, salt, token)
@@ -196,7 +206,10 @@ def reset():
 		</div>
 		"""
 
-		send_email(subject, recipients, body, html)
+		sent = send_email(subject, recipients, body, html)
+
+		if not sent:
+			return redirect('/reset#email_error')
 
 		db.add_verify_code(username, token)
 
