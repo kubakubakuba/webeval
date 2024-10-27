@@ -54,7 +54,9 @@
 			{% endif %}
 
 			<!-- Loop for task inputs -->
-			{% for i in task.inputs %}
+			{% if task.inputs %}
+
+				{% for i in task.inputs %}
 				<h6>Input: {{ i.description }}</h6>
 				<div>
 					<span>In:</span>  <code>{{ i.data_in }}</code> <br />
@@ -62,7 +64,9 @@
 				<div>
 					<span>Out:</span> <code>{{ i.data_out }}</code> <br />
 				</div>
-			{% endfor %}
+				{% endfor %}
+			
+			{% endif %}
 			<br />
 
 			<!-- Display task arguments -->

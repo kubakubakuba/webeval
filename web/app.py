@@ -391,7 +391,7 @@ def task(task_id):
 	task_description = markdown(task_description, extensions=['codehilite'])
 	task_scoring = task_data['score']['description']
 
-	inputs = task_data['inputs']
+	inputs = task_data.get('inputs', None)
 
 	latest_score = None
 
