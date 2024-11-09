@@ -24,9 +24,9 @@ export default defineConfig({
 						link: './WebEval/user',
 						collapsed: true,
 						items: [
-							{ text: 'Getting started', link: './WebEval/user/start' },
-							{ text: 'Submitting a solution', link: './WebEval/user/submit' },
-							{ text: 'Checking results', link: './WebEval/user/results' }
+							{ text: 'Getting started', link: './user/start' },
+							{ text: 'Submitting a solution', link: './user/submit' },
+							{ text: 'Checking results', link: './user/results' }
 						]
 					},
 					{
@@ -34,11 +34,11 @@ export default defineConfig({
 						link: './WebEval/dev',
 						collapsed: true,
 						items: [
-							{ text: 'Deploying the app', link: './WebEval/dev/deployment' },
-							{ text: 'Creating a task', link: './WebEval/dev/tasks' },
-							{ text: 'Admin panel', link: './WebEval/dev/admin-panel' },
-							{ text: 'Evaluation', link: './WebEval/dev/evaluator' },
-							{ text: 'Database schema', link: './WebEval/dev/database' }
+							{ text: 'Deploying the app', link: './dev/deployment' },
+							{ text: 'Creating a task', link: './dev/tasks' },
+							{ text: 'Admin panel', link: './dev/admin-panel' },
+							{ text: 'Evaluation', link: './dev/evaluator' },
+							{ text: 'Database schema', link: './dev/database' }
 						]
 					}
 				]
