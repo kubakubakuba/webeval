@@ -5,13 +5,16 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  base: '/wiki/',
-  title: "QtRVSim Web Evaluator Wiki",
-  description: "A wiki page for WebEval",
+	base: '/wiki/',
+	title: "QtRVSim Web Evaluator Wiki",
+	description: "A wiki page for WebEval",
 	themeConfig: {
 		nav: [
 			{ text: 'Home', link: '/' },
-			{ text: 'WebEval', link: '/WebEval' }
+			{ text: 'User manual', link: '/WebEval/user/' },
+			{ text: 'Developer manual', link: '/WebEval/dev/' },
+			{ text: 'WebEval', link: 'https://eval.comparch.edu.cvut.cz' },
+			{ text: 'CompArch', link: 'https://comparch.edu.cvut.cz' }
 		],
 
 		sidebar: [
@@ -50,8 +53,9 @@ export default defineConfig({
 		],
 
 		editLink: {
-			pattern: 'https://github.com/kubakubakuba/wiki/edit/main/:path'
+			pattern: 'https://gitlab.fel.cvut.cz/b35apo/qtrvsim-eval-web/-/edit/main/docs/:path'
 		},
+	
 
 		search: {
 			provider: 'local'
@@ -60,8 +64,8 @@ export default defineConfig({
 
 	markdown: {
 		config: (md) => {
-		  md.use(markdownItMathjax3);
-		  md.use(markdownItFootnote)
+			md.use(markdownItMathjax3);
+			md.use(markdownItFootnote)
 		}
 	},
 })

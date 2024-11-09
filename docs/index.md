@@ -4,13 +4,23 @@ layout: home
 
 hero:
   name: "QtRVSim Web Eval"
-  text: "wiki page"
+  text: "Wiki page"
+  image:
+      src: /WebEval/img/favicon.png
+      alt: QtRVSim WebEval logo
   tagline: 
   actions:
     #- theme: brand
-    - theme: alt
+    - theme: brand
       text: Enter
       link: /WebEval
+    - theme: alt
+      text: User Manual
+      link: /WebEval/user
+    - theme: alt
+      text: Developer Manual
+      link: /WebEval/dev
+    
     #- theme: alt
     #  text: API Examples
     #  link: /api-examples
