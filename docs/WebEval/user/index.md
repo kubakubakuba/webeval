@@ -1,13 +1,27 @@
 ---
+layout: home
 outline: deep
+title: "Web Evaluator User Manual"
+description: "A guide to using the Web Evaluator application."
+
+hero:
+  name: "Web Eval User Manual"
+  text: "Navigate through the user guide"
+  tagline: "Everything you need to know to get started"
+
+features:
+  - title: Getting Started
+    icon: 🚀
+    details: Learn the basics to begin using the Web Evaluator.
+    link: ./start
+
+  - title: Submitting a Task
+    icon: 📤
+    details: Instructions on submitting tasks to the system.
+    link: ./submit
+
+  - title: Checking Results
+    icon: 📈
+    details: Find out how to check your results after submission.
+    link: ./results
 ---
-
-# Web Evaluator User Manual
-
-Welcome to the User Manual of the Web Evaluator.
-
-| # | Title | Content |
-|-|-|-|
-| 1 | [Getting started](./start) | How to get started using this application |
-| 2 | [Submitting a task](./submit) | How to submit a task |
-| 3 | [Checking results](./results) | How to check your results |
