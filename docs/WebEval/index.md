@@ -6,4 +6,4 @@ If you are a User, looking for a guide on how to start using this application, h
 
 If you are a Developer, that wants to deploy this application, or you wish to contribute to this project, head over to the [Developer manual page](./dev/index).
 
-![QtRVSim Web Evaluator](./img/favicon.png)
+![QtRVSim Web Evaluator](/favicon.png)
