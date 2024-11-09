@@ -15,3 +15,7 @@ web/*.disable
 reference
 **/.venv/
 **/organizations.json
+
+docs/.vitepress/dist
+docs/.vitepress/cache
+node_modules
