@@ -1,3 +1,3 @@
 # Wiki
 
-Running version on [wiki.swpelc.eu](https://wiki.swpelc.eu)
+Running version on [eval.comparch.edu.cvut.cz/wiki/](https://eval.comparch.edu.cvut.cz/wiki/)
