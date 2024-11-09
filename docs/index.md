@@ -6,7 +6,7 @@ hero:
   name: "QtRVSim Web Eval"
   text: "Wiki page"
   image:
-      src: /WebEval/img/favicon.png
+      src: ./WebEval/img/favicon.png
       alt: QtRVSim WebEval logo
   tagline: 
   actions:
