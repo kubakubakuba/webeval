@@ -31,7 +31,7 @@ export default defineConfig({
 					},
 					{
 						text: 'Developer manual',
-						link: './WebEval/dev',
+						link: '/WebEval/dev',
 						collapsed: true,
 						items: [
 							{ text: 'Deploying the app', link: '/WebEval/dev/deployment' },
