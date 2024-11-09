@@ -10,7 +10,7 @@ hero:
     #- theme: brand
     - theme: alt
       text: Enter
-      link: ./WebEval
+      link: ./wiki/WebEval
     #- theme: alt
     #  text: API Examples
     #  link: /api-examples
