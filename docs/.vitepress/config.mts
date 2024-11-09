@@ -5,39 +5,40 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  base: '/wiki/',
   title: "QtRVSim Web Evaluator Wiki",
   description: "A wiki page for WebEval",
 	themeConfig: {
 		nav: [
 			{ text: 'Home', link: './' },
-			{ text: 'WebEval', link: './wiki/WebEval' }
+			{ text: 'WebEval', link: './WebEval' }
 		],
 
 		sidebar: [
 			{
 				text: 'WebEval',
-				link: './wiki/WebEval/',
+				link: './WebEval/',
 				items: [
 					{
 						text: 'User manual',
-						link: './wiki/WebEval/user',
+						link: './WebEval/user',
 						collapsed: true,
 						items: [
-							{ text: 'Getting started', link: './wiki/WebEval/user/start' },
-							{ text: 'Submitting a solution', link: './wiki/WebEval/user/submit' },
-							{ text: 'Checking results', link: './wiki/WebEval/user/results' }
+							{ text: 'Getting started', link: './WebEval/user/start' },
+							{ text: 'Submitting a solution', link: './WebEval/user/submit' },
+							{ text: 'Checking results', link: './WebEval/user/results' }
 						]
 					},
 					{
 						text: 'Developer manual',
-						link: './wiki/WebEval/dev',
+						link: './WebEval/dev',
 						collapsed: true,
 						items: [
-							{ text: 'Deploying the app', link: './wiki/WebEval/dev/deployment' },
-							{ text: 'Creating a task', link: './wiki/WebEval/dev/tasks' },
-							{ text: 'Admin panel', link: './wiki/WebEval/dev/admin-panel' },
-							{ text: 'Evaluation', link: './wiki/WebEval/dev/evaluator' },
-							{ text: 'Database schema', link: './wiki/WebEval/dev/database' }
+							{ text: 'Deploying the app', link: './WebEval/dev/deployment' },
+							{ text: 'Creating a task', link: './WebEval/dev/tasks' },
+							{ text: 'Admin panel', link: './WebEval/dev/admin-panel' },
+							{ text: 'Evaluation', link: './WebEval/dev/evaluator' },
+							{ text: 'Database schema', link: './WebEval/dev/database' }
 						]
 					}
 				]
