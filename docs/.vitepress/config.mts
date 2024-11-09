@@ -10,23 +10,23 @@ export default defineConfig({
   description: "A wiki page for WebEval",
 	themeConfig: {
 		nav: [
-			{ text: 'Home', link: './' },
-			{ text: 'WebEval', link: './WebEval' }
+			{ text: 'Home', link: '/' },
+			{ text: 'WebEval', link: '/WebEval' }
 		],
 
 		sidebar: [
 			{
 				text: 'WebEval',
-				link: './WebEval/',
+				link: '/WebEval/',
 				items: [
 					{
 						text: 'User manual',
-						link: './WebEval/user',
+						link: '/WebEval/user',
 						collapsed: true,
 						items: [
-							{ text: 'Getting started', link: './user/start' },
-							{ text: 'Submitting a solution', link: './user/submit' },
-							{ text: 'Checking results', link: './user/results' }
+							{ text: 'Getting started', link: '/WebEval/user/start' },
+							{ text: 'Submitting a solution', link: '/WebEval/user/submit' },
+							{ text: 'Checking results', link: '/WebEval/user/results' }
 						]
 					},
 					{
@@ -34,11 +34,11 @@ export default defineConfig({
 						link: './WebEval/dev',
 						collapsed: true,
 						items: [
-							{ text: 'Deploying the app', link: './dev/deployment' },
-							{ text: 'Creating a task', link: './dev/tasks' },
-							{ text: 'Admin panel', link: './dev/admin-panel' },
-							{ text: 'Evaluation', link: './dev/evaluator' },
-							{ text: 'Database schema', link: './dev/database' }
+							{ text: 'Deploying the app', link: '/WebEval/dev/deployment' },
+							{ text: 'Creating a task', link: '/WebEval/dev/tasks' },
+							{ text: 'Admin panel', link: '/WebEval/dev/admin-panel' },
+							{ text: 'Evaluation', link: '/WebEval/dev/evaluator' },
+							{ text: 'Database schema', link: '/WebEval/dev/database' }
 						]
 					}
 				]
