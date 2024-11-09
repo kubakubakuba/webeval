@@ -8,18 +8,34 @@ hero:
   image:
       src: /favicon.png
       alt: QtRVSim WebEval logo
-  tagline: 
-  actions:
+  tagline: "Improve your understanding of RISC-V assembly"
+  #actions:
     #- theme: brand
-    - theme: brand
-      text: Enter
-      link: /WebEval
-    - theme: alt
-      text: User Manual
-      link: /WebEval/user
-    - theme: alt
-      text: Developer Manual
-      link: /WebEval/dev
+  #  - theme: brand
+  #    text: Enter
+  #    link: /WebEval
+  #  - theme: alt
+  #    text: User Manual
+  #    link: /WebEval/user
+  #  - theme: alt
+  #    text: Developer Manual
+  #    link: /WebEval/dev
+
+features:
+  - title: Wiki
+    icon: ω
+    details: Welcome to the QtRVSim Web Evaluator Wiki page.
+    link: /WebEval/
+
+  - title: User Manual
+    icon: υ
+    details: Got stuck? Check the user manual for help.
+    link: /WebEval/user/
+
+  - title: Developer Manual
+    icon: δ
+    details: Want to contribute or deploy the application? Check the developer manual.
+    link: /WebEval/dev/
     
     #- theme: alt
     #  text: API Examples
