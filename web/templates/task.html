@@ -188,7 +188,16 @@
 									<div class="col-sm-4 border-left">
 										{{ score }}
 										{% if session['user_id'] == userid or is_admin == 1 %}
-											<a href="/view/{{ task.id }}/{{ userid }}/{% if is_best == 1 %}0{% elif is_best == 0 %}1{% endif %}">view</a>
+											<a href="/view/{{ task.id }}/{{ userid }}/{% if is_best == 1 %}0{% elif is_best == 0 %}1{% endif %}">
+												<img src="/static/view.svg" alt="View" width="24" height="24" style="margin-left: 25%;"/>
+											</a>
+										{% endif %}
+										
+										{% if is_admin == 1 %}
+										<!-- Reevaluation -->
+											<a href="/admin/reevaluate/{{ task.id }}/{{ userid }}/{% if is_best == 1 %}0{% elif is_best == 0 %}1{% endif %}">
+												<img src="/static/reevaluate.svg" alt="Re-evaluate" width="18" height="18" style="margin-left: 25%;"/>
+											</a>
 										{% endif %}
 
 									</div>

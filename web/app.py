@@ -505,6 +505,17 @@ def view_latest_for_user(task_id, user_id, is_latest):
 
 	return render_template('view.html', submission_code=code, task_id=task_id, user_id=user_id, is_latest=is_latest, sessions=session, best_or_latest=best_or_latest, task_name=task_name)
 
+@app.route('/admin/reevaluate/<int:task_id>/<int:user_id>/<int:is_best>')
+def reevaluate(task_id, user_id, is_best):
+	is_admin = check_admin()
+
+	if not is_admin:
+		return render_template('403.html'), 403
+
+	db.reevaluate_task(task_id, user_id, is_best)
+
+	return redirect('/task/' + str(task_id))
+
 @app.route('/about')
 def about():
 	#read description.md from templates/

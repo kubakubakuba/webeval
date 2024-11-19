@@ -465,3 +465,27 @@ def is_banned(user_id):
 	cursor.close()
 	db.close()
 	return user[0] == False and user[1] == "_banned_"
+
+def reevaluate_task(task_id, user_id, is_best):
+	"""Reevaluate a task for a user."""
+	(db, cursor) = connect()
+	#insert the latest or best source code
+
+	source = None
+
+	if is_best:
+		cursor.execute('SELECT best_source FROM results WHERE taskid = %s AND userid = %s', (task_id, user_id))
+		source = cursor.fetchone()
+
+	else:
+		cursor.execute('SELECT last_source FROM results WHERE taskid = %s AND userid = %s', (task_id, user_id))
+		source = cursor.fetchone()
+
+	if source:
+		cursor.execute('INSERT INTO submissions (userid, taskid, file) VALUES (%s, %s, %s)', (user_id, task_id, source))
+
+	cursor.execute('UPDATE results SET result = -1, score_best = 0, score_last = 0 WHERE taskid = %s AND userid = %s', (task_id, user_id))
+
+	db.commit()
+	cursor.close()
+	db.close()
