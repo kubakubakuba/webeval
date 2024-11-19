@@ -51,7 +51,7 @@ You can reset all user scores in the `Reset user scores` section. This automatic
 This marks all submissions by a [result code `100`](../user/results.md/#evaluator-results) which is shown to the user as `Reset by admin`.
 :::
 
-![User groups](../image/usergroups.png)
+![User groups](../img/usergroups.png)
 
 ### Task re-evaluation and submission inspection
 
