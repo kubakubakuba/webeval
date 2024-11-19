@@ -43,6 +43,8 @@ Public version is running [here](https://eval.comparch.edu.cvut.cz).
 - [X] Add profile settings page
 - [X] Add about page
 - [X] Move the whole evaluation into try - catch, if something goes (for some reason) horribly wrong
+- [X] Implement random testcases
+- [ ] Add a reevaluate button to invalidate a users result for a certain submission and run the evaluation again
 
 ## Database structure
 

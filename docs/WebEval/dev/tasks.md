@@ -4,7 +4,7 @@ outline: deep
 
 # Task creation
 
-Each task is created by a single `.toml` file. The file should be located inside the `web/tasks/` directory.
+Each task is defined by a single `.toml` file. The file should be located inside the `web/tasks/` directory.
 
 # On this page
 
