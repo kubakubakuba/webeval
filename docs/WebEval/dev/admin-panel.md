@@ -14,7 +14,7 @@ All user that have the `is admin` flag set in the database have access to this. 
 
 Select a user from the dropdown menu and click on the neighboring button to ban or unban the user.
 
-![ban unban](../ban-unban.png)
+![ban unban](../img/ban-unban.png)
 
 Similar input fields are available for country and organization reset.
 
