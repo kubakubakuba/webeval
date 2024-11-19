@@ -44,7 +44,7 @@ vect_10_s = "sorted(vect_10)"
 ```
 Where variables are defined by python functions.
 
-To use the variables in a testcase, surround it by <span v-pre>`{{` and `}}`</span>:
+To use the variables in a testcase, surround it by <span v-pre>`{{$` and `$}}`</span>:
 ```toml
 [[testcases.starting_mem]]
 array_size = [10]
