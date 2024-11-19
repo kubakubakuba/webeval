@@ -24,4 +24,14 @@ features:
     icon: 📈
     details: Find out how to check your results after submission.
     link: ./results
+
+  - title: Profile Settings
+    icon: 🧑‍💻
+    details: Customize your profile settings to your liking.
+    link: ./profile
+
+  - title: Scoreboard
+    icon: 🏆
+    details: View the scoreboard and see how you rank against others.
+    link: ./scoreboard
 ---
