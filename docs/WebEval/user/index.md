@@ -26,7 +26,7 @@ features:
     link: ./results
 
   - title: Profile settings
-    icon: 🧑‍💻
+    icon: 🖌️
     details: Customize your profile settings to your liking.
     link: ./profile
 
