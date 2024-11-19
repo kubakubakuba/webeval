@@ -6,7 +6,7 @@ from hashlib import sha512
 from dotenv import load_dotenv
 import secrets, os, toml, random, string, re, json
 import db as db
-from util import score_results, user_total_score
+from util import score_results, user_total_score, check_submission_deadlines
 
 load_dotenv("../.env")
 
@@ -298,11 +298,33 @@ def submit(task_id):
 	if 'logged_in' not in session:
 			return redirect(url_for('login'))
 	
+	task = db.get_task(task_id)
+
+	if task:
+			task_name = task[0]
+	else:
+		return render_template('404.html'), 404
+	
+	#read task file
+	task_path = db.get_task_path(task_id)
+	if task_path:
+		task_path = task_path[0]
+
+	task_data = None
+	if os.path.exists(task_path):
+		with open(task_path) as f:
+			task_data = toml.load(f)
+
 	if request.method == 'POST':
 
 		is_banned = db.is_user_banned(session['user_id'])
 		if is_banned: #logout user
 			return redirect('/logout')
+		
+		deadlines_check = check_submission_deadlines(task_data, task_name)
+		
+		if deadlines_check:
+			return deadlines_check
 		
 		user_id = session['user_id']
 		code = request.form['code'].replace('\r\n', '\n')
@@ -313,14 +335,6 @@ def submit(task_id):
 
 		return redirect('/task/' + str(task_id))
 	else:
-		task = db.get_task(task_id)
-
-		if task:
-			task_name = task[0]
-
-		else:
-			return render_template('404.html'), 404
-
 		#if there is a submission for this task by the logged in user, read the submission file
 		#get user latest submission code
 		submission_code = db.get_last_user_code(task_id, session['user_id'])
@@ -329,17 +343,12 @@ def submit(task_id):
 		#	with open(f"submissions/{session['user_id']}_{task_id}.S") as f:
 		#		submission_code = f.read()
 
-		#read task file
-		task_path = db.get_task_path(task_id)
-		if task_path:
-			task_path = task_path[0]
-
-		task_data = None
-		if os.path.exists(task_path):
-			with open(task_path) as f:
-				task_data = toml.load(f)
-
 		template_path = task_data['task'].get('template', None)	
+
+		deadlines_check = check_submission_deadlines(task_data, task_name)
+		
+		if deadlines_check:
+			return deadlines_check
 
 		template_code = ""
 
@@ -362,6 +371,8 @@ def submit(task_id):
 
 		return render_template('submit.html', task_name=task_name, sessions=session, submission_code=submission_code, template_code=template_code, language=language, task_description=task_description)
 	
+
+
 @app.route('/task/<int:task_id>')
 def task(task_id):
 	submission_found = False
@@ -404,6 +415,16 @@ def task(task_id):
 	task_description = markdown(task_description, extensions=['codehilite'])
 	task_scoring = task_data['score']['description']
 
+	task_submit_start_time = task_data['task'].get('submit_start', None)
+	task_submit_end_time = task_data['task'].get('submit_end', None)
+
+	deadlines = None
+
+	if task_submit_start_time and task_submit_end_time:
+		deadlines = {}
+		deadlines["start"] = datetime.strptime(task_submit_start_time, '%Y-%m-%dT%H:%M:%SZ')
+		deadlines["end"] = datetime.strptime(task_submit_end_time, '%Y-%m-%dT%H:%M:%SZ')
+
 	inputs = task_data.get('inputs', None)
 
 	latest_score = None
@@ -431,7 +452,8 @@ def task(task_id):
 		'arguments': task_arguments,
 		'inputs': inputs, 
 		'id': task_id,
-		'scoring': task_scoring
+		'scoring': task_scoring,
+		'deadlines': deadlines
 	}
 
 	# Get the best scores of all users for a specific task

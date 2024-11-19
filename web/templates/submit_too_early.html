@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}
+Disabled
+{% endblock title %}
+
+{% block content %}
+	<div class="card text-center">
+		<div class="card-body">
+			<h1 class="card-title">Submissions disabled</h1>
+			<p class="card-text">The submissions for task <b><em>{{task_name}}</em></b> are not yet opened. Please try again at {{start_time}}</p>
+			<div class="card card-btn col-sm-4 mx-auto mt-4" onclick="location.href='/'">
+				<div class="card-body text-center">
+					Go Home
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock content %}

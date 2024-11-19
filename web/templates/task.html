@@ -94,6 +94,12 @@
 					</a>
 				</div>
 
+				{% if task.deadlines %}
+	
+					This task is available for submission <br /> from <code>{{ task.deadlines.start }}</code> to <code>{{ task.deadlines.end }}</code>.
+	
+				{% endif %}
+
 			{% endif %}
 		</div>
 			<!-- Submission section for logged-in users -->
@@ -195,7 +201,7 @@
 										
 										{% if is_admin == 1 %}
 										<!-- Reevaluation -->
-											<a href="/admin/reevaluate/{{ task.id }}/{{ userid }}/{% if is_best == 1 %}0{% elif is_best == 0 %}1{% endif %}">
+											<a href="/admin/reevaluate/{{ task.id }}/{{ userid }}/{% if is_best == 1 %}1{% elif is_best == 0 %}0{% endif %}">
 												<img src="/static/reevaluate.svg" alt="Re-evaluate" width="18" height="18" style="margin-left: 25%;"/>
 											</a>
 										{% endif %}
