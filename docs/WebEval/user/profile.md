@@ -22,7 +22,7 @@ The full name in the leader board is displayed as `display name (username)`.
 
 In this section, you can set the country and organization you are affiliated with. This will be your university. If you do not find your university in the list, please contact the administrator (most likely your teacher).
 
-::: note
+::: tip
 You can configure this only once, if you happen to make a mistake, please contact the administrator.
 :::
 

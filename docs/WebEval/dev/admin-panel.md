@@ -22,7 +22,7 @@ Similar input fields are available for country and organization reset.
 
 Users can be managed into groups and organizations by a `Set group for user` section. Users select a country and organization on their [profile page](../user/profile), they can then be assigned into study groups by an administrator.
 
-::: note
+::: info
 Users are able to select their country and organization only from a select list defined in `/web/static/organizations.json`. If you need to add another organization to the list you can do so in the following format:
 ```json
 {
