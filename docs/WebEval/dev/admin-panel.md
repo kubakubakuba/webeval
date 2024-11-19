@@ -20,7 +20,7 @@ Similar input fields are available for country and organization reset.
 
 #### User groups
 
-Users can be managed into groups and organizations by a `Set group for user` section. Users select a country and organization on their [profile page](../user/profile.md), they can then be assigned into study groups by an administrator.
+Users can be managed into groups and organizations by a `Set group for user` section. Users select a country and organization on their [profile page](../user/profile), they can then be assigned into study groups by an administrator.
 
 ::: note
 Users are able to select their country and organization only from a select list defined in `/web/static/organizations.json`. If you need to add another organization to the list you can do so in the following format:
@@ -48,7 +48,7 @@ The list of universities is managed by [university-domains-list](https://github.
 You can reset all user scores in the `Reset user scores` section. This automatically invalidates all results of a specific user.
 
 ::: details
-This marks all submissions by a [result code `100`](../user/results.md/#evaluator-results) which is shown to the user as `Reset by admin`.
+This marks all submissions by a [result code `100`](../user/results) which is shown to the user as `Reset by admin`.
 :::
 
 ![User groups](../img/usergroups.png)

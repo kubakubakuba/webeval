@@ -39,4 +39,4 @@ At the bottom of the page you can set a privacy level for your results.
 | Study group | Only users from your study group can see your results |
 | Private | Only you can see your results |
 
-This influences the visibility of the [scoreboard](../scoreboard.md) and the [results](../results.md) page.
+This influences the visibility of the [scoreboard](./scoreboard) and the [results](./results) page.
