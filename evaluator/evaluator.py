@@ -3,6 +3,7 @@ from datetime import datetime
 import time
 import evaldb as db
 from qtrvsim import QtRVSim
+from preprocessor import preprocess
 import os
 import re
 import sys
@@ -52,7 +53,10 @@ def evaluate_submissions(num_submissions = 10):
 
 		try:
 			with open(task_filenames[task_id]) as f:
-				task_data = toml.load(f)
+				preprocessed = preprocess(f)
+				task_data = toml.loads(preprocessed)
+				print(task_data)
+				#task_data = toml.load(f)
 
 				cache_max_size = task_data["task"].get("cache_max_size", -1)
 				is_c_solution = task_data["task"].get("c_solution", False)
@@ -263,48 +267,52 @@ def evaluate_submissions(num_submissions = 10):
 			time.sleep(1)
 
 		except Exception as e:
-			if sim.get_result() == 5: #qtrvsim.py error code for integrated assembly error
-				error_log = f"An error occurred during evaluation:\n"
-				error_log += f"Error in integrated assembly.\n"
-				
-				#TODO: enable this line to show the stdout to the user
-				#error_log += f"{sim.error_log}\n"
-				
-				#/_job_19596/submission.S:17:error:unknown instruction
+			try:
+				if sim.get_result() == 5: #qtrvsim.py error code for integrated assembly error
+					error_log = f"An error occurred during evaluation:\n"
+					error_log += f"Error in integrated assembly.\n"
+					
+					#TODO: enable this line to show the stdout to the user
+					#error_log += f"{sim.error_log}\n"
+					
+					#/_job_19596/submission.S:17:error:unknown instruction
 
-				#parsing the error line numbers
-				#error_line_num = re.match(r'.*:(\d+):.*', sim.error_log)
-				#error_line_num = error_line_num.group(1) if error_line_num else "?"
+					#parsing the error line numbers
+					#error_line_num = re.match(r'.*:(\d+):.*', sim.error_log)
+					#error_line_num = error_line_num.group(1) if error_line_num else "?"
 
-				error_line_nums = re.findall(r'.*:(\d+):error:.*', sim.error_log, re.MULTILINE)
-				error_line_nums = [int(num) for num in error_line_nums]
+					error_line_nums = re.findall(r'.*:(\d+):error:.*', sim.error_log, re.MULTILINE)
+					error_line_nums = [int(num) for num in error_line_nums]
 
-				error_types = re.findall(r'.*:\d+:error:(.*)$', sim.error_log, re.MULTILINE)
+					error_types = re.findall(r'.*:\d+:error:(.*)$', sim.error_log, re.MULTILINE)
 
-				error_lines = []
-				if os.path.exists(filepath):
-					with open(filepath, 'r') as f:
-						lines = f.readlines()
-						for num in error_line_nums:
-							error_lines.append(lines[num-1].strip())
+					error_lines = []
+					if os.path.exists(filepath):
+						with open(filepath, 'r') as f:
+							lines = f.readlines()
+							for num in error_line_nums:
+								error_lines.append(lines[num-1].strip())
 
-				for i, err in enumerate(error_lines):
-					if len(error_types) > i and len(error_line_nums) > i:
-						error_log += f"On line {error_line_nums[i]} in your code:\n"
-						error_log += f"{error_types[i]}\nhere -->" + err + "\n"
+					for i, err in enumerate(error_lines):
+						if len(error_types) > i and len(error_line_nums) > i:
+							error_log += f"On line {error_line_nums[i]} in your code:\n"
+							error_log += f"{error_types[i]}\nhere -->" + err + "\n"
 
-				#error_log += f"On line {error_line_num} in your code:\n"
-				#error_log += error_lines[0] if len(error_lines) > 0 else "\n"
-				#error_log += "here -->" + error_lines[1] if len(error_lines) > 1 else "\n"
-				#error_log += error_lines[2] if len(error_lines) > 2 else "\n"
+					#error_log += f"On line {error_line_num} in your code:\n"
+					#error_log += error_lines[0] if len(error_lines) > 0 else "\n"
+					#error_log += "here -->" + error_lines[1] if len(error_lines) > 1 else "\n"
+					#error_log += error_lines[2] if len(error_lines) > 2 else "\n"
 
-				error_log += f"\nPlease check your code and try again.\n"
-				error_log += f"\nPlease note, that %lo and %hi are not yet supported in the integrated assembly, and will thus throw an assembly error when no Makefile for compilation is present at the task.\n"
+					error_log += f"\nPlease check your code and try again.\n"
+					error_log += f"\nPlease note, that %lo and %hi are not yet supported in the integrated assembly, and will thus throw an assembly error when no Makefile for compilation is present at the task.\n"
 
-				db.update_submission(s[0])
-				db.update_result(s[4], s[1], -1, 5, error_log)
+					db.update_submission(s[0])
+					db.update_result(s[4], s[1], -1, 5, error_log)
 
-			else:
+				else:
+					raise e
+
+			except Exception as e:
 				print(f"Error: {e}")
 				error_log = f"An error occurred during evaluation:\n"
 				error_log += f"{type(e).__name__}\n"
