@@ -46,6 +46,16 @@ Public version is running [here](https://eval.comparch.edu.cvut.cz).
 - [X] Implement random testcases
 - [ ] Add a reevaluate button to invalidate a users result for a certain submission and run the evaluation again
 
+# Wiki page
+
+All necessary information can now be obtained from the wiki page running at:
+
+[https://eval.comparch.edu.cvut.cz/wiki](https://eval.comparch.edu.cvut.cz/wiki)
+
+or you can read the documentation itself in markdown at the `docs/` folder.
+
+Some of the information below may be outdated. Please check the wiki for up to date info.
+
 ## Database structure
 
 ### Users table
