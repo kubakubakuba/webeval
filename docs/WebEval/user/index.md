@@ -10,22 +10,22 @@ hero:
   tagline: "Everything you need to know to get started"
 
 features:
-  - title: Getting Started
+  - title: Getting started
     icon: 🚀
     details: Learn the basics to begin using the Web Evaluator.
     link: ./start
 
-  - title: Submitting a Task
+  - title: Submitting a task
     icon: 📤
     details: Instructions on submitting tasks to the system.
     link: ./submit
 
-  - title: Checking Results
+  - title: Checking results
     icon: 📈
     details: Find out how to check your results after submission.
     link: ./results
 
-  - title: Profile Settings
+  - title: Profile settings
     icon: 🧑‍💻
     details: Customize your profile settings to your liking.
     link: ./profile

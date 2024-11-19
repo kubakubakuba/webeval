@@ -15,12 +15,12 @@ features:
     details: Step-by-step guide on deploying the application.
     link: ./deployment
 
-  - title: Task Creation
+  - title: Task creation
     icon: 📝
     details: Learn how to create and manage tasks within the application.
     link: ./tasks
 
-  - title: Admin Panel
+  - title: Admin panel
     icon: 🔧
     details: Guide to using the admin panel for management.
     link: ./admin-panel
