@@ -13,9 +13,9 @@ On this page you can customize your profile a little bit.
 You can change your display name which is then displayed in the leaderboard.
 
 ::: details
-The user name will always be displayed even if the display name is set. This is to prevent confusion in the leaderboard.
+The user name will always be displayed even if the display name is set. This is to prevent confusion in the scoreboard.
 
-The full name in the leader board is displayed as `display name (username)`.
+The full name in the scoreboard is displayed as `display name (username)`.
 :::
 
 ## Setting country, organization and a study group
