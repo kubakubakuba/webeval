@@ -6,6 +6,9 @@ outline: deep
 
 Each task is created by a single `.toml` file. The file should be located inside the `web/tasks/` directory.
 
+# On this page
+
+[[toc]]
 
 ## Task file structure
 
@@ -30,7 +33,7 @@ The task file is a `.toml` file that contains the following fields.
 
 ### Simple preprocessor
 
-**New feature**
+***New feature***
 
 You can now use a [preprocessor](https://gitlab.fel.cvut.cz/b35apo/qtrvsim-eval-web/-/blob/main/evaluator/preprocessor.py) to dynamically generate random data for your testcases, mainly to prevent hardcoded solutions.
 
@@ -42,7 +45,7 @@ vect_10_s = "sorted(vect_10)"
 ```
 Where variables are defined by python functions.
 
-To use the variables in a testcase, surround it by `{{` and `}}`:
+To use the variables in a testcase, surround it by <span v-pre>`{{` and `}}`</span>:
 ```toml
 [[testcases.starting_mem]]
 array_size = [10]
@@ -53,7 +56,9 @@ array_start = "{{$vect_10_s$}}"
 ```
 
 ::: details
-The surrounding symbols are technically `"{{$` and `$}}"`, this is because non numeric / array like values need to be treated like strings, otherwise it would not be a toml readable file.
+The surrounding symbols are technically <span v-pre>`"{{$` and `$}}"`</span>, this is because non numeric or array like values need to be treated like strings, otherwise they would lead to a not toml-readable file.
+
+This is why the python code for variable assignment and the variables itself are surrounded by `""` and are effectively treated as strings.
 ::: 
 
 The most important field is the `[[testcases]]`, which is an array that can have following fields:
@@ -149,43 +154,43 @@ Look below at the more complex examples to see exact `Makefile` usage.
 
 ## Examples
 
-### Simple addition (reading registers)
+### Reading from registers
 
 The most basic example of a task file, only uses register values to check the correctness of the solution.
 
 <<< ../tasks/addition.toml
 
-### Reading from memory (reading and setting memory state)
+### Reading from memory
 
 Also uses memory values to load values to the program and to check the final state of memory addresses. Look at how multiple memory addresses can be set and checked.
 
 <<< ../tasks/readmem.toml
 
-### Buble sort (preprocessor)
+### Usage of the preprocessor (Bubble sort)
 
 An example of a task that uses the preprocessor to generate random data for the testcases.
 
 <<< ../tasks/bubble.toml
 
-### Cache (using pragma cache)
+### Pragma cache usage
 
 An example of a usage of the `#pragma cache` directive in the task template file.
 
 <<< ../tasks/cache.toml
 
-### Fibonacci (usage of MathJax and syntax highlighting)
+### Usage of MathJax and syntax highlighting (Fibonacci)
 
 Here you can see the usage of formatted task file with MathJax and syntax highlighting.
 
 <<< ../tasks/fibonacci.toml
 
-### Hazard detection (usage of custom Makefile)
+### Usage of custom Makefile (Hazard detection)
 
 This task uses a custom `Makefile` to compile the solution to an ELF file, which is then run in the simulator (for programs that cannot yet be run in the simulator directly).
 
 <<< ../tasks/hazards.toml
 
-### Simple C calculator (custom Makefile, C solution, custom files and UART)
+### Writing the solution in C, custom Makefile, files and UART input/output (Calculator)
 
 This example of a task file requires the user to solve the task in C, write the output to UART. The task also uses other files which are present during compile time.
 
