@@ -48,7 +48,7 @@ The list of universities is managed by [university-domains-list](https://github.
 You can reset all user scores in the `Reset user scores` section. This automatically invalidates all results of a specific user.
 
 ::: details
-This marks all submissions by a [result code `100`](../user/results) which is shown to the user as `Reset by admin`.
+This marks all submissions by a [result code `100`](../dev/evaluator) which is shown to the user as `Reset by admin`.
 :::
 
 ![User groups](../img/usergroups.png)
