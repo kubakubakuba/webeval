@@ -18,6 +18,9 @@ The task file is a `.toml` file that contains the following fields.
 	- `name` - the name of the task
 	- `template` - path to a .S or .c file, that will be used as a template for the task
 	- `description` - the description of the task, can be styled using markdown, MathJax can also be used
+	- `c_solution` - (optional), if set to true, the task is set to be solved in C, `Makefile` and file to be present during compile time may be needed.
+	- `cache_max_size` - (optional), if set to some int number, sets the maximum size of the cache in the simulator (activates the cache settings in the evaluator)
+	- `submit_start` and `submit_end` - (optional), if set to a timestamp in a format of `2024-01-01T00:00:00Z` the task will be available for submission only in the given time frame
 
 - `[arguments]`
 	- `run` - arguments that will be passed to QtRVSim when evaluation the task, note that some arguments are required for certain functionalities, eg. `--d-regs` should be used, when reading the state of registers is needed. By default `--dump-cycles` is the minimal required argument in this section.
@@ -26,10 +29,6 @@ The task file is a `.toml` file that contains the following fields.
 	- `data_in` - data that will be passed to the task
 	- `data_out` - data that is expected as an output
 	- `description` - description of the input
-
-- `cache_max_size` - (optional), if set to some int number, sets the maximum size of the cache in the simulator (activates the cache settings in the evaluator)
-
-- `c_solution` - (optional), if set to true, the task is set to be solved in C, `Makefile` and file to be present during compile time may be needed.
 
 ### Simple preprocessor
 
