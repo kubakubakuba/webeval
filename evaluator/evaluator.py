@@ -9,8 +9,14 @@ import re
 import sys
 import urllib.parse
 import traceback
+from dotenv import load_dotenv
+
+load_dotenv()
 
 TIMEOUT_TIME = 10 #seconds
+
+# Configurable directory for tasks
+TASKS_DIR = os.getenv('TASKS_DIR', '../web/tasks')
 
 def fetch_submissions(count):
 	"""Fetch the earliest <count> submissions from the database."""
@@ -30,8 +36,15 @@ def fetch_submissions(count):
 	#make a dictionary of taskid -> task filename
 	task_filenames = {task[0]: task[1] for task in task_filenames}
 
-	#for each task_filename add ../web/ to the beginning
-	task_filenames = {task_id: "../web/" + task_filename for task_id, task_filename in task_filenames.items()}
+	#resolve task filenames using TASKS_DIR
+	resolved_filenames = {}
+	for task_id, task_filename in task_filenames.items():
+		# If path is relative, use TASKS_DIR; if absolute, use as-is
+		if not os.path.isabs(task_filename):
+			resolved_filenames[task_id] = os.path.join(TASKS_DIR, os.path.basename(task_filename))
+		else:
+			resolved_filenames[task_id] = task_filename
+	task_filenames = resolved_filenames
 
 	return (submissions, task_filenames)
 

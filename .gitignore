@@ -19,3 +19,5 @@ reference
 docs/.vitepress/dist
 docs/.vitepress/cache
 node_modules
+
+webeval_data.sql

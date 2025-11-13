@@ -7,6 +7,9 @@ services:
        - 'variables.env'
     depends_on:
       - db
+    volumes:
+      - ${TEMPLATES_DIR:-../../web/S_templates}:/app/S_templates:ro
+      - ${TASKS_DIR:-../../web/tasks}:/app/tasks:ro
 
   evaluator:
     build: ./evaluator
@@ -14,6 +17,7 @@ services:
       - db
     volumes:
       - evaluator-data:/var/lib/evaluator
+      - ${TASKS_DIR:-../../web/tasks}:/app/tasks:ro
     env_file:
        - 'variables.env'
     #restart: unless-stopped

@@ -1,0 +1,92 @@
+services:
+  db:
+    image: postgres:13-alpine
+    container_name: qtrvsim-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE:-qtrvsim_web_eval}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - qtrvsim-network
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/web/Dockerfile
+    container_name: qtrvsim-web
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_USER=${DB_USER:-qtrvsim}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-qtrvsim_web_eval}
+      - SECRET_KEY=${SECRET_KEY}
+      - MAIL_SERVER=${MAIL_SERVER}
+      - MAIL_PORT=${MAIL_PORT:-465}
+      - MAIL_USE_TLS=${MAIL_USE_TLS:-False}
+      - MAIL_USE_SSL=${MAIL_USE_SSL:-True}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+      - EVAL_DEFAULT_ADMIN=${EVAL_DEFAULT_ADMIN:-admin}
+      - EVAL_DEFAULT_ADMIN_PASSWORD=${EVAL_DEFAULT_ADMIN_PASSWORD:-admin}
+      - TEMPLATES_DIR=/data/S_templates
+      - TASKS_DIR=/data/tasks
+      - DB_INITIAL_DATA_MOUNTED=${DB_INITIAL_DATA:+/docker-init/data/initial_data.sql}
+    volumes:
+      - ${TEMPLATES_DIR:-../S_templates}:/data/S_templates:ro
+      - ${TASKS_DIR:-../tasks}:/data/tasks:ro
+      - type: bind
+        source: ${DB_INITIAL_DATA:-/dev/null}
+        target: /docker-init/data/initial_data.sql
+        read_only: true
+        bind:
+          create_host_path: false
+    ports:
+      - "${WEB_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - qtrvsim-network
+
+  evaluator:
+    build:
+      context: ..
+      dockerfile: docker/evaluator/Dockerfile
+    container_name: qtrvsim-evaluator
+    environment:
+      - DB_USER=${DB_USER:-qtrvsim}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-qtrvsim_web_eval}
+      - TASKS_DIR=/data/tasks
+    volumes:
+      - ${TASKS_DIR:-../tasks}:/data/tasks:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      web:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - qtrvsim-network
+
+volumes:
+  postgres_data:
+
+networks:
+  qtrvsim-network:
+    driver: bridge

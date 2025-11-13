@@ -23,6 +23,7 @@ echo "DB_HOST=$DB_HOST" >> .env
 echo "DB_PORT=$DB_PORT" >> .env
 echo "DB_USER=$DB_USER" >> .env
 echo "DB_PASSWORD=$DB_PASSWORD" >> .env
+echo "TASKS_DIR=/app/tasks" >> .env
 
 cd /home/qtrvsim-eval-web/evaluator
 

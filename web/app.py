@@ -8,7 +8,9 @@ import secrets, os, toml, random, string, re, json
 import db as db
 from util import score_results, user_total_score, check_submission_deadlines
 
-load_dotenv("../.env")
+# Load .env from /app/.env in Docker or ../.env locally
+env_path = "/app/.env" if os.path.exists("/app/.env") else "../.env"
+load_dotenv(env_path)
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
@@ -23,6 +25,10 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 URL = "https://eval.comparch.edu.cvut.cz"
 
 USER_FILTER = ["reference"]
+
+# Configurable directories for templates and tasks
+TEMPLATES_DIR = os.getenv('TEMPLATES_DIR', 'S_templates')
+TASKS_DIR = os.getenv('TASKS_DIR', 'tasks')
 
 mail = Mail(app)
 
@@ -308,7 +314,7 @@ def submit(task_id):
 	#read task file
 	task_path = db.get_task_path(task_id)
 	if task_path:
-		task_path = task_path[0]
+		task_path = os.path.join(TASKS_DIR, os.path.basename(task_path[0]))
 
 	task_data = None
 	if os.path.exists(task_path):
@@ -353,6 +359,9 @@ def submit(task_id):
 		template_code = ""
 
 		if template_path:
+			# Support both absolute and relative paths
+			if not os.path.isabs(template_path):
+				template_path = os.path.join(TEMPLATES_DIR, os.path.basename(template_path))
 			if os.path.exists(template_path):
 				with open(template_path) as f:
 					template_code = f.read()
@@ -386,7 +395,7 @@ def task(task_id):
 	task = db.get_task_path(task_id)
 
 	if task:
-		task_path = task[0]
+		task_path = os.path.join(TASKS_DIR, os.path.basename(task[0]))
 	else:
 		return render_template('404.html'), 404
 	
@@ -676,7 +685,7 @@ def repath(id, name):
 	if not is_admin:
 		return render_template('403.html'), 403
 
-	name = "tasks/" + name
+	name = os.path.join(TASKS_DIR, os.path.basename(name))
 
 	db.task_change_path(id, name)
 
@@ -704,7 +713,7 @@ def new_task(path):
 	if not is_admin:
 		return render_template('403.html'), 403
 
-	path = "tasks/" + path
+	path = os.path.join(TASKS_DIR, os.path.basename(path))
 
 	db.create_new_task(path)
 

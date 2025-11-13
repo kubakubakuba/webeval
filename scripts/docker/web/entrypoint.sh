@@ -28,9 +28,13 @@ if [ ! -f .env ]; then
 	echo "SECRET_KEY=$SECRET_KEY" >> .env
 	echo "MAIL_SERVER=$MAIL_SERVER" >> .env
 	echo "MAIL_PORT=$MAIL_PORT" >> .env
+	echo "MAIL_USE_TLS=$MAIL_USE_TLS" >> .env
+	echo "MAIL_USE_SSL=$MAIL_USE_SSL" >> .env
 	echo "MAIL_USERNAME=$MAIL_USERNAME" >> .env
 	echo "MAIL_PASSWORD=$MAIL_PASSWORD" >> .env
 	echo "MAIL_DEFAULT_SENDER=$MAIL_DEFAULT_SENDER" >> .env
+	echo "TEMPLATES_DIR=/app/S_templates" >> .env
+	echo "TASKS_DIR=/app/tasks" >> .env
 fi
 
 #wait until the db is ready, maximum 60 seconds

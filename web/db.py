@@ -2,7 +2,9 @@ import psycopg2
 from dotenv import load_dotenv
 import os
 
-load_dotenv("../.env")
+# Load .env from /app/.env in Docker or ../.env locally
+env_path = "/app/.env" if os.path.exists("/app/.env") else "../.env"
+load_dotenv(env_path)
 
 db_config = {
 	'user': os.getenv('DB_USER'),
@@ -10,7 +12,7 @@ db_config = {
 	'host': os.getenv('DB_HOST'),
 	'database': os.getenv('DB_DATABASE'),
 	'port': os.getenv('DB_PORT'),
-	'sslmode': 'require',
+	'sslmode': os.getenv('DB_SSLMODE', 'prefer'),
 	'connect_timeout': 10
 }
 

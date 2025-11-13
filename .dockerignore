@@ -1,0 +1,52 @@
+# Git and version control
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+docs/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local development
+.env
+.env.local
+*.log
+
+# Docker
+scripts/docker/
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+
+# Data directories
+.docker/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
