@@ -73,8 +73,10 @@ services:
       - DB_PORT=5432
       - DB_DATABASE=${DB_DATABASE:-qtrvsim_web_eval}
       - TASKS_DIR=/data/tasks
+      - TEMPLATES_DIR=/data/templates
     volumes:
       - ${TASKS_DIR:-../tasks}:/data/tasks:ro
+      - ${TEMPLATES_DIR:-../S_templates}:/data/templates:ro
     depends_on:
       db:
         condition: service_healthy
