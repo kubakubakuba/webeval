@@ -1,0 +1,72 @@
+<div class="logo-bar py-3" style="background-color: #012c56;">
+	<div class="container" style="margin-left:1%!important;">
+		<div class="row">
+			<div class="col-sm-8 d-flex align-items-center">
+				<a href="https://cvut.cz" target="_blank" style="text-decoration: none;"><img src="/static/logo.svg" alt="CTU Logo" style="max-width: 100%; max-height: 10vh;" class="mr-5"></a>
+				<a href="https://comparch.edu.cvut.cz" target="_blank" style="text-decoration: none;"><h1 style="color: white; font-size: 2em; padding-left: 20px;">Computer<br>Architectures Education</h1></a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<header class="bg-light text-dark">
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<div class="container-fluid">
+			<a class="navbar-brand" href="/">QtRvSim Web Evaluation</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav ml-auto">
+					<li class="nav-item">
+						<a class="nav-link" href="/about">About</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/scoreboard">Scoreboard</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/wiki">Wiki</a>
+					</li>
+					{% if 'logged_in' not in sessions %}
+						<li class="nav-item">
+							<a class="nav-link" href="/login">Login</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="/register">Register</a>
+						</li>
+					{% else %}
+						<li class="nav-item">
+							<a class="nav-link" href="/profile">Profile</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="/logout">Logout</a>
+						</li>
+					{% endif %}
+				</ul>
+				<!-- Theme Toggle Button -->
+				<div class="theme-toggle-wrapper">
+					<input type="checkbox" id="theme-toggle-checkbox">
+					<label for="theme-toggle-checkbox" class="toggle">
+						<span class="toggle-button">
+							<span class="crater crater-1"></span>
+							<span class="crater crater-2"></span>
+							<span class="crater crater-3"></span>   
+							<span class="crater crater-4"></span>
+							<span class="crater crater-5"></span>
+							<span class="crater crater-6"></span>
+							<span class="crater crater-7"></span>
+						</span>
+						<span class="star star-1"></span>
+						<span class="star star-2"></span>
+						<span class="star star-3"></span>
+						<span class="star star-4"></span>
+						<span class="star star-5"></span>
+						<span class="star star-6"></span>
+						<span class="star star-7"></span>
+						<span class="star star-8"></span>
+					</label>
+				</div>
+			</div>
+		</div>
+	</nav>
+</header>

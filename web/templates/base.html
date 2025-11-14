@@ -7,6 +7,7 @@
 	<title>{% block title %}{% endblock title %}</title>
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+	<script src="{{ url_for('static', filename='theme-switcher.js') }}"></script>
 	<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 	<style>
@@ -21,75 +22,13 @@
 	  </style>
 </head>
 <body>
-	<div class="logo-bar py-3" style="background-color: #012c56;">
-		<div class="container" style="margin-left:1%!important;">
-			<div class="row">
-				<div class="col-sm-8 d-flex align-items-center">
-					<a href="https://cvut.cz" target="_blank" style="text-decoration: none;"><img src="/static/logo.svg" alt="CTU Logo" style="max-width: 100%; max-height: 10vh;" class="mr-5"></a>
-					<a href="https://comparch.edu.cvut.cz" target="_blank" style="text-decoration: none;"><h1 style="color: white; font-size: 2em; padding-left: 20px;">Computer<br>Architectures Education</h1></a>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<header class="bg-light text-dark">
-		<nav class="navbar navbar-expand-lg navbar-light bg-light">
-			<div class="container-fluid">
-				<a class="navbar-brand" href="/">QtRvSim Web Evaluation</a>
-				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-				<div class="collapse navbar-collapse" id="navbarNav">
-					<ul class="navbar-nav ml-auto">
-						<li class="nav-item">
-							<a class="nav-link" href="/about">About</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="/scoreboard">Scoreboard</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="/wiki">Wiki</a>
-						</li>
-						{% if 'logged_in' not in sessions %}
-							<li class="nav-item">
-								<a class="nav-link" href="/login">Login</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" href="/register">Register</a>
-							</li>
-						{% else %}
-							<li class="nav-item">
-								<a class="nav-link" href="/profile">Profile</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" href="/logout">Logout</a>
-							</li>
-						{% endif %}
-					</ul>
-				</div>
-			</div>
-		</nav>
-	</header>
+	{% include 'header.html' %}
 
 	<main class="main-content">
 		{% block content %}{% endblock content %}
 	</main>
 
-	<footer class="footer py-3 bg-light text-dark">
-		<div class="container">
-			<div class="row justify-content-around">
-				<div class="col-sm-4 d-flex flex-column justify-content-center align-items-center">
-					<p style="color: black;">&copy; 2024 Czech Technical University in Prague</p>
-				</div>
-				<div class="col-sm-4 text-center">
-					<a class="gh-button" href="https://github.com/cvut/qtrvsim"><span class="gh-button__icon"></span>QtRvSim</a>
-				</div>
-				<div class="col-sm-4 text-center">
-					<a class="gh-button" href="https://gitlab.fel.cvut.cz/b35apo/qtrvsim-eval-web"><div class="gl-button__icon"></div>Web Evaluator</a>
-				</div>
-			</div>
-		</div>
-	</footer>
+	{% include 'footer.html' %}
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 </body>
 </html>

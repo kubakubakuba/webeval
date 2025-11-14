@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import secrets, os, toml, random, string, re, json
 import db as db
 from util import score_results, user_total_score, check_submission_deadlines
+from auth import login_required, admin_required, check_banned
 
 # Load .env from /app/.env in Docker or ../.env locally
 env_path = "/app/.env" if os.path.exists("/app/.env") else "../.env"
@@ -26,7 +27,6 @@ URL = "https://eval.comparch.edu.cvut.cz"
 
 USER_FILTER = ["reference"]
 
-# Configurable directories for templates and tasks
 TEMPLATES_DIR = os.getenv('TEMPLATES_DIR', 'S_templates')
 TASKS_DIR = os.getenv('TASKS_DIR', 'tasks')
 
@@ -295,14 +295,13 @@ def logout():
 	return redirect('/login')
 
 @app.route('/submit/<int:task_id>', methods=['GET', 'POST'])
+@login_required
+@check_banned
 def submit(task_id):
 	if os.path.exists("config/.submit.disable"):
 		with open("config/.submit.disable", "r") as f:
 			if f.read() == "true":
 				return render_template('disabled.html'), 403
-
-	if 'logged_in' not in session:
-			return redirect(url_for('login'))
 	
 	task = db.get_task(task_id)
 
@@ -322,11 +321,6 @@ def submit(task_id):
 			task_data = toml.load(f)
 
 	if request.method == 'POST':
-
-		is_banned = db.is_user_banned(session['user_id'])
-		if is_banned: #logout user
-			return redirect('/logout')
-		
 		deadlines_check = check_submission_deadlines(task_data, task_name)
 		
 		if deadlines_check:
@@ -510,12 +504,12 @@ def task(task_id):
 						latest_score=latest_score, is_admin=is_admin, issue_url=issue_url, makefile=makefile, files=files, displaynames=displaynames)
 
 @app.route('/view/<int:task_id>/<int:user_id>/<int:is_latest>')
+@login_required
 def view_latest_for_user(task_id, user_id, is_latest):
 	#check if the current user is admin or the userid is the same as the session user id
 	curr_is_admin = check_admin()
 
 	if session['user_id'] != user_id and not curr_is_admin:
-		#throw 403
 		return render_template('403.html'), 403
 	
 	code = db.get_user_code(task_id, user_id, is_latest)
@@ -537,12 +531,8 @@ def view_latest_for_user(task_id, user_id, is_latest):
 	return render_template('view.html', submission_code=code, task_id=task_id, user_id=user_id, is_latest=is_latest, sessions=session, best_or_latest=best_or_latest, task_name=task_name)
 
 @app.route('/admin/reevaluate/<int:task_id>/<int:user_id>/<int:is_best>')
+@admin_required
 def reevaluate(task_id, user_id, is_best):
-	is_admin = check_admin()
-
-	if not is_admin:
-		return render_template('403.html'), 403
-
 	db.reevaluate_task(task_id, user_id, is_best)
 
 	return redirect('/task/' + str(task_id))
@@ -559,38 +549,24 @@ def about():
 	return render_template('about.html', sessions=session, description=description)
 
 @app.route('/admin/ban/<int:user_id>/')
+@admin_required
 def ban(user_id):
-	
-	is_admin = check_admin()
-
-	if not is_admin:
-		return render_template('403.html'), 403
-
 	db.ban_user(user_id)
 
 	return redirect('/admin')
 
 @app.route('/admin/unban/<int:user_id>/')
+@admin_required
 def unban(user_id):
-	
-	is_admin = check_admin()
-
-	if not is_admin:
-		return render_template('403.html'), 403
-
 	db.unban_user(user_id)
 
 	return redirect('/admin')
 
 @app.route('/admin/')
+@admin_required
 def admin():
-	userid = session['user_id'] if 'user_id' in session else -1
+	userid = session['user_id']
 	
-	is_admin = check_admin()
-
-	if not is_admin:
-		return render_template('403.html'), 403
-
 	users = db.get_users()
 	#remove the current user from the list
 
@@ -627,13 +603,8 @@ def admin():
 	return render_template('admin.html', sessions=session, users=users, submissions=results, submit_disabled=submit_disabled, tasks=tasks, all_users=all_users)
 
 @app.route('/admin/toggle/submit/')
+@admin_required
 def toggle_submit():
-	
-	is_admin = check_admin()
-
-	if not is_admin:
-		return render_template('403.html'), 403
-
 	#if the file is empty, write "true" in in, else clear the file content
 
 	disabled = False
@@ -652,13 +623,8 @@ def toggle_submit():
 	return redirect('/admin')
 
 @app.route('/admin/reorder/<string:order>/')
+@admin_required
 def reorder(order):
-	
-	is_admin = check_admin()
-
-	if not is_admin:
-		return render_template('403.html'), 403
-
 	order_list = order.split(';')
 
 	db.reorder_tasks(order_list)
@@ -666,25 +632,15 @@ def reorder(order):
 	return redirect('/admin')
 
 @app.route('/admin/rename/<int:id>/<string:name>')
+@admin_required
 def rename(id, name):
-	
-	is_admin = check_admin()
-
-	if not is_admin:
-		return render_template('403.html'), 403
-
 	db.rename_task(id, name)
 
 	return redirect('/admin')
 
 @app.route('/admin/repath/<int:id>/<string:name>')
+@admin_required
 def repath(id, name):
-	
-	is_admin = check_admin()
-
-	if not is_admin:
-		return render_template('403.html'), 403
-
 	name = os.path.join(TASKS_DIR, os.path.basename(name))
 
 	db.task_change_path(id, name)
@@ -692,13 +648,8 @@ def repath(id, name):
 	return redirect('/admin')
 
 @app.route('/admin/available/<int:id>/<int:available>')
+@admin_required
 def change_available(id, available):
-	
-	is_admin = check_admin()
-
-	if not is_admin:
-		return render_template('403.html'), 403
-
 	available = False if available == 0 else True
 
 	db.set_task_availability(id, available)
@@ -706,13 +657,8 @@ def change_available(id, available):
 	return redirect('/admin')
 
 @app.route('/admin/new/<string:path>/')
+@admin_required
 def new_task(path):
-	
-	is_admin = check_admin()
-
-	if not is_admin:
-		return render_template('403.html'), 403
-
 	path = os.path.join(TASKS_DIR, os.path.basename(path))
 
 	db.create_new_task(path)
@@ -720,34 +666,22 @@ def new_task(path):
 	return redirect('/admin')
 
 @app.route('/admin/resetorg/<int:user_id>/')
+@admin_required
 def reset_org(user_id):
-	is_admin = check_admin()
-
-	if not is_admin:
-		return render_template('403.html'), 403
-
 	db.reset_org(user_id)
 
 	return redirect('/admin')
 
 @app.route('/admin/setgroup/<int:user_id>/<string:group>/')
+@admin_required
 def set_group(user_id, group):
-	is_admin = check_admin()
-
-	if not is_admin:
-		return render_template('403.html'), 403
-
 	db.set_group(user_id, group)
 
 	return redirect('/admin')
 
 @app.route('/admin/resetresults/<int:userid>/')
+@admin_required
 def reset_results(userid):
-	is_admin = check_admin()
-
-	if not is_admin:
-		return render_template('403.html'), 403
-
 	db.reset_results_user(userid)
 
 	return redirect('/admin')
@@ -855,11 +789,9 @@ def scoreboard_group(type, grouporg):
 	return render_template('scoreboard.html', sessions=session, submissions=results, total_score=total_score, user_ids=user_ids, user=None, grouporg=group_text, displaynames=displaynames)
 
 @app.route('/profile/')
+@login_required
 def profile():
-	userid = session['user_id'] if 'user_id' in session else -1
-
-	if userid == -1:
-		return redirect('/login')
+	userid = session['user_id']
 
 	user = db.get_user_by_id(userid)
 
@@ -878,11 +810,9 @@ def profile():
 	return render_template('profile.html', sessions=session, user=user_dict)
 
 @app.route('/profile/org/<string:country>/<string:org>')
+@login_required
 def change_org(country, org):
-	userid = session['user_id'] if 'user_id' in session else -1
-
-	if userid == -1:
-		return redirect('/login')
+	userid = session['user_id']
 
 	organizations = None
 
@@ -896,11 +826,9 @@ def change_org(country, org):
 
 	return redirect('/profile')
 @app.route('/profile/displayname/<string:displayname>')
+@login_required
 def change_displayname(displayname):
-	userid = session['user_id'] if 'user_id' in session else -1
-
-	if userid == -1:
-		return redirect('/login')
+	userid = session['user_id']
 	
 	displayname = displayname[:32]
 	
@@ -909,11 +837,9 @@ def change_displayname(displayname):
 	return redirect('/profile')
 
 @app.route('/profile/privacy/<int:visibility>')
+@login_required
 def change_privacy(visibility):
-	userid = session['user_id'] if 'user_id' in session else -1
-
-	if userid == -1:
-		return redirect('/login')
+	userid = session['user_id']
 	
 	#check if visibility is in range 0-3
 
