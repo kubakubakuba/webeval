@@ -1,0 +1,28 @@
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY ./package.json ./package-lock.json* ./
+
+# Install dependencies
+RUN npm install
+
+# Copy docs directory
+COPY ./docs ./docs
+
+# Build static site
+RUN npm run docs:build
+
+# Production stage - serve with nginx
+FROM nginx:alpine
+
+# Copy built files to nginx
+COPY --from=builder /app/docs/.vitepress/dist /usr/share/nginx/html
+
+# Copy nginx config
+COPY docker/docs/nginx-docs.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

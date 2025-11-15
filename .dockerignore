@@ -3,9 +3,9 @@
 .gitignore
 .gitattributes
 
-# Documentation
+# Documentation (README files ignored, but docs/ needed for docs container)
 *.md
-docs/
+!docs/**
 
 # Python cache
 __pycache__/

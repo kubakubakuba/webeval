@@ -1,0 +1,7 @@
+# Production override - use this with: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+services:
+  docs:
+    build:
+      context: ..
+      dockerfile: docker/docs/Dockerfile.prod
+    volumes: []  # Remove dev volumes
