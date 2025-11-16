@@ -1,4 +1,4 @@
-from flask import session, redirect, url_for, render_template
+from flask import session, redirect, url_for, render_template, request
 from functools import wraps
 import db as db
 
@@ -43,5 +43,22 @@ def check_banned(f):
 			if is_banned:
 				session.clear()
 				return redirect(url_for('login'))
+		return f(*args, **kwargs)
+	return decorated_function
+
+
+def api_key_required(f):
+	@wraps(f)
+	def decorated_function(*args, **kwargs):
+		auth_header = request.headers.get('Authorization')
+		
+		if not auth_header or not auth_header.startswith('Bearer '):
+			return {'error': 'Missing or invalid authorization header'}, 401
+		
+		api_key = auth_header.replace('Bearer ', '', 1)
+		
+		if not db.verify_api_key(api_key):
+			return {'error': 'Invalid or inactive API key'}, 401
+		
 		return f(*args, **kwargs)
 	return decorated_function

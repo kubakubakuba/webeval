@@ -88,11 +88,13 @@
 			<hr />
 
 			{% if 'logged_in' in sessions %}
-				<div class="card card-btn">
-					<a href="/submit/{{ task.id }}" class="card-body text-center text-decoration-none">
-						Submit a solution
-					</a>
-				</div>
+				{% if can_submit %}
+					<div class="card card-btn">
+						<a href="/submit/{{ task.id }}" class="card-body text-center text-decoration-none">
+							Submit a solution
+						</a>
+					</div>
+				{% endif %}
 
 				{% if task.deadlines %}
 	

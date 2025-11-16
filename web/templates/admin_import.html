@@ -57,11 +57,11 @@ table {
                 <div class="card-body">
                     <h5 class="card-title">CSV Format</h5>
                     <p>Upload a CSV file with the following format (semicolon-separated):</p>
-                    <code>email;username;display_name;country;organization;group;visibility</code>
+                    <code>email;username;display_name;country;organization;group;visibility;can_submit</code>
                     
                     <h6 class="mt-3">Example:</h6>
-                    <pre>john@example.com;john123;John Doe;USA;MIT;2024;0
-jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3</pre>
+                    <pre>john@example.com;john123;John Doe;USA;MIT;2024;0;1
+jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
                     
                     <h6 class="mt-3">Fields:</h6>
                     <ul>
@@ -77,6 +77,12 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3</pre>
                                 <li><code>1</code> = <strong>Organization</strong>: Only users from same organization</li>
                                 <li><code>2</code> = <strong>Study group</strong>: Only users from same study group</li>
                                 <li><code>3</code> = <strong>Private</strong>: Only the user can see results</li>
+                            </ul>
+                        </li>
+                        <li><strong>can_submit</strong>: Submission permission (optional, defaults to 1):
+                            <ul>
+                                <li><code>0</code> = <strong>Cannot submit</strong>: User cannot submit tasks via web interface</li>
+                                <li><code>1</code> = <strong>Can submit</strong>: User can submit tasks normally</li>
                             </ul>
                         </li>
                     </ul>

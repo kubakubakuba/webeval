@@ -23,6 +23,7 @@ CREATE TABLE users (
     organization character varying(255),
     "group" character varying(255),
     visibility integer NOT NULL DEFAULT 0,
+    can_submit boolean NOT NULL DEFAULT true,
     PRIMARY KEY (id),
     UNIQUE (email),
     UNIQUE (username)
@@ -140,9 +141,39 @@ CREATE TRIGGER trigger_update_results_timestamp
     EXECUTE FUNCTION update_timestamp();
 
 --
+-- Table: api_keys
+--
+CREATE TABLE api_keys (
+    id integer NOT NULL,
+    key character varying(64) NOT NULL,
+    created_by uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL DEFAULT NOW(),
+    last_used timestamp with time zone,
+    description character varying(255),
+    active boolean NOT NULL DEFAULT true,
+    PRIMARY KEY (id),
+    UNIQUE (key),
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE SEQUENCE api_keys_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE api_keys_id_seq OWNED BY api_keys.id;
+ALTER TABLE ONLY api_keys ALTER COLUMN id SET DEFAULT nextval('api_keys_id_seq'::regclass);
+
+CREATE INDEX idx_api_keys_key ON api_keys(key);
+CREATE INDEX idx_api_keys_active ON api_keys(active);
+
+--
 -- Permissions
 --
 ALTER TABLE users OWNER TO qtrvsim;
 ALTER TABLE tasks OWNER TO qtrvsim;
 ALTER TABLE results OWNER TO qtrvsim;
 ALTER TABLE submissions OWNER TO qtrvsim;
+ALTER TABLE api_keys OWNER TO qtrvsim;

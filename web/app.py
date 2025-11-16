@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 import secrets, os, toml, random, string, re, json
 import db as db
 from util import score_results, user_total_score, check_submission_deadlines
-from auth import login_required, admin_required, check_banned
+from auth import login_required, admin_required, check_banned, api_key_required
+from functools import wraps
 
 # Load .env from /app/.env in Docker or ../.env locally
 env_path = "/app/.env" if os.path.exists("/app/.env") else "../.env"
@@ -300,6 +301,11 @@ def logout():
 @login_required
 @check_banned
 def submit(task_id):
+	# Check if user has submit permission
+	user_id = session['user_id']
+	if not db.can_user_submit(user_id):
+		return render_template('403.html'), 403
+	
 	if os.path.exists("config/.submit.disable"):
 		with open("config/.submit.disable", "r") as f:
 			if f.read() == "true":
@@ -504,10 +510,12 @@ def task(task_id):
 
 	displaynames = db.get_user_displaynames()
 	displaynames = {user[0]: user[1] for user in displaynames}
+	
+	can_submit = db.can_user_submit(userid) if userid is not None else False
 
 	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data,
 						scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name,
-						latest_score=latest_score, is_admin=is_admin, issue_url=issue_url, makefile=makefile, files=files, displaynames=displaynames)
+						latest_score=latest_score, is_admin=is_admin, issue_url=issue_url, makefile=makefile, files=files, displaynames=displaynames, can_submit=can_submit)
 
 @app.route('/view/<int:task_id>/<user_id>/<int:is_latest>')
 @login_required
@@ -692,6 +700,55 @@ def reset_results(userid):
 
 	return redirect('/admin')
 
+@app.route('/admin/apikeys', methods=['GET'])
+@admin_required
+def admin_api_keys():
+	"""Display all API keys."""
+	api_keys = db.get_api_keys()
+	return render_template('admin_apikeys.html', sessions=session, api_keys=api_keys)
+
+@app.route('/admin/apikeys/create', methods=['POST'])
+@admin_required
+def create_api_key():
+	"""Generate a new API key."""
+	description = request.form.get('description', '').strip()
+	# Sanitize description: limit length and remove potentially harmful characters
+	if description:
+		description = re.sub(r'[<>\"\'&]', '', description)[:255]
+	created_by = session['user_id']
+	
+	result = db.create_api_key(created_by, description if description else None)
+	
+	if result:
+		return redirect('/admin/apikeys')
+	else:
+		return redirect('/admin/apikeys#error')
+
+@app.route('/admin/apikeys/delete/<int:key_id>', methods=['POST', 'GET'])
+@admin_required
+def delete_api_key(key_id):
+	"""Delete an API key."""
+	db.delete_api_key(key_id)
+	return redirect('/admin/apikeys')
+
+@app.route('/admin/apikeys/toggle/<int:key_id>', methods=['POST', 'GET'])
+@admin_required
+def toggle_api_key(key_id):
+	"""Toggle an API key's active status."""
+	db.toggle_api_key(key_id)
+	return redirect('/admin/apikeys')
+
+@app.route('/admin/apikeys/description/<int:key_id>', methods=['POST'])
+@admin_required
+def update_api_key_description(key_id):
+	"""Update an API key's description."""
+	description = request.form.get('description', '').strip()
+	# Sanitize description
+	if description:
+		description = re.sub(r'[<>\"\'&]', '', description)[:255]
+	db.update_api_key_description(key_id, description if description else None)
+	return redirect('/admin/apikeys')
+
 @app.route('/admin/import', methods=['GET', 'POST'])
 @admin_required
 def admin_import_users():
@@ -725,10 +782,11 @@ def admin_import_users():
 			if not row or all(cell.strip() == '' for cell in row):
 				continue
 			
-			# Expect 7 columns: email;username;display_name;country;organization;group;visibility
+			# Expect 7-8 columns: email;username;display_name;country;organization;group;visibility;can_submit
+			# can_submit is optional and defaults to 1 (allow)
 			if len(row) < 7:
 				return render_template('admin_import.html', 
-					errors=[f'Line {row_num}: Invalid format - expected 7 columns (semicolon-separated), got {len(row)}'])
+					errors=[f'Line {row_num}: Invalid format - expected 7-8 columns (semicolon-separated), got {len(row)}'])
 			
 			users_data.append({
 				'email': row[0].strip(),
@@ -737,7 +795,8 @@ def admin_import_users():
 				'country': row[3].strip(),
 				'organization': row[4].strip(),
 				'group': row[5].strip(),
-				'visibility': row[6].strip()
+				'visibility': row[6].strip(),
+				'can_submit': row[7].strip() if len(row) > 7 else '1'
 			})
 		
 		if not users_data:
@@ -762,6 +821,9 @@ def admin_import_users():
 					
 					if user_data.get('visibility') not in ['0', '1', '2', '3']:
 						errors.append(f"{line_prefix}: Invalid visibility (must be 0-3): {user_data.get('visibility', 'empty')}")
+					
+					if user_data.get('can_submit', '1') not in ['0', '1']:
+						errors.append(f"{line_prefix}: Invalid can_submit (must be 0 or 1): {user_data.get('can_submit', 'empty')}")
 					
 					# Check existing users
 					if user_data.get('email'):
@@ -980,3 +1042,97 @@ def page_forbidden(e):
 @app.errorhandler(404)
 def page_not_found(e):
 	return render_template('404.html'), 404
+
+@app.route('/api/submit', methods=['POST'])
+@api_key_required
+def api_submit():
+	"""
+	API endpoint to submit a task for a user.
+	
+	Request body (JSON):
+	{
+		"username": "user123",
+		"task_id": 1,
+		"code": "# Assembly or C code here"
+	}
+	
+	Headers:
+	Authorization: Bearer <api_key>
+	
+	Example curl:
+	curl -X POST https://eval.comparch.edu.cvut.cz/api/submit \
+		-H "Authorization: Bearer <your_api_key>" \
+		-H "Content-Type: application/json" \
+		-d '{"username": "user123", "task_id": 1, "code": "..."}'
+	"""
+	try:
+		data = request.get_json()
+		
+		if not data:
+			return {'error': 'No JSON data provided'}, 400
+		
+		username = data.get('username')
+		task_id = data.get('task_id')
+		code = data.get('code')
+		
+		if not username or not task_id or not code:
+			return {'error': 'Missing required fields: username, task_id, code'}, 400
+		
+		# Check if task exists and is available
+		task = db.get_task(task_id)
+		if not task:
+			return {'error': f'Task {task_id} not found or not available'}, 404
+		
+		# Get user ID from username
+		user_id = db.get_user_id_by_username(username)
+		if not user_id:
+			return {'error': f'User {username} not found'}, 404
+		
+		# Check if user is banned
+		is_banned = db.is_banned(user_id)
+		if is_banned:
+			return {'error': 'User is banned'}, 403
+		
+		# Check if user is verified
+		user = db.get_user_by_id(user_id)
+		if not user or not user[4]:  # user[4] is verified field
+			return {'error': 'User is not verified'}, 403
+		
+		# Check submission deadlines
+		task_path = db.get_task_path(task_id)
+		if task_path:
+			task_path = os.path.join(TASKS_DIR, os.path.basename(task_path[0]))
+			if os.path.exists(task_path):
+				with open(task_path) as f:
+					task_data = toml.load(f)
+				
+				# Check deadlines
+				deadlines = task_data.get('task', {})
+				start_date = deadlines.get('start_date')
+				end_date = deadlines.get('end_date')
+				
+				if start_date:
+					start_datetime = datetime.strptime(start_date, '%Y-%m-%d %H:%M:%S')
+					if datetime.now() < start_datetime:
+						return {'error': f'Task submissions not yet open. Opens at {start_date}'}, 403
+				
+				if end_date:
+					end_datetime = datetime.strptime(end_date, '%Y-%m-%d %H:%M:%S')
+					if datetime.now() > end_datetime:
+						return {'error': f'Task submissions closed. Deadline was {end_date}'}, 403
+		
+		# Submit the code
+		code = code.replace('\r\n', '\n')
+		db.submit(user_id, task_id, code)
+		
+		return {
+			'success': True,
+			'message': 'Submission successful',
+			'username': username,
+			'task_id': task_id,
+			'task_name': task[0],
+			'timestamp': datetime.now().isoformat()
+		}, 201
+		
+	except Exception as e:
+		return {'error': f'Server error: {str(e)}'}, 500

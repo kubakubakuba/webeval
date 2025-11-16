@@ -92,6 +92,15 @@ def is_admin_by_id(userid):
 	db.close()
 	return admin
 
+def can_user_submit(userid):
+	"""Check if user can submit tasks"""
+	(db, cursor) = connect()
+	cursor.execute('SELECT can_submit FROM users WHERE id = %s', (userid,))
+	result = cursor.fetchone()
+	cursor.close()
+	db.close()
+	return result[0] if result else False
+
 def get_task(task_id):
 	"""Get a task."""
 	(db, cursor) = connect()
@@ -498,7 +507,7 @@ def batch_import_users(users_data):
 	Batch import users from CSV data.
 	
 	Args:
-		users_data: List of dictionaries with keys: email, username, display_name, country, organization, group, visibility
+		users_data: List of dictionaries with keys: email, username, display_name, country, organization, group, visibility, can_submit
 		
 	Returns:
 		Tuple of (success_list, error_list)
@@ -553,6 +562,11 @@ def batch_import_users(users_data):
 			if visibility not in ['0', '1', '2', '3']:
 				errors.append(f"{line_prefix}: Visibility must be 0-3 (0=Public, 1=Organization, 2=Group, 3=Private), got: {visibility}")
 			
+			# can_submit validation
+			can_submit = user_data.get('can_submit', '1').strip()
+			if can_submit not in ['0', '1']:
+				errors.append(f"{line_prefix}: can_submit must be 0 or 1, got: {can_submit}")
+			
 			# Check if email already exists in database
 			cursor.execute('SELECT id FROM users WHERE LOWER(email) = LOWER(%s)', (email,))
 			if cursor.fetchone():
@@ -579,6 +593,7 @@ def batch_import_users(users_data):
 			organization = user_data.get('organization', '').strip() or None
 			group = user_data.get('group', '').strip() or None
 			visibility = int(user_data.get('visibility', '0').strip())
+			can_submit = user_data.get('can_submit', '1').strip() == '1'
 			
 			# Generate salt and token
 			salt = hashlib.sha512(os.urandom(64)).hexdigest()
@@ -592,10 +607,10 @@ def batch_import_users(users_data):
 			# Both email and password fields contain the hashed email
 			cursor.execute('''
 				INSERT INTO users 
-				(email, password, salt, token, verified, username, admin, display_name, country, organization, "group", visibility)
-				VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+				(email, password, salt, token, verified, username, admin, display_name, country, organization, "group", visibility, can_submit)
+				VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 				RETURNING id
-			''', (hashed_email, hashed_email, salt, token, True, username, False, display_name, country, organization, group, visibility))
+			''', (hashed_email, hashed_email, salt, token, True, username, False, display_name, country, organization, group, visibility, can_submit))
 			
 			user_id = cursor.fetchone()[0]
 			
@@ -621,3 +636,114 @@ def batch_import_users(users_data):
 		db.close()
 	
 	return (success, errors)
+
+def create_api_key(created_by, description=None):
+	"""Create a new API key."""
+	import secrets
+	api_key = secrets.token_urlsafe(48)  # 64 characters when base64 encoded
+	
+	(db, cursor) = connect()
+	try:
+		cursor.execute(
+			'INSERT INTO api_keys (key, created_by, description) VALUES (%s, %s, %s) RETURNING id, key, created_at',
+			(api_key, created_by, description)
+		)
+		result = cursor.fetchone()
+		db.commit()
+		return result
+	except Exception as e:
+		db.rollback()
+		return None
+	finally:
+		cursor.close()
+		db.close()
+
+def get_api_keys():
+	"""Get all API keys."""
+	(db, cursor) = connect()
+	cursor.execute('''
+		SELECT api_keys.id, api_keys.key, api_keys.created_by, users.username, 
+		       api_keys.created_at, api_keys.last_used, api_keys.description, api_keys.active
+		FROM api_keys 
+		INNER JOIN users ON api_keys.created_by = users.id
+		ORDER BY api_keys.created_at DESC
+	''')
+	keys = cursor.fetchall()
+	cursor.close()
+	db.close()
+	return keys
+
+def verify_api_key(key):
+	"""Verify an API key and update last_used timestamp."""
+	(db, cursor) = connect()
+	try:
+		cursor.execute(
+			'SELECT id, created_by, active FROM api_keys WHERE key = %s',
+			(key,)
+		)
+		result = cursor.fetchone()
+		
+		if result and result[2]:  # Check if key exists and is active
+			# Update last_used timestamp
+			cursor.execute(
+				'UPDATE api_keys SET last_used = NOW() WHERE id = %s',
+				(result[0],)
+			)
+			db.commit()
+			return True
+		
+		return False
+	finally:
+		cursor.close()
+		db.close()
+
+def delete_api_key(key_id):
+	"""Delete an API key."""
+	(db, cursor) = connect()
+	try:
+		cursor.execute('DELETE FROM api_keys WHERE id = %s', (key_id,))
+		db.commit()
+		return True
+	except Exception as e:
+		db.rollback()
+		return False
+	finally:
+		cursor.close()
+		db.close()
+
+def toggle_api_key(key_id):
+	"""Toggle the active status of an API key."""
+	(db, cursor) = connect()
+	try:
+		cursor.execute('UPDATE api_keys SET active = NOT active WHERE id = %s', (key_id,))
+		db.commit()
+		return True
+	except Exception as e:
+		db.rollback()
+		return False
+	finally:
+		cursor.close()
+		db.close()
+
+def get_user_id_by_username(username):
+	"""Get user ID by username."""
+	(db, cursor) = connect()
+	cursor.execute('SELECT id FROM users WHERE username = %s', (username,))
+	result = cursor.fetchone()
+	cursor.close()
+	db.close()
+	return result[0] if result else None
+
+def update_api_key_description(key_id, description):
+	"""Update the description of an API key."""
+	(db, cursor) = connect()
+	try:
+		cursor.execute('UPDATE api_keys SET description = %s WHERE id = %s', (description, key_id))
+		db.commit()
+		return True
+	except Exception as e:
+		db.rollback()
+		return False
+	finally:
+		cursor.close()
+		db.close()

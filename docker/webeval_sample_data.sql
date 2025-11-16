@@ -40,10 +40,10 @@ COPY public.tasks (id, name, path, available, sequence) FROM stdin;
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: qtrvsim
 --
 
-COPY public.users (id, email, password, salt, token, verified, username, admin, display_name, country, organization, "group", visibility) FROM stdin;
-bfe11ab0-f288-418e-bbc6-ba59617556b5	b152eb9851e2ed73b27f888c2613de5435e25a18ae5638fb17c52468fd0247c55770541ed4bbad7bd699f75159c02bd6c562ab6ff2f3fdb2862be465d31d1fbc	cb7d0569eddff00a2a4c0eb4a18ffc594da40e59f97ea306eb27b0afa9ea3b314417a8dc2f8841da358f1371df840359f9d55316be64bf2b2c8c7930e0c47f36	793492cec4dd88c16437fef86c51fb9b	\N	t	test	f	\N	\N	\N	\N	0
-6e191f30-747c-4df2-a31b-3ac166512e73	f3be085dd76b5c35d62772424a7dae715d4e1b65a62721e5d9b51b5a6b84f0242d437009814067800c12f14a1b7466e1feef72b49e002bc65f3602d38e5af6e3	d033dfdcbd24b7d6fd9b50c4e113fe043b57af7d838e5f2980469774368d819058d3e4e6e99e840ae87ac9650fb38b94f6cde4627de3f62126fcd970d94c8985	823013382590da6aceb31a6423de7d94	\N	t	admin	t	\N	\N	\N	\N	0
-b121f56b-699c-48cc-8172-d89306bd8154	eb3a83a1fc66b322f1e72e41008321c59e1264319dd36897217d0d94b6b0cd02958f3006ae18668e3efe45f352c7ba8e104d28f478cfa6bfec6782434c981b14	f92b8490592dd02bf5598e9901417eca73df8fafa85fc313a28473ec01f45086c35442ebe78326694ea6f9af8c64100a508bbe4fd945f7d6822cb221e76c9d65	f1840412a28d9e417b3d82f943b9af39	\N	t	reference	f	\N	\N	\N	\N	0
+COPY public.users (id, email, password, salt, token, verified, username, admin, display_name, country, organization, "group", visibility, can_submit) FROM stdin;
+bfe11ab0-f288-418e-bbc6-ba59617556b5	b152eb9851e2ed73b27f888c2613de5435e25a18ae5638fb17c52468fd0247c55770541ed4bbad7bd699f75159c02bd6c562ab6ff2f3fdb2862be465d31d1fbc	cb7d0569eddff00a2a4c0eb4a18ffc594da40e59f97ea306eb27b0afa9ea3b314417a8dc2f8841da358f1371df840359f9d55316be64bf2b2c8c7930e0c47f36	793492cec4dd88c16437fef86c51fb9b	\N	t	test	f	\N	\N	\N	\N	0	0
+6e191f30-747c-4df2-a31b-3ac166512e73	f3be085dd76b5c35d62772424a7dae715d4e1b65a62721e5d9b51b5a6b84f0242d437009814067800c12f14a1b7466e1feef72b49e002bc65f3602d38e5af6e3	d033dfdcbd24b7d6fd9b50c4e113fe043b57af7d838e5f2980469774368d819058d3e4e6e99e840ae87ac9650fb38b94f6cde4627de3f62126fcd970d94c8985	823013382590da6aceb31a6423de7d94	\N	t	admin	t	\N	\N	\N	\N	0	1
+b121f56b-699c-48cc-8172-d89306bd8154	eb3a83a1fc66b322f1e72e41008321c59e1264319dd36897217d0d94b6b0cd02958f3006ae18668e3efe45f352c7ba8e104d28f478cfa6bfec6782434c981b14	f92b8490592dd02bf5598e9901417eca73df8fafa85fc313a28473ec01f45086c35442ebe78326694ea6f9af8c64100a508bbe4fd945f7d6822cb221e76c9d65	f1840412a28d9e417b3d82f943b9af39	\N	t	reference	f	\N	\N	\N	\N	0	1
 \.
 
 
@@ -63,6 +63,21 @@ b121f56b-699c-48cc-8172-d89306bd8154	1	Evaluation started on: 2025-11-16 01:03:4
 COPY public.submissions (id, userid, taskid, file, evaluated, "time") FROM stdin;
 12	b121f56b-699c-48cc-8172-d89306bd8154	1	//Write a program that loads a value 10 into register a1 and value 12 into register a2. Then, add the values and store the result in register a3.\n\nli a1,10\nli a2,12\nadd a3, a1, a2\n\nnop\nnop\nnop\nnop\nebreak	t	2025-11-16 01:03:38.150787+00
 \.
+
+
+--
+-- Data for Name: api_keys; Type: TABLE DATA; Schema: public; Owner: qtrvsim
+--
+
+COPY public.api_keys (id, key, created_by, created_at, last_used, description, active) FROM stdin;
+\.
+
+
+--
+-- Name: api_keys_id_seq; Type: SEQUENCE SET; Schema: public; Owner: qtrvsim
+--
+
+SELECT pg_catalog.setval('public.api_keys_id_seq', 1, false);
 
 
 --
