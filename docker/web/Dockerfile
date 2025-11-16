@@ -20,7 +20,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 COPY web/ /app/
 
-COPY scripts/qtrvsim_web_eval.sql /docker-init/schema.sql
+RUN mkdir -p /docker-init/data
+
+COPY docker/webeval_schema.sql /docker-init/schema.sql
+COPY docker/webeval_sample_data.sql /docker-init/sample_data.sql
 
 RUN mkdir -p /docker-init/data
 

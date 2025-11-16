@@ -37,7 +37,9 @@ def check_admin() -> bool:
 		#return redirect(url_for('login'))
 		return False
 
-	userid = session['user_id'] if 'user_id' in session else -1
+	userid = session.get('user_id')
+	if userid is None:
+		return False
 	is_admin = db.is_admin_by_id(userid)
 	is_admin = is_admin[0] if is_admin else False
 
@@ -463,30 +465,34 @@ def task(task_id):
 	#best_scores = db.get_best_scores(task_id)
 	organization = user[9] if user is not None else "___none__"
 	group = user[10] if user is not None else "___none__"
-	curr_user = user[0] if user is not None else -1
+	curr_user = user[0] if user is not None else None
 
 	best_scores = db.get_best_scores_for_verified_grouporg(task_id, group, organization, curr_user)
 	#add flag 1 (best) to the third argument of the tuple
 	best_scores = [(score[3], score[1], score[0], 1) for score in best_scores]
 
-	#check if latest score is already in best scores
-	duplicate_score = []
-	if latest_score is not None:
-		duplicate_score = (latest_score[0], latest_score[1], latest_score[2], 1) #reflag to 1 (best)
+	#check if latest score is the same as best score (score value only)
+	# If latest and best have the same score value, only show best (green)
+	# If they differ, show both (best in green, latest in yellow)
+	# Also filter out latest_score if the score is None (not yet evaluated)
+	if latest_score is not None and latest_score[1] is not None:
+		best_score_values = {(score[0], score[1]) for score in best_scores}  # (userid, score) tuples
+		latest_tuple = (latest_score[0], latest_score[1])
+		if latest_tuple in best_score_values:
+			latest_score = None
 
-	if duplicate_score in best_scores:
-		latest_score = None
+	scores = best_scores + ([latest_score] if latest_score and latest_score[1] is not None else [])
 
-	scores = best_scores + ([latest_score] if latest_score else [])
-
+	# Filter out any scores with None values before sorting
+	scores = [s for s in scores if s[1] is not None]
 	scores.sort(key=lambda x: x[1])
 
 	latest_score = None if latest_score is None else latest_score[1]
 
 	time = None if time is None else time.strftime('%d.%m. %Y %H:%M:%S')
 
-	userid = session['user_id'] if 'user_id' in session else -1
-	is_admin = db.is_admin_by_id(userid)
+	userid = session['user_id'] if 'user_id' in session else None
+	is_admin = db.is_admin_by_id(userid) if userid is not None else False
 	is_admin = is_admin[0] if is_admin else False
 
 	issue_url = None
@@ -503,13 +509,13 @@ def task(task_id):
 						scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name,
 						latest_score=latest_score, is_admin=is_admin, issue_url=issue_url, makefile=makefile, files=files, displaynames=displaynames)
 
-@app.route('/view/<int:task_id>/<int:user_id>/<int:is_latest>')
+@app.route('/view/<int:task_id>/<user_id>/<int:is_latest>')
 @login_required
 def view_latest_for_user(task_id, user_id, is_latest):
 	#check if the current user is admin or the userid is the same as the session user id
 	curr_is_admin = check_admin()
 
-	if session['user_id'] != user_id and not curr_is_admin:
+	if str(session['user_id']) != str(user_id) and not curr_is_admin:
 		return render_template('403.html'), 403
 	
 	code = db.get_user_code(task_id, user_id, is_latest)
@@ -530,7 +536,7 @@ def view_latest_for_user(task_id, user_id, is_latest):
 
 	return render_template('view.html', submission_code=code, task_id=task_id, user_id=user_id, is_latest=is_latest, sessions=session, best_or_latest=best_or_latest, task_name=task_name)
 
-@app.route('/admin/reevaluate/<int:task_id>/<int:user_id>/<int:is_best>')
+@app.route('/admin/reevaluate/<int:task_id>/<user_id>/<int:is_best>')
 @admin_required
 def reevaluate(task_id, user_id, is_best):
 	db.reevaluate_task(task_id, user_id, is_best)
@@ -548,14 +554,14 @@ def about():
 
 	return render_template('about.html', sessions=session, description=description)
 
-@app.route('/admin/ban/<int:user_id>/')
+@app.route('/admin/ban/<user_id>/')
 @admin_required
 def ban(user_id):
 	db.ban_user(user_id)
 
 	return redirect('/admin')
 
-@app.route('/admin/unban/<int:user_id>/')
+@app.route('/admin/unban/<user_id>/')
 @admin_required
 def unban(user_id):
 	db.unban_user(user_id)
@@ -739,9 +745,9 @@ def scoreboard_group(type, grouporg):
 
 	results = {}
 
-	user_id = session['user_id'] if 'user_id' in session else -1
+	user_id = session.get('user_id')
 
-	user = db.get_user_by_id(user_id)
+	user = db.get_user_by_id(user_id) if user_id else None
 	user_group = user[10] if user else None
 	user_org = user[9] if user else None
 

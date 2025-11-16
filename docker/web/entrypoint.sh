@@ -56,20 +56,20 @@ EOSQL
 				echo "⚠ Warning: Error loading initial data (continuing anyway)"
 			fi
 		else
-			# Only create default admin if no initial data was provided
-			if [ "$EVAL_DEFAULT_ADMIN" != "" ] && [ "$EVAL_DEFAULT_ADMIN" != "None" ]; then
-				echo "Creating default admin user..."
+			# Load sample data for testing/development
+			echo "Loading sample data (admin/admin, test1-3/test)..."
+			PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$POSTGRES_USER" -d "$DB_DATABASE" -f /docker-init/sample_data.sql
+			
+			if [ $? -eq 0 ]; then
+				echo "✓ Sample data loaded successfully"
 				
-				SALT=$(openssl rand -base64 16)
-				HASHED_PASSWORD=$(python3 -c "from hashlib import sha512; print(sha512(('$EVAL_DEFAULT_ADMIN_PASSWORD' + '$SALT').encode()).hexdigest())")
-				HASHED_EMAIL=$(python3 -c "from hashlib import sha512; print(sha512(('$MAIL_USERNAME' + '$SALT').encode()).hexdigest())")
-				
+				# Grant privileges after loading sample data
 				PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$POSTGRES_USER" -d "$DB_DATABASE" <<-EOSQL
-					INSERT INTO users (email, password, salt, username, admin, verified)
-					VALUES ('$HASHED_EMAIL', '$HASHED_PASSWORD', '$SALT', '$EVAL_DEFAULT_ADMIN', true, true);
+					GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $DB_USER;
+					GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;
 EOSQL
-				
-				echo "✓ Admin user '$EVAL_DEFAULT_ADMIN' created"
+			else
+				echo "⚠ Warning: Error loading sample data"
 			fi
 		fi
 	else

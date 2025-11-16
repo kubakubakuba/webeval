@@ -1,20 +1,18 @@
-FROM ubuntu:jammy
+FROM debian:trixie
 
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	python3 \
 	python3-pip \
-	gnupg \
-	software-properties-common \
-	&& apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6ABE86107FE08A77 \
-	&& add-apt-repository ppa:qtrvsimteam/ppa \
-	&& apt-get update \
-	&& apt-get install -y qtrvsim \
+	make \
+	gcc \
+	g++ \
+	gcc-riscv64-unknown-elf \
+	qtrvsim \
 	&& rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir --upgrade pip && \
-	pip3 install --no-cache-dir \
+RUN pip3 install --no-cache-dir --break-system-packages \
 	toml \
 	markdown \
 	psycopg2-binary \

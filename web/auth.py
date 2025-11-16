@@ -20,7 +20,10 @@ def admin_required(f):
 		if 'logged_in' not in session:
 			return redirect(url_for('login'))
 		
-		userid = session.get('user_id', -1)
+		userid = session.get('user_id')
+		if userid is None:
+			return render_template('403.html'), 403
+			
 		is_admin = db.is_admin_by_id(userid)
 		is_admin = is_admin[0] if is_admin else False
 		
