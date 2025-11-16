@@ -692,6 +692,114 @@ def reset_results(userid):
 
 	return redirect('/admin')
 
+@app.route('/admin/import', methods=['GET', 'POST'])
+@admin_required
+def admin_import_users():
+	"""Batch import users from CSV file."""
+	if request.method == 'GET':
+		return render_template('admin_import.html')
+	
+	# POST - handle file upload
+	import csv
+	import io
+	
+	if 'csvFile' not in request.files:
+		return render_template('admin_import.html', errors=['No file uploaded'])
+	
+	file = request.files['csvFile']
+	
+	if file.filename == '':
+		return render_template('admin_import.html', errors=['No file selected'])
+	
+	if not file.filename.endswith('.csv'):
+		return render_template('admin_import.html', errors=['File must be a CSV file'])
+	
+	try:
+		# Read and parse CSV
+		stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+		csv_reader = csv.reader(stream, delimiter=';')
+		
+		users_data = []
+		for row_num, row in enumerate(csv_reader, start=1):
+			# Skip empty rows
+			if not row or all(cell.strip() == '' for cell in row):
+				continue
+			
+			# Expect 7 columns: email;username;display_name;country;organization;group;visibility
+			if len(row) < 7:
+				return render_template('admin_import.html', 
+					errors=[f'Line {row_num}: Invalid format - expected 7 columns (semicolon-separated), got {len(row)}'])
+			
+			users_data.append({
+				'email': row[0].strip(),
+				'username': row[1].strip(),
+				'display_name': row[2].strip(),
+				'country': row[3].strip(),
+				'organization': row[4].strip(),
+				'group': row[5].strip(),
+				'visibility': row[6].strip()
+			})
+		
+		if not users_data:
+			return render_template('admin_import.html', errors=['CSV file is empty'])
+		
+		# Check if dry run
+		dry_run = 'dryRun' in request.form
+		
+		if dry_run:
+			# Validation only
+			errors = []
+			(db_conn, cursor) = db.connect()
+			try:
+				for idx, user_data in enumerate(users_data, start=1):
+					line_prefix = f"Line {idx}"
+					
+					if not user_data.get('email') or '@' not in user_data['email']:
+						errors.append(f"{line_prefix}: Invalid email: {user_data.get('email', 'empty')}")
+					
+					if not user_data.get('username') or len(user_data['username']) < 3:
+						errors.append(f"{line_prefix}: Invalid username: {user_data.get('username', 'empty')}")
+					
+					if user_data.get('visibility') not in ['0', '1', '2', '3']:
+						errors.append(f"{line_prefix}: Invalid visibility (must be 0-3): {user_data.get('visibility', 'empty')}")
+					
+					# Check existing users
+					if user_data.get('email'):
+						cursor.execute('SELECT id FROM users WHERE LOWER(email) = LOWER(%s)', (user_data['email'],))
+						if cursor.fetchone():
+							errors.append(f"{line_prefix}: Email already exists: {user_data['email']}")
+					
+					if user_data.get('username'):
+						cursor.execute('SELECT id FROM users WHERE LOWER(username) = LOWER(%s)', (user_data['username'],))
+						if cursor.fetchone():
+							errors.append(f"{line_prefix}: Username already exists: {user_data['username']}")
+			finally:
+				cursor.close()
+				db_conn.close()
+			
+			if errors:
+				return render_template('admin_import.html', errors=errors)
+			else:
+				# Return info message with user data for preview
+				return render_template('admin_import.html', 
+					info={
+						'message': 'DRY RUN: Validation passed - no users were imported', 
+						'count': len(users_data),
+						'users': users_data
+					})
+		else:
+			# Actual import
+			(success, errors) = db.batch_import_users(users_data)
+			
+			if errors:
+				return render_template('admin_import.html', errors=errors)
+			else:
+				return render_template('admin_import.html', 
+					success={'count': len(success), 'users': success})
+	
+	except Exception as e:
+		return render_template('admin_import.html', errors=[f'Error processing file: {str(e)}'])
+
 @app.route('/scoreboard/')
 def scoreboard():
 	active_tasks = db.get_active_tasks()
@@ -832,11 +940,16 @@ def change_org(country, org):
 
 	return redirect('/profile')
 @app.route('/profile/displayname/<string:displayname>')
+@app.route('/profile/displayname/', defaults={'displayname': ''})
 @login_required
 def change_displayname(displayname):
 	userid = session['user_id']
 	
-	displayname = displayname[:32]
+	# Empty string means delete display name
+	if displayname:
+		displayname = displayname[:32]
+	else:
+		displayname = None
 	
 	db.change_displayname(userid, displayname)
 

@@ -492,3 +492,132 @@ def reevaluate_task(task_id, user_id, is_best):
 	db.commit()
 	cursor.close()
 	db.close()
+
+def batch_import_users(users_data):
+	"""
+	Batch import users from CSV data.
+	
+	Args:
+		users_data: List of dictionaries with keys: email, username, display_name, country, organization, group, visibility
+		
+	Returns:
+		Tuple of (success_list, error_list)
+		success_list: List of successfully imported users
+		error_list: List of error messages
+	"""
+	import uuid
+	import hashlib
+	
+	errors = []
+	success = []
+	
+	# Validation phase - check all data before importing
+	(db, cursor) = connect()
+	
+	try:
+		# Check for duplicate emails and usernames in the CSV itself
+		emails = [u['email'].lower() for u in users_data]
+		usernames = [u['username'].lower() for u in users_data]
+		
+		if len(emails) != len(set(emails)):
+			errors.append("Duplicate emails found in CSV file")
+			
+		if len(usernames) != len(set(usernames)):
+			errors.append("Duplicate usernames found in CSV file")
+		
+		# Validate each user
+		for idx, user_data in enumerate(users_data, start=1):
+			line_prefix = f"Line {idx}"
+			
+			# Required fields
+			if not user_data.get('email'):
+				errors.append(f"{line_prefix}: Email is required")
+				continue
+				
+			if not user_data.get('username'):
+				errors.append(f"{line_prefix}: Username is required")
+				continue
+			
+			# Email format validation (basic)
+			email = user_data['email'].strip()
+			if '@' not in email or '.' not in email:
+				errors.append(f"{line_prefix}: Invalid email format: {email}")
+				
+			# Username validation
+			username = user_data['username'].strip()
+			if len(username) < 3:
+				errors.append(f"{line_prefix}: Username must be at least 3 characters: {username}")
+			
+			# Visibility validation
+			visibility = user_data.get('visibility', '0').strip()
+			if visibility not in ['0', '1', '2', '3']:
+				errors.append(f"{line_prefix}: Visibility must be 0-3 (0=Public, 1=Organization, 2=Group, 3=Private), got: {visibility}")
+			
+			# Check if email already exists in database
+			cursor.execute('SELECT id FROM users WHERE LOWER(email) = LOWER(%s)', (email,))
+			if cursor.fetchone():
+				errors.append(f"{line_prefix}: Email already exists: {email}")
+			
+			# Check if username already exists in database
+			cursor.execute('SELECT id FROM users WHERE LOWER(username) = LOWER(%s)', (username,))
+			if cursor.fetchone():
+				errors.append(f"{line_prefix}: Username already exists: {username}")
+		
+		# If there are any errors, don't import anything
+		if errors:
+			cursor.close()
+			db.close()
+			return (success, errors)
+		
+		# Import phase - all validation passed
+		for user_data in users_data:
+			# Get values with defaults
+			email = user_data['email'].strip()
+			username = user_data['username'].strip()
+			display_name = user_data.get('display_name', '').strip() or None
+			country = user_data.get('country', '').strip() or None
+			organization = user_data.get('organization', '').strip() or None
+			group = user_data.get('group', '').strip() or None
+			visibility = int(user_data.get('visibility', '0').strip())
+			
+			# Generate salt and token
+			salt = hashlib.sha512(os.urandom(64)).hexdigest()
+			token = uuid.uuid4().hex
+			
+			# Hash the email with the salt
+			# Email is stored hashed for privacy, password is set to same hash (user must reset)
+			hashed_email = hashlib.sha512((email + salt).encode()).hexdigest()
+			
+			# Insert user (verified=false, they need to reset password)
+			# Both email and password fields contain the hashed email
+			cursor.execute('''
+				INSERT INTO users 
+				(email, password, salt, token, verified, username, admin, display_name, country, organization, "group", visibility)
+				VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+				RETURNING id
+			''', (hashed_email, hashed_email, salt, token, True, username, False, display_name, country, organization, group, visibility))
+			
+			user_id = cursor.fetchone()[0]
+			
+			success.append({
+				'username': username,
+				'email': email,
+				'id': str(user_id),
+				'display_name': display_name,
+				'country': country,
+				'organization': organization,
+				'group': group,
+				'visibility': str(visibility)
+			})
+		
+		db.commit()
+		
+	except Exception as e:
+		db.rollback()
+		errors.append(f"Database error: {str(e)}")
+	
+	finally:
+		cursor.close()
+		db.close()
+	
+	return (success, errors)

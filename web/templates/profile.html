@@ -38,14 +38,30 @@ Profile
 		<hr />
 
 		<h5>Display name:</h5>
+		{% if user.display_name %}
+			<p>Current display name: <strong>{{ user.display_name }}</strong></p>
+		{% else %}
+			<p>No display name set</p>
+		{% endif %}
 
 		<div class="col-md-6">
-			<input type="text" id="set-display-input" class="form-control" placeholder="{{ user.display_name }}" aria-label="New display name">
+			<input type="text" id="set-display-input" class="form-control" placeholder="{{ user.display_name if user.display_name else 'Enter display name' }}" aria-label="New display name">
 		</div>
 
-		<div class="card card-btn col-md-6" onclick="location.href='/profile/displayname/' + encodeURIComponent(document.getElementById('set-display-input').value.trim());">
-			<div class="card-body text-center">
-				Set display name
+		<div class="row col-md-6">
+			<div class="col-md-6">
+				<div class="card card-btn" onclick="location.href='/profile/displayname/' + encodeURIComponent(document.getElementById('set-display-input').value.trim());">
+					<div class="card-body text-center">
+						Set display name
+					</div>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="card card-btn" onclick="if(confirm('Are you sure you want to remove your display name?')) location.href='/profile/displayname/';">
+					<div class="card-body text-center">
+						Delete display name
+					</div>
+				</div>
 			</div>
 		</div>
 
@@ -108,10 +124,10 @@ Profile
 		<div class="col-md-6">
 			<h3>Change privacy settings:</h3>
 			<select id="privacy-selector" class="form-select" aria-label="Privacy selector">
-				<option value="0" {% if user.visibility == 0 %} selected {% endif %}>Public (everyone is able to see your results)</option>
-				<option value="1" {% if user.visibility == 1 %} selected {% endif %}>Organization (only people in the same organization)</option>
-				<option value="2" {% if user.visibility == 2 %} selected {% endif %}>Study group (only people in the same study group)</option>
-				<option value="3" {% if user.visibility == 3 %} selected {% endif %}>Private (no one is able to see your results)</option>
+				<option value="0" {% if user.visibility == 0 %} selected {% endif %}>Public (everyone can see your results)</option>
+				<option value="1" {% if user.visibility == 1 %} selected {% endif %}>Organization (only users from your organization can see your results)</option>
+				<option value="2" {% if user.visibility == 2 %} selected {% endif %}>Study group (only users from your study group can see your results)</option>
+				<option value="3" {% if user.visibility == 3 %} selected {% endif %}>Private (only you can see your results)</option>
 			</select>
 			<div class="card card-btn" onclick="location.href='/profile/privacy/' + document.getElementById('privacy-selector').value;">
 				<div class="card-body text-center">

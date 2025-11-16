@@ -1,11 +1,6 @@
 #!/bin/bash
 set -e
 
-echo "[EVALUATOR] Starting entrypoint script..."
-echo "[EVALUATOR] DB_HOST=${DB_HOST}"
-echo "[EVALUATOR] DB_PORT=${DB_PORT}"
-echo "[EVALUATOR] DB_USER=${DB_USER}"
-echo "[EVALUATOR] DB_DATABASE=${DB_DATABASE}"
 echo "[EVALUATOR] TASKS_DIR=${TASKS_DIR}"
 
 echo "[EVALUATOR] Waiting for database to be ready..."
@@ -35,11 +30,6 @@ DB_DATABASE=$DB_DATABASE
 TASKS_DIR=$TASKS_DIR
 EOF
 
-echo "[EVALUATOR] .env file created:"
-cat .env
-
-# Disable SSL mode for internal docker communication
-echo "[EVALUATOR] Disabling SSL mode in evaldb.py..."
 sed -i "s/'sslmode': 'require'/'sslmode': 'disable'/g" /app/evaldb.py
 
 echo "[EVALUATOR] Starting evaluator service..."
