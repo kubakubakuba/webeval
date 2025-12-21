@@ -47,6 +47,10 @@ def check_admin() -> bool:
 
 	return is_admin
 
+@app.context_processor
+def inject_is_admin():
+	return dict(is_admin=check_admin())
+
 admin_module.init_admin(TASKS_DIR)
 app.register_blueprint(admin_module.admin_bp)
 

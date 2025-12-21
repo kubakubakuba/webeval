@@ -6,6 +6,17 @@ Scoreboard
 
 {% block content %}
 	<style>
+		.back-link {
+			display: inline-block;
+			margin-bottom: 20px;
+			color: var(--link-color);
+			text-decoration: none;
+		}
+
+		.back-link:hover {
+			text-decoration: underline;
+		}
+
 		.card-btn{
 			margin-bottom: 15px;
 		}
@@ -14,6 +25,8 @@ Scoreboard
 			text-decoration: none;
 		}
 	</style>
+
+	<a href="/" class="back-link">← Back to Home</a>
 
 	{% if user is not none %}
 

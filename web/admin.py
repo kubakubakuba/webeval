@@ -2,7 +2,6 @@
 
 from flask import Blueprint, render_template, request, redirect, session
 from auth import admin_required
-from util import score_results
 import db, os, re, csv, io
 
 TASKS_DIR = None
@@ -28,7 +27,7 @@ def reevaluate(task_id, user_id, is_best):
 def ban(user_id):
 	"""Ban a user."""
 	db.ban_user(user_id)
-	return redirect('/admin')
+	return redirect('/admin/users')
 
 
 @admin_bp.route('/unban/<user_id>/')
@@ -36,44 +35,46 @@ def ban(user_id):
 def unban(user_id):
 	"""Unban a user."""
 	db.unban_user(user_id)
-	return redirect('/admin')
+	return redirect('/admin/users')
 
 
 @admin_bp.route('/')
 @admin_required
 def admin():
-	"""Main admin panel."""
+	"""Main admin panel - dashboard with navigation."""
+	# Check if submissions are disabled
+	submit_disabled = False
+	if os.path.exists("config/.submit.disable"):
+		with open("config/.submit.disable", "r") as f:
+			submit_disabled = f.read() == "true"
+		
+	return render_template('admin.html', sessions=session, submit_disabled=submit_disabled)
+
+
+@admin_bp.route('/users')
+@admin_required
+def admin_users():
+	"""User management page."""
 	userid = session['user_id']
 	
 	users = db.get_users()
 	all_users = [user for user in users]
 	users = [user for user in users if user[0] != userid]
 
-	active_tasks = db.get_active_tasks()
-
-	results = {}
-	for task in active_tasks:
-		task_id, task_name = task
-		results[task_name] = db.get_best_only_scores(task_id)
-
-	# Score results (mark first 5 scores from 5 to 1 points)
-	results = score_results(results)
-
 	# Order users by id
 	users = sorted(users, key=lambda x: x[0])
 	all_users = sorted(all_users, key=lambda x: x[0])
+		
+	return render_template('admin_users.html', sessions=session, users=users, all_users=all_users)
 
-	# Check if submissions are disabled
-	submit_disabled = False
-	if os.path.exists("config/.submit.disable"):
-		with open("config/.submit.disable", "r") as f:
-			submit_disabled = f.read() == "true"
 
+@admin_bp.route('/tasks')
+@admin_required
+def admin_tasks():
+	"""Task management page."""
 	tasks = db.list_tasks_with_filepath()
 		
-	return render_template('admin.html', sessions=session, users=users, 
-						 submissions=results, submit_disabled=submit_disabled, 
-						 tasks=tasks, all_users=all_users)
+	return render_template('admin_tasks.html', sessions=session, tasks=tasks)
 
 
 @admin_bp.route('/toggle/submit/')
@@ -102,7 +103,7 @@ def reorder(order):
 	"""Reorder tasks."""
 	order_list = order.split(';')
 	db.reorder_tasks(order_list)
-	return redirect('/admin')
+	return redirect('/admin/tasks')
 
 
 @admin_bp.route('/rename/<int:id>/<string:name>')
@@ -110,7 +111,7 @@ def reorder(order):
 def rename(id, name):
 	"""Rename a task."""
 	db.rename_task(id, name)
-	return redirect('/admin')
+	return redirect('/admin/tasks')
 
 
 @admin_bp.route('/repath/<int:id>/<string:name>')
@@ -119,7 +120,7 @@ def repath(id, name):
 	"""Change task file path."""
 	name = os.path.join(TASKS_DIR, os.path.basename(name))
 	db.task_change_path(id, name)
-	return redirect('/admin')
+	return redirect('/admin/tasks')
 
 
 @admin_bp.route('/available/<int:id>/<int:available>')
@@ -128,7 +129,7 @@ def change_available(id, available):
 	"""Toggle task availability."""
 	available = False if available == 0 else True
 	db.set_task_availability(id, available)
-	return redirect('/admin')
+	return redirect('/admin/tasks')
 
 
 @admin_bp.route('/new/<string:path>/')
@@ -137,7 +138,7 @@ def new_task(path):
 	"""Create a new task."""
 	path = os.path.join(TASKS_DIR, os.path.basename(path))
 	db.create_new_task(path)
-	return redirect('/admin')
+	return redirect('/admin/tasks')
 
 
 @admin_bp.route('/resetorg/<int:user_id>/')
@@ -145,7 +146,7 @@ def new_task(path):
 def reset_org(user_id):
 	"""Reset user organization."""
 	db.reset_org(user_id)
-	return redirect('/admin')
+	return redirect('/admin/users')
 
 
 @admin_bp.route('/setgroup/<int:user_id>/<string:group>/')
@@ -153,7 +154,7 @@ def reset_org(user_id):
 def set_group(user_id, group):
 	"""Set user group."""
 	db.set_group(user_id, group)
-	return redirect('/admin')
+	return redirect('/admin/users')
 
 
 @admin_bp.route('/resetresults/<int:userid>/')
@@ -161,7 +162,7 @@ def set_group(user_id, group):
 def reset_results(userid):
 	"""Reset all results for a user."""
 	db.reset_results_user(userid)
-	return redirect('/admin')
+	return redirect('/admin/users')
 
 
 @admin_bp.route('/apikeys', methods=['GET'])

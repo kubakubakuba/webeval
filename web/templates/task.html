@@ -6,6 +6,17 @@
 
 {% block content %}
 <style>
+	.back-link {
+		display: inline-block;
+		margin-bottom: 20px;
+		color: var(--link-color);
+		text-decoration: none;
+	}
+
+	.back-link:hover {
+		text-decoration: underline;
+	}
+
 	.card-btn:hover {
 		background-color: #f8f9fa;
 	}
@@ -22,8 +33,10 @@
 	.cm-expected-number-value { color: #2E8B57; }
 	.cm-provided-number-value { color: #DC143C; }
 	.cm-error-value { color: #B22222; }
-
 </style>
+
+<a href="/" class="back-link">← Back to Home</a>
+
 <div class="container-fluid">
 	<div class="row">
 		<!-- Main Content Column -->

@@ -5,5 +5,20 @@ About
 {% endblock title %}
 
 {% block content %}
+	<style>
+		.back-link {
+			display: inline-block;
+			margin-bottom: 20px;
+			color: var(--link-color);
+			text-decoration: none;
+		}
+
+		.back-link:hover {
+			text-decoration: underline;
+		}
+	</style>
+
+	<a href="/" class="back-link">← Back to Home</a>
+
 	{{ description | safe}}
 {% endblock content %}

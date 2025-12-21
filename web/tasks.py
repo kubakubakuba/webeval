@@ -106,7 +106,7 @@ def submit(task_id):
 		if is_c_solution:
 			language = "c"
 
-		return render_template('submit.html', task_name=task_name, sessions=session, submission_code=submission_code, template_code=template_code, language=language, task_description=task_description)
+		return render_template('submit.html', task_name=task_name, task_id=task_id, sessions=session, submission_code=submission_code, template_code=template_code, language=language, task_description=task_description)
 
 
 @tasks_bp.route('/task/<int:task_id>')
