@@ -51,8 +51,7 @@ services:
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
-      - EVAL_DEFAULT_ADMIN=${EVAL_DEFAULT_ADMIN:-admin}
-      - EVAL_DEFAULT_ADMIN_PASSWORD=${EVAL_DEFAULT_ADMIN_PASSWORD:-admin}
+      - BASE_URL=${BASE_URL:-https://eval.comparch.edu.cvut.cz}
       - TEMPLATES_DIR=/data/S_templates
       - TASKS_DIR=/data/tasks
       - DB_INITIAL_DATA_MOUNTED=${DB_INITIAL_DATA:+/docker-init/data/initial_data.sql}

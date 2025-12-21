@@ -27,9 +27,8 @@ Copy `variables.env` to a new file (e.g., `.env.local`) and configure the follow
 - `MAIL_PASSWORD`: SMTP password
 - `MAIL_DEFAULT_SENDER`: Default sender email address
 
-#### Admin Setup
-- `EVAL_DEFAULT_ADMIN`: Default admin username (set to "None" to skip)
-- `EVAL_DEFAULT_ADMIN_PASSWORD`: Default admin password
+#### Application URL
+- `BASE_URL`: Base URL for email links and API documentation (e.g., `https://eval.comparch.edu.cvut.cz`)
 
 #### File Directories (NEW)
 - `TEMPLATES_DIR`: Path to code templates directory (default: `./.docker/S_templates`)
