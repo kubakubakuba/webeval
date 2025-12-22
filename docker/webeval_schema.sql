@@ -24,6 +24,8 @@ CREATE TABLE users (
     "group" character varying(255),
     visibility integer NOT NULL DEFAULT 0,
     can_submit boolean NOT NULL DEFAULT true,
+    user_api_key character varying(64),
+    user_api_key_expiry timestamp with time zone,
     PRIMARY KEY (id),
     UNIQUE (email),
     UNIQUE (username)

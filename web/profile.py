@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, session, current_app
+from flask import Blueprint, render_template, request, redirect, session, current_app, jsonify
 from auth import login_required
 import db
 import json
+import secrets
+from datetime import datetime, timedelta
 
 profile_bp = Blueprint('profile', __name__, url_prefix='/profile')
 
@@ -77,3 +79,64 @@ def change_privacy(visibility):
 	db.change_privacy(userid, visibility)
 
 	return redirect('/profile')
+
+
+@profile_bp.route('/api-key', methods=['GET'])
+@login_required
+def api_key():
+	"""Display user's API key management page."""
+	userid = session['user_id']
+	user = db.get_user_by_id(userid)
+	
+	# Get current API key and expiry
+	api_key_info = db.get_user_api_key(userid)
+	api_key = api_key_info[0] if api_key_info else None
+	api_key_expiry = api_key_info[1] if api_key_info else None
+	
+	# Check if key is expired
+	is_expired = False
+	if api_key_expiry:
+		is_expired = datetime.now() > api_key_expiry.replace(tzinfo=None)
+	
+	user_dict = {
+		'id': user[0],
+		'username': user[3],
+	}
+	
+	return render_template('profile_apikey.html', 
+		sessions=session, 
+		user=user_dict, 
+		api_key=api_key,
+		api_key_expiry=api_key_expiry,
+		is_expired=is_expired)
+
+
+@profile_bp.route('/api-key/generate', methods=['POST'])
+@login_required
+def generate_api_key():
+	"""Generate a new API key for the user."""
+	userid = session['user_id']
+	
+	# Generate a secure random API key (64 characters)
+	new_api_key = secrets.token_urlsafe(48)  # 48 bytes = 64 characters in base64
+	
+	# Set expiry to 30 days from now
+	expiry_date = datetime.now() + timedelta(days=30)
+	
+	# Save to database
+	if db.generate_user_api_key(userid, new_api_key, expiry_date):
+		return redirect('/profile/api-key')
+	else:
+		return render_template('400.html'), 400
+
+
+@profile_bp.route('/api-key/revoke', methods=['POST'])
+@login_required
+def revoke_api_key():
+	"""Revoke the user's API key."""
+	userid = session['user_id']
+	
+	if db.revoke_user_api_key(userid):
+		return redirect('/profile/api-key')
+	else:
+		return render_template('400.html'), 400

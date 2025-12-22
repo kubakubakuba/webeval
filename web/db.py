@@ -747,3 +747,68 @@ def update_api_key_description(key_id, description):
 	finally:
 		cursor.close()
 		db.close()
+
+# User API Key functions
+
+def generate_user_api_key(user_id, api_key, expiry_date):
+	"""Generate or update a user's API key with expiry date."""
+	(db, cursor) = connect()
+	try:
+		cursor.execute(
+			'UPDATE users SET user_api_key = %s, user_api_key_expiry = %s WHERE id = %s',
+			(api_key, expiry_date, user_id)
+		)
+		db.commit()
+		return True
+	except Exception as e:
+		db.rollback()
+		return False
+	finally:
+		cursor.close()
+		db.close()
+
+def get_user_api_key(user_id):
+	"""Get user's API key and expiry date."""
+	(db, cursor) = connect()
+	try:
+		cursor.execute(
+			'SELECT user_api_key, user_api_key_expiry FROM users WHERE id = %s',
+			(user_id,)
+		)
+		result = cursor.fetchone()
+		return result
+	finally:
+		cursor.close()
+		db.close()
+
+def verify_user_api_key(api_key):
+	"""Verify a user API key and return user info if valid and not expired."""
+	(db, cursor) = connect()
+	try:
+		cursor.execute(
+			'SELECT id, username, verified, can_submit FROM users WHERE user_api_key = %s AND user_api_key_expiry > NOW()',
+			(api_key,)
+		)
+		result = cursor.fetchone()
+		return result
+	finally:
+		cursor.close()
+		db.close()
+
+def revoke_user_api_key(user_id):
+	"""Revoke (delete) a user's API key."""
+	(db, cursor) = connect()
+	try:
+		cursor.execute(
+			'UPDATE users SET user_api_key = NULL, user_api_key_expiry = NULL WHERE id = %s',
+			(user_id,)
+		)
+		db.commit()
+		return True
+	except Exception as e:
+		db.rollback()
+		return False
+	finally:
+		cursor.close()
+		db.close()
+		db.close()

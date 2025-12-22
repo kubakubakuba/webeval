@@ -62,3 +62,33 @@ def api_key_required(f):
 		
 		return f(*args, **kwargs)
 	return decorated_function
+
+def user_api_key_required(f):
+	"""Decorator to require a valid user API key for authentication."""
+	@wraps(f)
+	def decorated_function(*args, **kwargs):
+		auth_header = request.headers.get('Authorization')
+		
+		if not auth_header or not auth_header.startswith('Bearer '):
+			return {'error': 'Missing or invalid authorization header. Use: Authorization: Bearer <api_key>'}, 401
+		
+		api_key = auth_header.replace('Bearer ', '', 1)
+		
+		# Verify user API key and get user info
+		user_info = db.verify_user_api_key(api_key)
+		
+		if not user_info:
+			return {'error': 'Invalid, expired, or revoked API key'}, 401
+		
+		user_id, username, verified, can_submit = user_info
+		
+		if not verified:
+			return {'error': 'User account is not verified'}, 403
+		
+		if not can_submit:
+			return {'error': 'User account cannot submit tasks'}, 403
+		
+		# Pass user info to the wrapped function
+		return f(user_id=user_id, username=username, *args, **kwargs)
+	
+	return decorated_function
