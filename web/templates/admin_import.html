@@ -4,6 +4,25 @@
 
 {% block content %}
 <style>
+.back-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.card-btn {
+    cursor: pointer;
+}
+
+.card-btn:hover {
+    background-color: #f8f9fa;
+}
+
 /* Custom container override */
 .container-fluid.import-container {
     max-width: none !important;
@@ -12,20 +31,6 @@
 }
 
 /* Content styling */
-.import-result-card {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-}
-html.dark-mode .import-result-card {
-    background-color: #2a2a2a;
-    border-color: #444;
-}
-.import-result-table {
-    margin-top: 15px;
-}
-.import-result-table th {
-    font-weight: 600;
-}
 .csv-format-section {
     padding-right: 25px;
 }
@@ -47,6 +52,8 @@ table {
     min-width: 600px;
 }
 </style>
+
+<a href="/admin" class="back-link">← Back to Admin Panel</a>
 
 <div class="container-fluid import-container">
     <h1 class="mb-4">Batch Import Users</h1>
@@ -96,7 +103,7 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
             
             <!-- Error Messages -->
             {% if errors %}
-            <div class="card mb-4 import-result-card">
+            <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title text-danger">Import Failed - Validation Errors</h5>
                     <ul class="mb-0">
@@ -114,7 +121,7 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
             <!-- Upload Form -->
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="card-title">Upload CSV File</h5>
+                    <!--<h5 class="card-title">Upload CSV File</h5>-->
                     <form method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="csvFile" class="form-label">Select CSV File</label>
@@ -126,10 +133,11 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
                                 Dry run (validate only, don't import)
                             </label>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 mb-2">
-                            <i class="bi bi-upload"></i> Upload and Import
-                        </button>
-                        <a href="/admin" class="btn btn-secondary w-100">Cancel</a>
+                        <div class="card card-btn" onclick="this.closest('form').submit();">
+                            <div class="card-body text-center">
+                                <i class="bi bi-upload"></i> Upload and Import
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -138,7 +146,7 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
             <div class="table-column">
                 <!-- Dry Run Results -->
                 {% if info %}
-                <div class="card mb-4 import-result-card">
+                <div class="card mb-4">
                     <div class="card-body">
                         <h5 class="card-title">Dry Run Result</h5>
                         <p><strong>{{ info.message }}</strong></p>
@@ -186,7 +194,7 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
 
                 <!-- Success Results -->
                 {% if success %}
-                <div class="card mb-4 import-result-card">
+                <div class="card mb-4">
                     <div class="card-body">
                         <h5 class="card-title">Import Successful</h5>
                         <p>Successfully imported <strong>{{ success.count }}</strong> user(s):</p>

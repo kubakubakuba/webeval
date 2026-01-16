@@ -58,18 +58,20 @@ Profile
 			<input type="text" id="set-display-input" class="form-control" placeholder="{{ user.display_name if user.display_name else 'Enter display name' }}" aria-label="New display name">
 		</div>
 
-		<div class="row col-md-6">
-			<div class="col-md-6">
-				<div class="card card-btn" onclick="location.href='/profile/displayname/' + encodeURIComponent(document.getElementById('set-display-input').value.trim());">
-					<div class="card-body text-center">
-						Set display name
+		<div class="col-md-6">
+			<div class="row gx-2">
+				<div class="col-6">
+					<div class="card card-btn" onclick="location.href='/profile/displayname/' + encodeURIComponent(document.getElementById('set-display-input').value.trim());">
+						<div class="card-body text-center">
+							Set display name
+						</div>
 					</div>
 				</div>
-			</div>
-			<div class="col-md-6">
-				<div class="card card-btn" onclick="if(confirm('Are you sure you want to remove your display name?')) location.href='/profile/displayname/';">
-					<div class="card-body text-center">
-						Delete display name
+				<div class="col-6">
+					<div class="card card-btn" onclick="if(confirm('Are you sure you want to remove your display name?')) location.href='/profile/displayname/';">
+						<div class="card-body text-center">
+							Delete display name
+						</div>
 					</div>
 				</div>
 			</div>
@@ -84,6 +86,7 @@ Profile
 			<h3>Study group:</h3>
 			<p>{{ user.group }}</p>
 		{% else %}
+		<!-- Disable the organization selection for now, only let users created by us to have an organization.
 			<h3>Organization:</h3>
 			<p>Warning, this can only be set once!</p>
 
@@ -129,7 +132,10 @@ Profile
 					});
 				});
 			</script>
+		-->
 		{% endif %}
+
+		<hr />
 
 		<div class="col-md-6">
 			<h3>Change privacy settings:</h3>
@@ -149,11 +155,9 @@ Profile
 		<hr style="margin: 30px 0;" />
 
 		<div class="col-md-6">
-			<h3>API Key Management:</h3>
 			<div class="card card-btn" onclick="window.location.href='/profile/api-key'">
 				<div class="card-body text-center">
-					<h5>API Key</h5>
-					<p>Manage your API key for external applications</p>
+					API Key Management
 				</div>
 			</div>
 		</div>

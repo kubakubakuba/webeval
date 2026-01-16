@@ -187,24 +187,24 @@ def user_get_task(user_id, username, task_id):
 				with open(template_path) as f:
 					template_code = f.read()
 		
-		# Get user's last submission if any
-		last_submission = db.get_last_user_code(task_id, user_id)
-		last_code = last_submission[0] if last_submission else None
+		# Get user's submissions and scores
+		# Query for last_source, best_source, score_last, score_best from results table
+		(db_conn, cursor) = db.connect()
+		cursor.execute('SELECT last_source, best_source, score_last, score_best FROM results WHERE taskid = %s AND userid = %s', (task_id, user_id))
+		result = cursor.fetchone()
+		cursor.close()
+		db_conn.close()
 		
-		# Get user's score for this task
-		result = db.get_last_user_submission(task_id, user_id)
-		score_last = result[2] if result else None
-		score_best = None  # get_last_user_submission doesn't return best score
-		
-		# Get best score separately if needed
 		if result:
-			# Query for best score from results table
-			(db_conn, cursor) = db.connect()
-			cursor.execute('SELECT score_best FROM results WHERE taskid = %s AND userid = %s', (task_id, user_id))
-			best = cursor.fetchone()
-			score_best = best[0] if best else None
-			cursor.close()
-			db_conn.close()
+			last_code = result[0]
+			best_code = result[1]
+			score_last = result[2]
+			score_best = result[3]
+		else:
+			last_code = None
+			best_code = None
+			score_last = None
+			score_best = None
 		
 		return {
 			'success': True,
@@ -215,9 +215,10 @@ def user_get_task(user_id, username, task_id):
 			'end_date': task_info.get('end_date'),
 			'is_c_solution': task_info.get('c_solution', False),
 			'template_code': template_code,
-			'last_submission': last_code,
 			'score_last': score_last,
-			'score_best': score_best
+			'score_best': score_best,
+			'submission_last': last_code,
+			'submission_best': best_code
 		}, 200
 		
 	except Exception as e:

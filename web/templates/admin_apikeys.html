@@ -5,6 +5,8 @@ API Keys Management
 {% endblock title %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='api-icons.css') }}">
+
 <style>
 	.api-key-container {
 		max-width: 1400px;
@@ -61,44 +63,38 @@ API Keys Management
 		text-align: center;
 	}
 
-	.status-badge {
-		display: inline-block;
-		padding: 4px 8px;
-		border-radius: 4px;
-		font-size: 12px;
-		font-weight: bold;
+	/* Icon styles */
+	.status-icon-active {
+		color: #28a745;
 	}
 
-	.status-active {
-		background-color: #28a745;
-		color: white;
+	.status-icon-disabled {
+		color: #dc3545;
 	}
 
-	.status-inactive {
-		background-color: #6c757d;
-		color: white;
-	}
-
-	.action-btn {
-		background-color: var(--bg-secondary);
-		color: var(--text-primary);
-		border: 1px solid var(--border-color);
-		padding: 6px 10px;
-		border-radius: 4px;
+	.api-action-btn {
+		background: none;
+		border: none;
+		padding: 4px;
 		cursor: pointer;
-		font-size: 14px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		transition: opacity 0.2s;
+		color: var(--text-primary);
+	}
+
+	.api-action-btn:hover {
+		opacity: 0.7;
+	}
+
+	.api-action-btn svg {
+		display: block;
+	}
+
+	a.api-action-btn {
 		text-decoration: none;
-		display: inline-block;
-		transition: background-color 0.2s;
-	}
-
-	.action-btn:hover {
-		background-color: var(--bg-primary);
-	}
-
-	.copy-btn {
-		padding: 4px 8px;
-		font-size: 12px;
+		color: inherit;
 	}
 
 	.back-link {
@@ -159,7 +155,6 @@ API Keys Management
 				<h2>Create New API Key</h2>
 				<form method="POST" action="/admin/apikeys/create">
 					<div class="form-group">
-						<label for="description">Description (optional):</label>
 						<input type="text" id="description" name="description" placeholder="e.g., CI/CD Pipeline Key" maxlength="255">
 					</div>
 					<div class="card card-btn" onclick="this.closest('form').submit();" style="cursor: pointer;">
@@ -214,7 +209,14 @@ API Keys Management
 					<td style="padding: 12px;">
 						<div style="display: flex; align-items: center; gap: 8px;">
 							<span id="desc-text-{{ key[0] }}">{{ key[6] if key[6] else '-' }}</span>
-							<button class="action-btn" onclick="editDescription({{ key[0] }}, '{{ key[6] if key[6] else '' }}'); event.stopPropagation();" title="Edit description">✏️</button>
+							<button class="api-action-btn" onclick="editDescription({{ key[0] }}, '{{ key[6] if key[6] else '' }}'); event.stopPropagation();" title="Edit description">
+								<svg class="api-icon api-icon-edit" width="16" height="16">
+									<use href="/static/sprites.svg#edit"></use>
+								</svg>
+							</button>
+									<use href="/static/sprites.svg#edit"></use>
+								</svg>
+							</button>
 						</div>
 					</td>
 					<td style="padding: 12px;">{{ key[3] }}</td>
@@ -228,28 +230,48 @@ API Keys Management
 					</td>
 					<td style="padding: 12px;">
 						{% if key[7] %}
-						<span class="status-badge status-active">Active</span>
+						<svg class="status-icon-active" width="20" height="20">
+							<use href="/static/sprites.svg#enabled"></use>
+						</svg>
 						{% else %}
-						<span class="status-badge status-inactive">Inactive</span>
+						<svg class="status-icon-disabled" width="20" height="20">
+							<use href="/static/sprites.svg#disabled"></use>
+						</svg>
 						{% endif %}
 					</td>
 					<td style="padding: 12px;">
 						<div style="display: flex; align-items: center; gap: 8px;">
 							<code id="key-{{ key[0] }}" style="font-size: 12px; background-color: var(--bg-code); padding: 4px 8px; border-radius: 4px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ key[1] }}</code>
-							<button class="action-btn copy-btn" onclick="copyToClipboard('key-{{ key[0] }}'); event.stopPropagation();" title="Copy to clipboard">📋</button>
+							<button class="api-action-btn" onclick="copyToClipboard('key-{{ key[0] }}'); event.stopPropagation();" title="Copy to clipboard">
+								<svg class="api-icon api-icon-copy" width="16" height="16">
+									<use href="/static/sprites.svg#copy"></use>
+								</svg>
+							</button>
 						</div>
 					</td>
 					<td style="padding: 12px; text-align: center;">
-						<div style="display: flex; gap: 8px; justify-content: center;">
+						<div class="api-actions" style="justify-content: center;">
 							{% if key[7] %}
-							<a href="/admin/apikeys/toggle/{{ key[0] }}" class="action-btn" title="Deactivate">⏸️</a>
+							<a href="/admin/apikeys/toggle/{{ key[0] }}" class="api-action-btn" title="Deactivate">
+								<svg class="status-icon-disabled" width="18" height="18">
+									<use href="/static/sprites.svg#disable"></use>
+								</svg>
+							</a>
 							{% else %}
-							<a href="/admin/apikeys/toggle/{{ key[0] }}" class="action-btn" title="Activate">▶️</a>
+							<a href="/admin/apikeys/toggle/{{ key[0] }}" class="api-action-btn" title="Activate">
+								<svg class="status-icon-active" width="18" height="18">
+								<use href="/static/sprites.svg#enable"></use>
+								</svg>
+							</a>
 							{% endif %}
 							<a href="/admin/apikeys/delete/{{ key[0] }}" 
-							   class="action-btn" 
+							   class="api-action-btn" 
 							   onclick="return confirm('Are you sure you want to delete this API key? This action cannot be undone.');"
-							   title="Delete">🗑️</a>
+							   title="Delete">
+								<svg class="status-icon-disabled" width="18" height="18">
+									<use href="/static/sprites.svg#delete"></use>
+								</svg>
+							</a>
 						</div>
 					</td>
 				</tr>
