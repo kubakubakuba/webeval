@@ -335,7 +335,8 @@ def admin_import_users():
 def task_editor():
 	"""Task editor page."""
 	tasks = db.list_tasks_with_filepath()
-	return render_template('admin_editor.html', sessions=session, tasks=tasks)
+	user_theme = db.get_user_setting(session['user_id'], 'editor_theme')
+	return render_template('admin_editor.html', sessions=session, tasks=tasks, user_theme=user_theme)
 
 
 @admin_bp.route('/editor/load/<int:task_id>')

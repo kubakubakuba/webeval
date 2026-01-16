@@ -73,6 +73,7 @@
 			mode: "{% if language == 'c' %}text/x-csrc{% else %}gas{% endif %}",
 			lineWrapping: true,
 			viewportMargin: Infinity,
+			{% if user_theme and user_theme != 'default' %}theme: "{{ user_theme }}",{% endif %}
 			value: textarea.value
 		});
 

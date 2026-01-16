@@ -106,7 +106,10 @@ def submit(task_id):
 		if is_c_solution:
 			language = "c"
 
-		return render_template('submit.html', task_name=task_name, task_id=task_id, sessions=session, submission_code=submission_code, template_code=template_code, language=language, task_description=task_description)
+		# Get user's editor theme preference
+		user_theme = db.get_user_setting(session['user_id'], 'editor_theme')
+
+		return render_template('submit.html', task_name=task_name, task_id=task_id, sessions=session, submission_code=submission_code, template_code=template_code, language=language, task_description=task_description, user_theme=user_theme)
 
 
 @tasks_bp.route('/task/<int:task_id>')
@@ -235,9 +238,13 @@ def task(task_id):
 	
 	can_submit = db.can_user_submit(userid) if userid is not None else False
 
+	# Get user's editor theme preference
+	user_theme = db.get_user_setting(userid, 'editor_theme') if userid else 'default'
+	user_theme = user_theme or 'default'
+
 	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data,
 scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name,
-latest_score=latest_score, is_admin=is_admin, issue_url=issue_url, makefile=makefile, files=files, displaynames=displaynames, can_submit=can_submit)
+latest_score=latest_score, is_admin=is_admin, issue_url=issue_url, makefile=makefile, files=files, displaynames=displaynames, can_submit=can_submit, user_theme=user_theme)
 
 
 @tasks_bp.route('/view/<int:task_id>/<user_id>/<int:is_latest>')
@@ -266,4 +273,7 @@ def view_latest_for_user(task_id, user_id, is_latest):
 		code = result_file
 		best_or_latest = "Evaluation log"
 
-	return render_template('view.html', submission_code=code, task_id=task_id, user_id=user_id, is_latest=is_latest, sessions=session, best_or_latest=best_or_latest, task_name=task_name)
+	# Get user's editor theme preference
+	user_theme = db.get_user_setting(session.get('user_id'), 'editor_theme') if 'user_id' in session else None
+
+	return render_template('view.html', submission_code=code, task_id=task_id, user_id=user_id, is_latest=is_latest, sessions=session, best_or_latest=best_or_latest, task_name=task_name, user_theme=user_theme)

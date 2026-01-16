@@ -16,6 +16,9 @@ def profile():
 
 	user = db.get_user_by_id(userid)
 
+	# Get user theme from settings
+	user_theme = db.get_user_setting(userid, 'editor_theme') or 'default'
+
 	user_dict = {
 		'id': user[0],
 		'username': user[3],
@@ -26,7 +29,7 @@ def profile():
 		'visibility': user[11]
 	}
 
-	return render_template('profile.html', sessions=session, user=user_dict)
+	return render_template('profile.html', sessions=session, user=user_dict, user_theme=user_theme)
 
 
 @profile_bp.route('/org/<string:country>/<string:org>')
@@ -140,3 +143,20 @@ def revoke_api_key():
 		return redirect('/profile/api-key')
 	else:
 		return render_template('400.html'), 400
+
+
+@profile_bp.route('/theme/<theme_name>', methods=['POST'])
+@login_required
+def save_theme(theme_name):
+	"""Save user's preferred editor theme."""
+	userid = session['user_id']
+	
+	valid_themes = ['default', 'monokai', 'dracula', 'material', 'material-darker', 'solarized', 'nord', 'gruvbox-dark', 'twilight', 'ambiance', 'vitesse-dark']
+	
+	if theme_name not in valid_themes:
+		return jsonify({'error': 'Invalid theme'}), 400
+	
+	if db.set_user_setting(userid, 'editor_theme', theme_name):
+		return jsonify({'success': True, 'theme': theme_name}), 200
+	else:
+		return jsonify({'error': 'Failed to save theme'}), 500

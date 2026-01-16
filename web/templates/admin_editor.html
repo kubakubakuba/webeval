@@ -84,6 +84,7 @@ Task Editor
 			mode: "toml",
 			lineWrapping: true,
 			viewportMargin: Infinity,
+			{% if user_theme and user_theme != 'default' %}theme: "{{ user_theme }}",{% endif %}
 			value: '',
 			readOnly: true
 		});

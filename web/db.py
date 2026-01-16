@@ -1,6 +1,7 @@
 import psycopg2
 from dotenv import load_dotenv
 import os
+import json
 
 # Load .env from /app/.env in Docker or ../.env locally
 env_path = "/app/.env" if os.path.exists("/app/.env") else "../.env"
@@ -820,4 +821,38 @@ def revoke_user_api_key(user_id):
 	finally:
 		cursor.close()
 		db.close()
+
+
+def get_user_setting(user_id, setting_key):
+	"""Get a specific setting from user's settings JSONB column."""
+	(db, cursor) = connect()
+	try:
+		cursor.execute(
+			'SELECT settings->>%s FROM users WHERE id = %s',
+			(setting_key, user_id)
+		)
+		result = cursor.fetchone()
+		return result[0] if result else None
+	except Exception as e:
+		return None
+	finally:
+		cursor.close()
+		db.close()
+
+
+def set_user_setting(user_id, setting_key, setting_value):
+	"""Set a specific setting in user's settings JSONB column."""
+	(db, cursor) = connect()
+	try:
+		cursor.execute(
+			'UPDATE users SET settings = jsonb_set(settings, %s, %s) WHERE id = %s',
+			('{' + setting_key + '}', json.dumps(setting_value), user_id)
+		)
+		db.commit()
+		return True
+	except Exception as e:
+		db.rollback()
+		return False
+	finally:
+		cursor.close()
 		db.close()

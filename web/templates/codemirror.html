@@ -30,6 +30,17 @@
 	<title>{% block title %}{% endblock title %}</title>
 	<link href="{{ url_for('static', filename='libs/bootstrap.min.css') }}" rel="stylesheet">
 	<link rel="stylesheet" href="{{ url_for('static', filename='libs/codemirror.min.css') }}">
+	<!-- CodeMirror Themes -->
+	<link rel="stylesheet" href="{{ url_for('static', filename='themes/monokai.min.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='themes/dracula.min.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='themes/material.min.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='themes/material-darker.min.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='themes/solarized.min.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='themes/nord.min.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='themes/gruvbox-dark.min.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='themes/twilight.min.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='themes/ambiance.min.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='themes/vitesse-dark.min.css') }}">
 	<script src="{{ url_for('static', filename='libs/codemirror.min.js') }}"></script>
 	<script src="{{ url_for('static', filename='libs/gas.min.js') }}"></script>
 	<script src="{{ url_for('static', filename='libs/python.min.js') }}"></script>

@@ -26,6 +26,7 @@ CREATE TABLE users (
     can_submit boolean NOT NULL DEFAULT true,
     user_api_key character varying(64),
     user_api_key_expiry timestamp with time zone,
+    settings jsonb DEFAULT '{}'::jsonb,
     PRIMARY KEY (id),
     UNIQUE (email),
     UNIQUE (username)

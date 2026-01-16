@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "codemirror.html" %}
 
 {% block title %}
 Profile
@@ -6,8 +6,8 @@ Profile
 
 {% block content %}
 	<script src="{{ url_for('static', filename='libs/jquery-3.5.1.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='libs/bootstrap.bundle.min.js') }}"></script>
 	<link href="{{ url_for('static', filename='libs/select2.min.css') }}" rel="stylesheet" />
+	<script src="{{ url_for('static', filename='libs/select2.min.js') }}"></script>
 
 	<style>
 		.back-link {
@@ -37,15 +37,21 @@ Profile
 			margin: 15px 0px 15px 0px;
 		}
 
+		#themePreviewEditor {
+			height: 250px;
+			border: 1px solid var(--border-color);
+			margin-bottom: 15px;
+		}
+
 	</style>
 	<a href="/" class="back-link">← Back to Home</a>
-<script src="{{ url_for('static', filename='libs/select2.min.js') }}"></script>
+
+	<h3>{{ user.username }}'s profile</h3>
+	<hr />
 
 <div class="row">
-	<div class="col-sm-12">
-		<h3>{{ user.username }}'s profile</h3>
-		<hr />
-
+	<!-- Left column: Settings -->
+	<div class="col-lg-6">
 		<h5>Display name:</h5>
 		{% if user.display_name %}
 			<p>Current display name: <strong>{{ user.display_name }}</strong></p>
@@ -53,24 +59,20 @@ Profile
 			<p>No display name set</p>
 		{% endif %}
 
-		<div class="col-md-6">
-			<input type="text" id="set-display-input" class="form-control" placeholder="{{ user.display_name if user.display_name else 'Enter display name' }}" aria-label="New display name">
-		</div>
+		<input type="text" id="set-display-input" class="form-control" placeholder="{{ user.display_name if user.display_name else 'Enter display name' }}" aria-label="New display name">
 
-		<div class="col-md-6">
-			<div class="row gx-2">
-				<div class="col-6">
-					<div class="card card-btn" onclick="location.href='/profile/displayname/' + encodeURIComponent(document.getElementById('set-display-input').value.trim());">
-						<div class="card-body text-center">
-							Set display name
-						</div>
+		<div class="row gx-2">
+			<div class="col-6">
+				<div class="card card-btn" onclick="location.href='/profile/displayname/' + encodeURIComponent(document.getElementById('set-display-input').value.trim());">
+					<div class="card-body text-center">
+						Set display name
 					</div>
 				</div>
-				<div class="col-6">
-					<div class="card card-btn" onclick="if(confirm('Are you sure you want to remove your display name?')) location.href='/profile/displayname/';">
-						<div class="card-body text-center">
-							Delete display name
-						</div>
+			</div>
+			<div class="col-6">
+				<div class="card card-btn" onclick="if(confirm('Are you sure you want to remove your display name?')) location.href='/profile/displayname/';">
+					<div class="card-body text-center">
+						Delete display name
 					</div>
 				</div>
 			</div>
@@ -135,32 +137,123 @@ Profile
 		{% endif %}
 
 		<hr />
-
-		<div class="col-md-6">
-			<h3>Change privacy settings:</h3>
-			<select id="privacy-selector" class="form-select" aria-label="Privacy selector">
-				<option value="0" {% if user.visibility == 0 %} selected {% endif %}>Public (everyone can see your results)</option>
-				<option value="1" {% if user.visibility == 1 %} selected {% endif %}>Organization (only users from your organization can see your results)</option>
-				<option value="2" {% if user.visibility == 2 %} selected {% endif %}>Study group (only users from your study group can see your results)</option>
-				<option value="3" {% if user.visibility == 3 %} selected {% endif %}>Private (only you can see your results)</option>
-			</select>
-			<div class="card card-btn" onclick="location.href='/profile/privacy/' + document.getElementById('privacy-selector').value;">
-				<div class="card-body text-center">
-					Set privacy
-				</div>
+		<h3>Change privacy settings:</h3>
+		<select id="privacy-selector" class="form-select" aria-label="Privacy selector">
+			<option value="0" {% if user.visibility == 0 %} selected {% endif %}>Public (everyone can see your results)</option>
+			<option value="1" {% if user.visibility == 1 %} selected {% endif %}>Organization (only users from your organization can see your results)</option>
+			<option value="2" {% if user.visibility == 2 %} selected {% endif %}>Study group (only users from your study group can see your results)</option>
+			<option value="3" {% if user.visibility == 3 %} selected {% endif %}>Private (only you can see your results)</option>
+		</select>
+		<div class="card card-btn" onclick="location.href='/profile/privacy/' + document.getElementById('privacy-selector').value;">
+			<div class="card-body text-center">
+				Set privacy
 			</div>
 		</div>
 
-		<hr style="margin: 30px 0;" />
-
-		<div class="col-md-6">
-			<div class="card card-btn" onclick="window.location.href='/profile/api-key'">
-				<div class="card-body text-center">
-					API Key Management
-				</div>
+		<hr />
+		<div class="card card-btn" onclick="window.location.href='/profile/api-key'" style="margin-top: 30px;">
+			<div class="card-body text-center">
+				API Key Management
 			</div>
 		</div>
 	</div>
+
+	<!-- Right column: Editor Theme Selection -->
+	<div class="col-lg-6">
+		<h3>Editor Theme</h3>
+		<p>Choose your preferred editor theme:</p>
+		<select id="theme-selector" class="form-select">
+			<option value="default" {% if user_theme == 'default' %}selected{% endif %}>Default</option>
+			<option value="monokai" {% if user_theme == 'monokai' %}selected{% endif %}>Monokai</option>
+			<option value="dracula" {% if user_theme == 'dracula' %}selected{% endif %}>Dracula</option>
+			<option value="material" {% if user_theme == 'material' %}selected{% endif %}>Material</option>
+			<option value="material-darker" {% if user_theme == 'material-darker' %}selected{% endif %}>Material Darker</option>
+			<option value="solarized" {% if user_theme == 'solarized' %}selected{% endif %}>Solarized Dark</option>
+			<option value="nord" {% if user_theme == 'nord' %}selected{% endif %}>Nord</option>
+			<option value="gruvbox-dark" {% if user_theme == 'gruvbox-dark' %}selected{% endif %}>Gruvbox Dark</option>
+			<option value="twilight" {% if user_theme == 'twilight' %}selected{% endif %}>Twilight</option>
+			<option value="ambiance" {% if user_theme == 'ambiance' %}selected{% endif %}>Ambiance</option>
+			<option value="vitesse-dark" {% if user_theme == 'vitesse-dark' %}selected{% endif %}>Vitesse Dark</option>
+		</select>
+
+		<div class="card card-btn" id="save-theme-btn">
+			<div class="card-body text-center">
+				Save Theme
+			</div>
+		</div>
+
+		<div id="themePreviewEditor"></div>
+	</div>
+
+	<script>
+		var themeEditor;
+		var sampleCode = `//cache pragma
+#pragma cache:lru,1,1,1,wb
+
+.option norelax
+
+.globl    array_size
+.globl    array_start
+
+.text
+.globl _start
+
+_start:
+
+	la   a0, array_start
+	la   a1, array_size
+	lw   a1, 0(a1) // number of elements in the array
+
+//your code here
+
+end_loop:
+	fence           // flush cache memory
+	ebreak          // stop the simulator
+	j end_loop
+
+.data
+
+array_size:
+.word	15
+array_start:
+.word	5, 3, 4, 1, 15, 8, 9, 2, 10, 6, 11, 1, 6, 9, 12`;
+		
+		document.addEventListener('DOMContentLoaded', function() {
+			// Initialize CodeMirror editor for theme preview
+			themeEditor = CodeMirror(document.getElementById('themePreviewEditor'), {
+				value: sampleCode,
+				mode: 'gas',
+				lineNumbers: true,
+				theme: '{{ user_theme if user_theme else "default" }}',
+				readOnly: false
+			});
+
+			// Update theme preview on selection change
+			document.getElementById('theme-selector').addEventListener('change', function() {
+				var selectedTheme = this.value;
+				themeEditor.setOption('theme', selectedTheme);
+			});
+
+			// Save theme to user settings
+			document.getElementById('save-theme-btn').addEventListener('click', function() {
+				var selectedTheme = document.getElementById('theme-selector').value;
+				
+				fetch('/profile/theme/' + selectedTheme, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(response => response.json())
+				.then(data => {
+					alert('Theme saved successfully!');
+				})
+				.catch(error => {
+					alert('Error saving theme. Please try again.');
+				});
+			});
+		});
+	</script>
 </div>
 
 {% endblock content %}
