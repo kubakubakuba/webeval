@@ -119,6 +119,15 @@ def get_task_path(task_id):
 	db.close()
 	return task
 
+def get_task_path_admin(task_id):
+	"""Get the path to a task (admin - no availability check)."""
+	(db, cursor) = connect()
+	cursor.execute('SELECT path FROM tasks WHERE id = %s', (task_id,))
+	task = cursor.fetchone()
+	cursor.close()
+	db.close()
+	return task
+
 def get_task_name(task_id):
 	"""Get the name of a task."""
 	(db, cursor) = connect()

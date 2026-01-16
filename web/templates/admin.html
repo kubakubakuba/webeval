@@ -61,7 +61,7 @@ Admin Panel
 
 	<h1 class="mb-4">Admin Panel</h1>
 	
-	<div class="row">
+	<div class="row gy-4">
 		<!-- Users Management -->
 		<div class="col-md-6 col-lg-3">
 			<div class="card admin-card text-center" onclick="location.href='/admin/users';">
@@ -70,6 +70,7 @@ Admin Panel
 						<i class="bi bi-people"></i>
 					</div>
 					<div class="admin-card-title">Users</div>
+					<hr />
 					<div class="admin-card-description">
 						Manage users, groups, and permissions
 					</div>
@@ -85,6 +86,7 @@ Admin Panel
 						<i class="bi bi-list-task"></i>
 					</div>
 					<div class="admin-card-title">Tasks</div>
+					<hr />
 					<div class="admin-card-description">
 						Manage tasks, order, and availability
 					</div>
@@ -100,6 +102,7 @@ Admin Panel
 						<i class="bi bi-key"></i>
 					</div>
 					<div class="admin-card-title">API Keys</div>
+					<hr />
 					<div class="admin-card-description">
 						Manage API keys and access
 					</div>
@@ -107,6 +110,24 @@ Admin Panel
 			</div>
 		</div>
 		
+		<!-- Task Editor -->
+		<div class="col-md-6 col-lg-3">
+			<div class="card admin-card text-center" onclick="location.href='/admin/editor';">
+				<div class="card-body">
+					<div class="admin-card-icon">
+						<i class="bi bi-pencil-square"></i>
+					</div>
+					<div class="admin-card-title">Task Editor</div>
+					<hr />
+					<div class="admin-card-description">
+						Edit task configuration files
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row gy-4 mt-0">
 		<!-- Submissions Toggle -->
 		<div class="col-md-6 col-lg-3">
 			<div class="card admin-card text-center" onclick="location.href='/admin/toggle/submit/';">
@@ -119,7 +140,7 @@ Admin Panel
 						<span class="status-badge {% if submit_disabled %}status-disabled{% else %}status-enabled{% endif %}">
 							{% if submit_disabled %}Disabled{% else %}Enabled{% endif %}
 						</span>
-						<br>
+						<hr />
 						Click to {% if submit_disabled %}enable{% else %}disable{% endif %}
 					</div>
 				</div>

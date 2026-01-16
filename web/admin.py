@@ -328,3 +328,54 @@ def admin_import_users():
 	
 	except Exception as e:
 		return render_template('admin_import.html', errors=[f'Error processing file: {str(e)}'])
+
+
+@admin_bp.route('/editor')
+@admin_required
+def task_editor():
+	"""Task editor page."""
+	tasks = db.list_tasks_with_filepath()
+	return render_template('admin_editor.html', sessions=session, tasks=tasks)
+
+
+@admin_bp.route('/editor/load/<int:task_id>')
+@admin_required
+def load_task_file(task_id):
+	"""Load task file content."""
+	import json
+	
+	filepath = db.get_task_path_admin(task_id)
+	if not filepath:
+		return json.dumps({'error': 'Task not found'}), 404
+	
+	# Construct full path using TASKS_DIR
+	filepath = os.path.join(TASKS_DIR, filepath[0])
+	
+	try:
+		with open(filepath, 'r') as f:
+			content = f.read()
+		return json.dumps({'content': content, 'filepath': filepath})
+	except Exception as e:
+		return json.dumps({'error': str(e)}), 500
+
+
+@admin_bp.route('/editor/save/<int:task_id>', methods=['POST'])
+@admin_required
+def save_task_file(task_id):
+	"""Save task file content."""
+	import json
+	
+	filepath = db.get_task_path_admin(task_id)
+	if not filepath:
+		return json.dumps({'error': 'Task not found'}), 404
+	
+	# Construct full path using TASKS_DIR
+	filepath = os.path.join(TASKS_DIR, filepath[0])
+	content = request.form.get('content', '')
+	
+	try:
+		with open(filepath, 'w') as f:
+			f.write(content)
+		return json.dumps({'success': True, 'message': 'File saved successfully'})
+	except Exception as e:
+		return json.dumps({'error': str(e)}), 500
