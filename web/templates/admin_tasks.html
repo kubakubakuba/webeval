@@ -5,12 +5,12 @@ Task Management - Admin Panel
 {% endblock title %}
 
 {% block content %}
-	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/TableDnD/1.0.5/jquery.tablednd.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/bootstrap-table.min.js"></script>
-	<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.css">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/extensions/reorder-rows/bootstrap-table-reorder-rows.min.js"></script>
+	<script src="{{ url_for('static', filename='libs/jquery-3.3.1.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='libs/bootstrap.bundle.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='libs/jquery.tablednd.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='libs/bootstrap-table.min.js') }}"></script>
+	<link rel="stylesheet" href="{{ url_for('static', filename='libs/bootstrap-table.min.css') }}">
+	<script src="{{ url_for('static', filename='libs/bootstrap-table-reorder-rows.min.js') }}"></script>
 
 	<style>
 		.form-select {
