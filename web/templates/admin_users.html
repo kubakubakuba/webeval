@@ -20,7 +20,8 @@ User Management - Admin Panel
 		}
 
 		.back-link {
-			display: inline-block;
+			display: inline-flex;
+			align-items: center;
 			margin-bottom: 20px;
 			color: var(--link-color);
 			text-decoration: none;
@@ -39,7 +40,12 @@ User Management - Admin Panel
 		}
 	</style>
 
-	<a href="/admin" class="back-link">← Back to Admin Panel</a>
+	<a href="/admin" class="back-link">
+		<svg width="20" height="20" style="vertical-align: middle; margin-right: 5px;">
+			<use href="/static/sprites.svg#back"></use>
+		</svg>
+		Back to Admin Panel
+	</a>
 
 	<h1 class="mb-4">User Management</h1>
 

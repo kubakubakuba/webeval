@@ -7,7 +7,8 @@
 {% block content %}
 	<style>
 		.back-link {
-			display: inline-block;
+			display: inline-flex;
+			align-items: center;
 			margin-bottom: 20px;
 			color: var(--link-color);
 			text-decoration: none;
@@ -22,7 +23,12 @@
 		}
 	</style>
 
-	<a href="/task/{{ task_id }}" class="back-link">← Back to Task</a>
+	<a href="/task/{{ task_id }}" class="back-link">
+		<svg width="20" height="20" style="vertical-align: middle; margin-right: 5px;">
+			<use href="/static/sprites.svg#back"></use>
+		</svg>
+		Back to Task
+	</a>
 
 	<h2>{{ best_or_latest }} for task: {{ task_name }}</h2>
 	<div class="card">

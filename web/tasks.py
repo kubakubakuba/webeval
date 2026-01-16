@@ -1,6 +1,6 @@
 """Task-related routes: submit, view task details, view submissions."""
 
-from flask import Blueprint, render_template, request, redirect, session
+from flask import Blueprint, render_template, request, redirect, session, Response
 from markdown import markdown
 from datetime import datetime
 from auth import login_required, check_banned
@@ -245,6 +245,32 @@ def task(task_id):
 	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data,
 scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name,
 latest_score=latest_score, is_admin=is_admin, issue_url=issue_url, makefile=makefile, files=files, displaynames=displaynames, can_submit=can_submit, user_theme=user_theme)
+
+
+@tasks_bp.route('/download/<int:task_id>/<user_id>/<int:is_best>')
+@login_required
+def download_submission(task_id, user_id, is_best):
+	"""Download submission file for a specific user (best or latest)."""
+	# Check if the current user is admin or the userid is the same as the session user id
+	curr_is_admin = check_admin()
+
+	if str(session['user_id']) != str(user_id) and not curr_is_admin:
+		return render_template('403.html'), 403
+	
+	# Get the source code
+	code = db.get_user_code(task_id, user_id, 0 if is_best else 1)
+	code = code[0] if code else ""
+
+	# Get username
+	username = db.get_username(user_id)
+	username = username[0] if username else "user"
+
+	# Determine filename suffix
+	suffix = "best" if is_best else "latest"
+	
+	response = Response(code, mimetype='text/plain')
+	response.headers['Content-Disposition'] = f'attachment; filename=task{task_id}_{username}_{suffix}.txt'
+	return response
 
 
 @tasks_bp.route('/view/<int:task_id>/<user_id>/<int:is_latest>')

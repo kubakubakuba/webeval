@@ -5,8 +5,8 @@
 {% block content %}
 <style>
 .back-link {
-    display: inline-block;
-    margin-bottom: 20px;
+	display: inline-flex;
+	align-items: center;
     color: var(--link-color);
     text-decoration: none;
 }
@@ -53,7 +53,12 @@ table {
 }
 </style>
 
-<a href="/admin" class="back-link">← Back to Admin Panel</a>
+<a href="/admin" class="back-link">
+	<svg width="20" height="20" style="vertical-align: middle; margin-right: 5px;">
+		<use href="/static/sprites.svg#back"></use>
+	</svg>
+	Back to Admin Panel
+</a>
 
 <div class="container-fluid import-container">
     <h1 class="mb-4">Batch Import Users</h1>

@@ -7,7 +7,8 @@
 {% block content %}
 <style>
 	.back-link {
-		display: inline-block;
+		display: inline-flex;
+		align-items: center;
 		margin-bottom: 20px;
 		color: var(--link-color);
 		text-decoration: none;
@@ -76,7 +77,12 @@
 	}
 </style>
 
-<a href="/" class="back-link">← Back to Home</a>
+<a href="/" class="back-link">
+	<svg width="20" height="20" style="vertical-align: middle; margin-right: 5px;">
+		<use href="/static/sprites.svg#back"></use>
+	</svg>
+	Back to Home
+</a>
 
 <div class="container-fluid">
 	<div class="row">
@@ -201,7 +207,7 @@
 							{% endif %}
 						</div>
 						<div>
-							Time submitted:
+							Submission time:
 							{{ time }}
 						</div>
 
@@ -255,8 +261,11 @@
 													<svg width="20" height="20">
 														<use href="/static/sprites.svg#inspect"></use>
 													</svg>
-												</a>
-											{% endif %}
+												</a>											<a href="/download/{{ task.id }}/{{ userid }}/{% if is_best == 1 %}1{% elif is_best == 0 %}0{% endif %}" class="icon-link">
+												<svg width="20" height="20">
+													<use href="/static/sprites.svg#download"></use>
+												</svg>
+											</a>											{% endif %}
 											
 											{% if is_admin == 1 %}
 												<a href="/admin/reevaluate/{{ task.id }}/{{ userid }}/{% if is_best == 1 %}1{% elif is_best == 0 %}0{% endif %}" class="icon-link">
