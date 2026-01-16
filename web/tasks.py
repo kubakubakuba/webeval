@@ -158,10 +158,15 @@ def task(task_id):
 
 	deadlines = None
 
-	if task_submit_start_time and task_submit_end_time:
+	if task_submit_start_time or task_submit_end_time:
+		from datetime import timezone
 		deadlines = {}
-		deadlines["start"] = datetime.strptime(task_submit_start_time, '%Y-%m-%dT%H:%M:%SZ')
-		deadlines["end"] = datetime.strptime(task_submit_end_time, '%Y-%m-%dT%H:%M:%SZ')
+		if task_submit_start_time:
+			utc_time = datetime.strptime(task_submit_start_time, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+			deadlines["start"] = utc_time.astimezone()
+		if task_submit_end_time:
+			utc_time = datetime.strptime(task_submit_end_time, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+			deadlines["end"] = utc_time.astimezone()
 
 	inputs = task_data.get('inputs', None)
 
@@ -238,6 +243,15 @@ def task(task_id):
 	displaynames = {user[0]: user[1] for user in displaynames}
 	
 	can_submit = db.can_user_submit(userid) if userid is not None else False
+	
+	# Check if submissions are within the deadline window
+	if can_submit and deadlines:
+		from datetime import timezone
+		current_time = datetime.now(timezone.utc)
+		if deadlines.get("start") and current_time < deadlines["start"].astimezone(timezone.utc):
+			can_submit = False
+		if deadlines.get("end") and current_time > deadlines["end"].astimezone(timezone.utc):
+			can_submit = False
 
 	# Get user's editor theme preference
 	user_theme = db.get_user_setting(userid, 'editor_theme') if userid else 'default'

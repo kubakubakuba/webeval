@@ -75,22 +75,21 @@ def score_results(results) -> dict:
 	return results
 
 def check_submission_deadlines(task_data, task_name):
-	print(f"was here")
 	task_submit_start_time = task_data['task'].get('submit_start', None)
 	task_submit_end_time = task_data['task'].get('submit_end', None)
 
 	#check if the current time is within the submit time window
+	from datetime import timezone
+	now = datetime.now(timezone.utc).replace(tzinfo=None)
 
-	if task_submit_start_time and task_submit_end_time:
+	if task_submit_start_time:
 		task_submit_start_time = datetime.strptime(task_submit_start_time, '%Y-%m-%dT%H:%M:%SZ')
-		task_submit_end_time = datetime.strptime(task_submit_end_time, '%Y-%m-%dT%H:%M:%SZ')
-
-		print(f"start: {task_submit_start_time}, end: {task_submit_end_time}")
-
-		if task_submit_start_time > datetime.now():
+		if task_submit_start_time > now:
 			return render_template('submit_too_early.html', task_name=task_name, start_time=task_submit_start_time)
-		
-		if task_submit_end_time < datetime.now():
+	
+	if task_submit_end_time:
+		task_submit_end_time = datetime.strptime(task_submit_end_time, '%Y-%m-%dT%H:%M:%SZ')
+		if task_submit_end_time < now:
 			return render_template('submit_too_late.html', task_name=task_name, end_time=task_submit_end_time)
 
 	return None

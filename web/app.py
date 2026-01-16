@@ -3,6 +3,7 @@ from flask_mail import Mail
 from markdown import markdown
 from dotenv import load_dotenv
 import os
+import toml
 import db
 from util import check_submission_deadlines
 import admin as admin_module
@@ -11,6 +12,7 @@ import tasks as tasks_module
 import scoreboard as scoreboard_module
 import profile as profile_module
 import api as api_module
+from datetime import datetime, timezone
 
 # Load .env from /app/.env in Docker or ../.env locally
 env_path = "/app/.env" if os.path.exists("/app/.env") else "../.env"
@@ -51,7 +53,7 @@ def check_admin() -> bool:
 def inject_is_admin():
 	return dict(is_admin=check_admin())
 
-admin_module.init_admin(TASKS_DIR)
+admin_module.init_admin(TASKS_DIR, TEMPLATES_DIR)
 app.register_blueprint(admin_module.admin_bp)
 
 login_module.init_login(URL, mail)
@@ -72,13 +74,43 @@ app.register_blueprint(api_module.api_bp)
 def index():
 	task = db.list_tasks()
 
-	tasks = {}
+	tasks = []
 	if task:
-		for(i, t) in enumerate(task):
+		for t in task:
 			task_id, task_name = t
-			tasks[i] = (task_id, task_name)
+			
+			task_path = db.get_task_path(task_id)
+			deadline_info = None
+			
+			if task_path:
+				task_file = os.path.join(TASKS_DIR, os.path.basename(task_path[0]))
+				if os.path.exists(task_file):
+					try:
+						with open(task_file) as f:
+							task_data = toml.load(f)
+						
+						submit_start = task_data['task'].get('submit_start', None)
+						submit_end = task_data['task'].get('submit_end', None)
+						
+						now = datetime.now(timezone.utc).replace(tzinfo=None)
+						
+						if submit_start:
+							start_time = datetime.strptime(submit_start, '%Y-%m-%dT%H:%M:%SZ')
+							if now < start_time:
+								delta = start_time - now
+								deadline_info = ('opens', delta)
+						
+						if submit_end and not deadline_info:
+							end_time = datetime.strptime(submit_end, '%Y-%m-%dT%H:%M:%SZ')
+							if now < end_time:
+								delta = end_time - now
+								deadline_info = ('closes', delta)
+					except Exception as e:
+						pass
+			
+			tasks.append((task_id, task_name, deadline_info))
 
-	return render_template('index.html', sessions=session, tasks=tasks.values())
+	return render_template('index.html', sessions=session, tasks=tasks)
 
 @app.route('/about')
 def about():

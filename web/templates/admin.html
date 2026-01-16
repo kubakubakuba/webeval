@@ -109,6 +109,25 @@ Admin Panel
 				</div>
 			</div>
 		</div>
+
+		<!-- Submissions Toggle -->
+		<div class="col-md-6 col-lg-3">
+			<div class="card admin-card text-center" onclick="location.href='/admin/toggle/submit/';">
+				<div class="card-body">
+					<div class="admin-card-icon">
+						<i class="bi bi-toggle-{% if submit_disabled %}off{% else %}on{% endif %}"></i>
+					</div>
+					<div class="admin-card-title">Submissions</div>
+					<div class="admin-card-description">
+						<span class="status-badge {% if submit_disabled %}status-disabled{% else %}status-enabled{% endif %}">
+							{% if submit_disabled %}Disabled{% else %}Enabled{% endif %}
+						</span>
+						<hr />
+						Click to {% if submit_disabled %}enable{% else %}disable{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
 		
 		<!-- Task Editor -->
 		<div class="col-md-6 col-lg-3">
@@ -125,23 +144,18 @@ Admin Panel
 				</div>
 			</div>
 		</div>
-	</div>
-
-	<div class="row gy-4 mt-0">
-		<!-- Submissions Toggle -->
+		
+		<!-- Templates Editor -->
 		<div class="col-md-6 col-lg-3">
-			<div class="card admin-card text-center" onclick="location.href='/admin/toggle/submit/';">
+			<div class="card admin-card text-center" onclick="location.href='/admin/templates';">
 				<div class="card-body">
 					<div class="admin-card-icon">
-						<i class="bi bi-toggle-{% if submit_disabled %}off{% else %}on{% endif %}"></i>
+						<i class="bi bi-file-code"></i>
 					</div>
-					<div class="admin-card-title">Submissions</div>
+					<div class="admin-card-title">Template Editor</div>
+					<hr />
 					<div class="admin-card-description">
-						<span class="status-badge {% if submit_disabled %}status-disabled{% else %}status-enabled{% endif %}">
-							{% if submit_disabled %}Disabled{% else %}Enabled{% endif %}
-						</span>
-						<hr />
-						Click to {% if submit_disabled %}enable{% else %}disable{% endif %}
+						Edit assembly and C template files
 					</div>
 				</div>
 			</div>

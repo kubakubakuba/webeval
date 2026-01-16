@@ -436,7 +436,10 @@ def set_task_availability(taskid, available):
 def create_new_task(path):
 	"""Create a new task."""
 	(db, cursor) = connect()
-	cursor.execute('INSERT INTO tasks (name, path, available) VALUES (%s, %s, true)', (path, path))
+	# Get the next sequence number (max + 1)
+	cursor.execute('SELECT COALESCE(MAX(sequence), 0) + 1 FROM tasks')
+	next_sequence = cursor.fetchone()[0]
+	cursor.execute('INSERT INTO tasks (name, path, available, sequence) VALUES (%s, %s, true, %s)', (path, path, next_sequence))
 	db.commit()
 	cursor.close()
 	db.close()

@@ -5,11 +5,49 @@ QtRVSim Web Evaluation
 {% endblock title %}
 
 {% block content %}
+	<style>
+		.task-item {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+		
+		.task-deadline {
+			font-size: 0.9em;
+			color: #666;
+			font-style: italic;
+			white-space: nowrap;
+			margin-left: 20px;
+		}
+	</style>
+
 	<h4>Tasks available for submission:</h4>
 
 	<div class="list-group">
 		{% for t in tasks %}
-			<a href="/task/{{ t[0] }}" class="list-group-item list-group-item-action">{{ t[1] }}</a>
+			<a href="/task/{{ t[0] }}" class="list-group-item list-group-item-action">
+				<div class="task-item">
+					<span>{{ t[1] }}</span>
+					{% if t[2] %}
+						<span class="task-deadline">
+							{% set action, delta = t[2] %}
+							{% set days = delta.days %}
+							{% set hours = (delta.seconds // 3600) %}
+							{% set minutes = ((delta.seconds % 3600) // 60) %}
+							
+							{% if days > 0 %}
+								{{ action.capitalize() }} in {{ days }}d
+							{% elif hours > 0 %}
+								{{ action.capitalize() }} in {{ hours }}h
+							{% elif minutes > 0 %}
+								{{ action.capitalize() }} in {{ minutes }}min
+							{% else %}
+								{{ action.capitalize() }} soon
+							{% endif %}
+						</span>
+					{% endif %}
+				</div>
+			</a>
 		{% endfor %}
 	</div>
 

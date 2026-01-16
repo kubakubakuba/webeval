@@ -157,11 +157,15 @@
 				{% endif %}
 
 				{% if task.deadlines %}
-	
-					This task is available for submission <br /> from <code>{{ task.deadlines.start }}</code> to <code>{{ task.deadlines.end }}</code>.
-	
+					<div class="alert alert-info mt-3">
+						{% if task.deadlines.start %}
+							<strong>Opens:</strong> {{ task.deadlines.start.strftime('%B %d, %Y at %H:%M') }}<br />
+						{% endif %}
+						{% if task.deadlines.end %}
+							<strong>Closes:</strong> {{ task.deadlines.end.strftime('%B %d, %Y at %H:%M') }}
+						{% endif %}
+					</div>
 				{% endif %}
-
 			{% endif %}
 		</div>
 			<!-- Submission section for logged-in users -->

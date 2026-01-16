@@ -5,11 +5,13 @@ from auth import admin_required
 import db, os, re, csv, io
 
 TASKS_DIR = None
+TEMPLATES_DIR = None
 
-def init_admin(tasks_dir):
+def init_admin(tasks_dir, templates_dir):
 	"""Initialize admin module with configuration."""
-	global TASKS_DIR
+	global TASKS_DIR, TEMPLATES_DIR
 	TASKS_DIR = tasks_dir
+	TEMPLATES_DIR = templates_dir
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -387,5 +389,95 @@ def save_task_file(task_id):
 		with open(filepath, 'w') as f:
 			f.write(content)
 		return json.dumps({'success': True, 'message': 'File saved successfully'})
+	except Exception as e:
+		return json.dumps({'error': str(e)}), 500
+
+
+@admin_bp.route('/templates')
+@admin_required
+def templates_editor():
+	"""Templates editor page."""
+	import glob
+	
+	# Get all template files
+	templates = []
+	if os.path.exists(TEMPLATES_DIR):
+		for filepath in glob.glob(os.path.join(TEMPLATES_DIR, '*')):
+			if os.path.isfile(filepath):
+				filename = os.path.basename(filepath)
+				templates.append(filename)
+	
+	templates.sort()
+	user_theme = db.get_user_setting(session['user_id'], 'editor_theme')
+	return render_template('admin_templates.html', sessions=session, templates=templates, user_theme=user_theme)
+
+
+@admin_bp.route('/templates/load/<path:filename>')
+@admin_required
+def load_template_file(filename):
+	"""Load template file content."""
+	import json
+	
+	# Sanitize filename to prevent directory traversal
+	filename = os.path.basename(filename)
+	filepath = os.path.join(TEMPLATES_DIR, filename)
+	
+	if not os.path.exists(filepath) or not os.path.isfile(filepath):
+		return json.dumps({'error': 'Template not found'}), 404
+	
+	try:
+		with open(filepath, 'r') as f:
+			content = f.read()
+		return json.dumps({'content': content, 'filepath': filepath})
+	except Exception as e:
+		return json.dumps({'error': str(e)}), 500
+
+
+@admin_bp.route('/templates/save/<path:filename>', methods=['POST'])
+@admin_required
+def save_template_file(filename):
+	"""Save template file content."""
+	import json
+	
+	# Sanitize filename to prevent directory traversal
+	filename = os.path.basename(filename)
+	filepath = os.path.join(TEMPLATES_DIR, filename)
+	content = request.form.get('content', '')
+	
+	try:
+		with open(filepath, 'w') as f:
+			f.write(content)
+		return json.dumps({'success': True, 'message': 'File saved successfully'})
+	except Exception as e:
+		return json.dumps({'error': str(e)}), 500
+
+
+@admin_bp.route('/templates/create', methods=['POST'])
+@admin_required
+def create_template_file():
+	"""Create a new template file."""
+	import json
+	
+	filename = request.form.get('filename', '').strip()
+	
+	if not filename:
+		return json.dumps({'error': 'Filename is required'}), 400
+	
+	# Sanitize filename
+	filename = os.path.basename(filename)
+	
+	if not filename.endswith('.S') and not filename.endswith('.c'):
+		return json.dumps({'error': 'Template must have .S or .c extension'}), 400
+	
+	filepath = os.path.join(TEMPLATES_DIR, filename)
+	
+	if os.path.exists(filepath):
+		return json.dumps({'error': 'File already exists'}), 400
+	
+	try:
+		# Create empty file
+		with open(filepath, 'w') as f:
+			f.write('')
+		return json.dumps({'success': True, 'message': 'File created successfully', 'filename': filename})
 	except Exception as e:
 		return json.dumps({'error': str(e)}), 500

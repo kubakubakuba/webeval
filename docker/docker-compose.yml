@@ -56,8 +56,8 @@ services:
       - TASKS_DIR=/data/tasks
       - DB_INITIAL_DATA_MOUNTED=${DB_INITIAL_DATA:+/docker-init/data/initial_data.sql}
     volumes:
-      - ${TEMPLATES_DIR:-../S_templates}:/data/S_templates:ro
-      - ${TASKS_DIR:-../tasks}:/data/tasks:ro
+      - ${TEMPLATES_DIR:-../S_templates}:/data/S_templates
+      - ${TASKS_DIR:-../tasks}:/data/tasks
       - type: bind
         source: ${DB_INITIAL_DATA:-/dev/null}
         target: /docker-init/data/initial_data.sql
@@ -97,7 +97,7 @@ services:
       - TASKS_DIR=/data/tasks
       - TEMPLATES_DIR=/data/templates
     volumes:
-      - ${TASKS_DIR:-../tasks}:/data/tasks:ro
+      - ${TASKS_DIR:-../tasks}:/data/tasks
       - ${TEMPLATES_DIR:-../S_templates}:/data/templates:ro
     depends_on:
       db:
