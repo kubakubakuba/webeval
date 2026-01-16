@@ -3,6 +3,7 @@ from datetime import datetime
 import re
 from collections import defaultdict
 import os
+import json
 
 class QtRVSim:
 	def __init__(self, submission_file="", working_dir=""):
@@ -317,8 +318,49 @@ class QtRVSim:
 			if match:
 				self.cache_stats[stat_key] = value_type(match.group(1))
 		
+	def parse_json_output(self, json_file):
+		'''Parse the JSON output from qtrvsim and extract registers and cycles.'''
+		self.regs = defaultdict(int) #clear the registers
+		
+		try:
+			with open(json_file, 'r') as f:
+				data = json.load(f)
+			
+			if 'cycles' in data and 'cycles' in data['cycles']:
+				self.cycles = int(data['cycles']['cycles'])
+			else:
+				self.cycles = -1
+			
+			if 'regs' in data:
+				regs_data = data['regs']
+				
+				#store PC
+				if 'PC' in regs_data:
+					self.regs['PC'] = int(regs_data['PC'], 16)
+				
+				#store R0-R31 with register names
+				for i in range(32):
+					reg_key = f'R{i}'
+					if reg_key in regs_data:
+						self.regs[self.register_names[i]] = int(regs_data[reg_key], 16)
+				
+				csr_regs = ['mvendorid', 'marchid', 'mimpid', 'mhardid', 'mstatus', 'misa', 'mie', 'mtvec', 'mscratch', 'mepc', 'mcause', 'mtval', 'mip', 'mcycle', 'minstret', 'mtinst', 'mtval2']
+				for csr in csr_regs:
+					if csr in regs_data:
+						self.regs[csr] = int(regs_data[csr], 16)
+				
+		except FileNotFoundError:
+			self.cycles = -1
+			if self.verbose:
+				print(f"JSON output file not found: {json_file}")
+		except json.JSONDecodeError as e:
+			self.cycles = -1
+			if self.verbose:
+				print(f"Error parsing JSON: {e}")
+
 	def rgx_get_registers(self, log):
-		'''Get the registers from the stdout of qtrvsim. Set them to the self.regs dictionary.'''
+		'''Get the registers from the stdout of qtrvsim. Set them to the self.regs dictionary.
+		DEPRECATED: Use parse_json_output instead.'''
 		self.regs = defaultdict(int) #clear the registers
 
 		# Patterns for registers
@@ -419,10 +461,12 @@ class QtRVSim:
 		#print(self.mem_arg)
 		#print(self.dump_mem_arg)
 		arguments = arguments.split()
-		command = ["qtrvsim_cli"] + arguments + ["--asm", self.submission_file]
+		
+		json_output_file = f"{self.working_dir}/qtrvsim_output.json"
+		command = ["qtrvsim_cli"] + arguments + ["--dump-to-json", json_output_file, "--asm", self.submission_file]
 		
 		if self.makefile_present:
-			command = ["qtrvsim_cli"] + arguments + [self.submission_file.split(".")[0]]
+			command = ["qtrvsim_cli"] + arguments + ["--dump-to-json", json_output_file, self.submission_file.split(".")[0]]
 
 		if self.verbose:
 			print("Running command: ", ' '.join(command), "\n\n\n")
@@ -457,11 +501,10 @@ class QtRVSim:
 		was_accepted = 0 #TODO: check if the output is correct
 
 		if not killed:
-			self.rgx_get_cycles(stdout_text)
+			self.parse_json_output(json_output_file)
 			self.rgx_get_cache_stats(stdout_text)
 
 			if self.do_compare_registers:
-				self.rgx_get_registers(stdout_text)
 				#compare registers
 				for reg, value in self.compare_registes.items():
 					if self.regs[reg] != value:
