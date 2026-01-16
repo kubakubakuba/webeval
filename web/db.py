@@ -506,7 +506,7 @@ def reevaluate_task(task_id, user_id, is_best):
 	if source:
 		cursor.execute('INSERT INTO submissions (userid, taskid, file) VALUES (%s, %s, %s)', (user_id, task_id, source))
 
-	cursor.execute('UPDATE results SET result = -1, score_best = 0, score_last = 0 WHERE taskid = %s AND userid = %s', (task_id, user_id))
+	cursor.execute('UPDATE results SET result = -1, score_best = NULL, score_last = NULL, best_source = NULL, last_source = NULL WHERE taskid = %s AND userid = %s', (task_id, user_id))
 
 	db.commit()
 	cursor.close()
