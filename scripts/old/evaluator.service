@@ -1,0 +1,14 @@
+[Unit]
+Description=QtRVSim Web Eval Evaluator
+After=network.target
+
+[Service]
+User=pelcjaku
+Group=pelcjaku
+WorkingDirectory=/var/www/qtrvsim-eval-web/evaluator
+ExecStart=/bin/bash -c 'cd /var/www/qtrvsim-eval-web/evaluator && pipenv run python3 evaluator.py'
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
