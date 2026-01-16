@@ -220,11 +220,15 @@ def get_user_displaynames():
 	db.close()
 	return displaynames
 
-def get_best_scores_for_verified_grouporg(taskid, group, organization, curr_user):
+def get_best_scores_for_verified_grouporg(taskid, group, organization, curr_user, is_admin=False):
 	"""Get the best scores for a task for only verified users, that have visibility set to public (0) or are at the same group or the same organization."""
 	(db, cursor) = connect()
 	# Use COALESCE to handle NULL curr_user (anonymous users) - compare against a UUID that won't match any real user
-	cursor.execute('SELECT users.username, results.score_best, results.result_file, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND results.score_best IS NOT NULL AND results.score_best > 0 AND (users.visibility = 0 OR (users."group" = %s AND users.visibility = 2) OR (users.organization = %s AND users.visibility = 1) OR (users.id = COALESCE(%s::uuid, \'00000000-0000-0000-0000-000000000000\'::uuid))) ORDER BY results.score_best ASC', (taskid, group, organization, curr_user))
+	if is_admin:
+		# Admin can see all results regardless of visibility
+		cursor.execute('SELECT users.username, results.score_best, results.result_file, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND results.score_best IS NOT NULL AND results.score_best > 0 ORDER BY results.score_best ASC', (taskid,))
+	else:
+		cursor.execute('SELECT users.username, results.score_best, results.result_file, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND results.score_best IS NOT NULL AND results.score_best > 0 AND (users.visibility = 0 OR (users."group" = %s AND users.visibility = 2) OR (users.organization = %s AND users.visibility = 1) OR (users.id = COALESCE(%s::uuid, \'00000000-0000-0000-0000-000000000000\'::uuid))) ORDER BY results.score_best ASC', (taskid, group, organization, curr_user))
 	scores = cursor.fetchall()
 	cursor.close()
 	db.close()
@@ -248,28 +252,40 @@ def get_best_only_scores(taskid):
 	db.close()
 	return scores
 
-def get_best_only_scores_for_public(taskid):
+def get_best_only_scores_for_public(taskid, is_admin=False):
 	"""Get the best scores for a task for public users."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND users.visibility = 0 AND results.score_best > 0 ORDER BY results.score_best ASC', (taskid,))
+	if is_admin:
+		# Admin can see all results
+		cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND results.score_best > 0 ORDER BY results.score_best ASC', (taskid,))
+	else:
+		cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND users.visibility = 0 AND results.score_best > 0 ORDER BY results.score_best ASC', (taskid,))
 	scores = cursor.fetchall()
 	cursor.close()
 	db.close()
 	return scores
 
-def get_best_only_scores_for_group(taskid, group):
+def get_best_only_scores_for_group(taskid, group, is_admin=False):
 	"""Get the best scores for a task for a group."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND users."group" = %s AND users.visibility IN (2, 0) AND results.score_best > 0 ORDER BY results.score_last ASC', (taskid, group))
+	if is_admin:
+		# Admin can see all results in the group
+		cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND users."group" = %s AND results.score_best > 0 ORDER BY results.score_last ASC', (taskid, group))
+	else:
+		cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND users."group" = %s AND users.visibility IN (2, 0) AND results.score_best > 0 ORDER BY results.score_last ASC', (taskid, group))
 	scores = cursor.fetchall()
 	cursor.close()
 	db.close()
 	return scores
 
-def get_best_only_scores_for_org(taskid, org):
+def get_best_only_scores_for_org(taskid, org, is_admin=False):
 	"""Get the best scores for a task for an organization."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND users.organization = %s AND users.visibility IN (1, 0) AND results.score_best > 0 ORDER BY results.score_last ASC', (taskid, org))
+	if is_admin:
+		# Admin can see all results in the organization
+		cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND users.organization = %s AND results.score_best > 0 ORDER BY results.score_last ASC', (taskid, org))
+	else:
+		cursor.execute('SELECT users.username, results.score_best, results.userid FROM results INNER JOIN users ON results.userid = users.id WHERE results.taskid = %s AND users.verified = true AND users.organization = %s AND users.visibility IN (1, 0) AND results.score_best > 0 ORDER BY results.score_last ASC', (taskid, org))
 	scores = cursor.fetchall()
 	cursor.close()
 	db.close()
@@ -320,7 +336,7 @@ def get_username(userid):
 def get_users():
 	"""Get all users."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT id, username, email, verified, token, country, organization, "group", display_name FROM users')
+	cursor.execute('SELECT id, username, email, verified, token, country, organization, "group", display_name, can_submit FROM users')
 	users = cursor.fetchall()
 	cursor.close()
 	db.close()
@@ -453,6 +469,14 @@ def set_group(user_id, group):
 	"""Change the group of a user."""
 	(db, cursor) = connect()
 	cursor.execute('UPDATE users SET "group" = %s WHERE id = %s', (group, user_id))
+	db.commit()
+	cursor.close()
+	db.close()
+
+def set_can_submit(user_id, can_submit):
+	"""Set whether a user can submit solutions."""
+	(db, cursor) = connect()
+	cursor.execute('UPDATE users SET can_submit = %s WHERE id = %s', (can_submit, user_id))
 	db.commit()
 	cursor.close()
 	db.close()

@@ -141,7 +141,7 @@ def new_task(path):
 	return redirect('/admin/tasks')
 
 
-@admin_bp.route('/resetorg/<int:user_id>/')
+@admin_bp.route('/resetorg/<user_id>/')
 @admin_required
 def reset_org(user_id):
 	"""Reset user organization."""
@@ -149,7 +149,7 @@ def reset_org(user_id):
 	return redirect('/admin/users')
 
 
-@admin_bp.route('/setgroup/<int:user_id>/<string:group>/')
+@admin_bp.route('/setgroup/<user_id>/<string:group>/')
 @admin_required
 def set_group(user_id, group):
 	"""Set user group."""
@@ -157,7 +157,16 @@ def set_group(user_id, group):
 	return redirect('/admin/users')
 
 
-@admin_bp.route('/resetresults/<int:userid>/')
+@admin_bp.route('/togglesubmit/<user_id>/<int:can_submit>/')
+@admin_required
+def toggle_can_submit(user_id, can_submit):
+	"""Toggle whether a user can submit."""
+	can_submit_bool = can_submit == 1
+	db.set_can_submit(user_id, can_submit_bool)
+	return redirect('/admin/users')
+
+
+@admin_bp.route('/resetresults/<userid>/')
 @admin_required
 def reset_results(userid):
 	"""Reset all results for a user."""

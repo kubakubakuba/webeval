@@ -156,6 +156,40 @@ User Management - Admin Panel
 					Set group for user
 				</div>
 			</div>
+
+			<hr />
+
+			Toggle submission permission for user:
+
+			<select id="toggle-submit-selector" class="form-select" aria-label="Toggle submit selector">
+				<option value="-">-</option>
+				{% for user in all_users %}
+					<option value="{{ user[0] }}">
+						{% if user[8] is not none %}
+							{{ user[8] }}({{user[1]}}): can_submit={{ user[9] }}
+						{% else %}
+							{{user[1]}}: can_submit={{ user[9] }}
+						{% endif %}
+					</option>
+				{% endfor %}
+			</select>
+
+			<div class="row">
+				<div class="col-md-6">
+					<div class="card card-btn" onclick="location.href='/admin/togglesubmit/' + document.getElementById('toggle-submit-selector').value + '/1';">
+						<div class="card-body text-center">
+							Allow Submit
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="card card-btn" onclick="location.href='/admin/togglesubmit/' + document.getElementById('toggle-submit-selector').value + '/0';">
+						<div class="card-body text-center">
+							Disallow Submit
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 

@@ -193,12 +193,17 @@ def task(task_id):
 		'deadlines': deadlines
 	}
 
+	# Check admin status early since we need it for score queries
+	userid = session['user_id'] if 'user_id' in session else None
+	is_admin = db.is_admin_by_id(userid) if userid is not None else False
+	is_admin = is_admin[0] if is_admin else False
+
 	# Get the best scores of all users for a specific task
 	organization = user[9] if user is not None else "___none__"
 	group = user[10] if user is not None else "___none__"
 	curr_user = user[0] if user is not None else None
 
-	best_scores = db.get_best_scores_for_verified_grouporg(task_id, group, organization, curr_user)
+	best_scores = db.get_best_scores_for_verified_grouporg(task_id, group, organization, curr_user, is_admin)
 	# Add flag 1 (best) to the third argument of the tuple
 	best_scores = [(score[3], score[1], score[0], 1) for score in best_scores]
 
@@ -221,10 +226,6 @@ def task(task_id):
 	latest_score = None if latest_score is None else latest_score[1]
 
 	time = None if time is None else time.strftime('%d.%m. %Y %H:%M:%S')
-
-	userid = session['user_id'] if 'user_id' in session else None
-	is_admin = db.is_admin_by_id(userid) if userid is not None else False
-	is_admin = is_admin[0] if is_admin else False
 
 	issue_url = None
 
