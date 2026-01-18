@@ -19,9 +19,7 @@ echo "Installing web server dependencies..."
 apt-get install -y --no-install-recommends \
 	postgresql-client \
 	netcat-traditional \
-	python3 \
-	python3-pip \
-	python3-venv
+	python3
 
 echo "Installing evaluator dependencies..."
 apt-get install -y --no-install-recommends \
