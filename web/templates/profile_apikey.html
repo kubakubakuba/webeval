@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}
+API Key Management
+{% endblock title %}
+
+{% block content %}
+	<style>
+		.back-link {
+			display: inline-flex;
+			align-items: center;
+			margin-bottom: 20px;
+			color: var(--link-color);
+			text-decoration: none;
+		}
+
+		.back-link:hover {
+			text-decoration: underline;
+		}
+
+		.api-key-box {
+			background-color: var(--card-bg);
+			border: 1px solid var(--border-color);
+			border-radius: 8px;
+			padding: 15px;
+			margin: 20px 0;
+			font-family: monospace;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+		}
+
+		.api-key-text {
+			font-size: 16px;
+			font-family: monospace;
+		}
+
+		.copy-btn {
+			padding: 8px 16px;
+			background-color: var(--primary-color);
+			color: white;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			margin-left: 15px;
+			white-space: nowrap;
+		}
+
+		.copy-btn:hover {
+			opacity: 0.8;
+		}
+
+		.status-badge {
+			display: inline-block;
+			padding: 5px 15px;
+			border-radius: 20px;
+			font-weight: bold;
+			margin-left: 10px;
+		}
+
+		.status-active {
+			background-color: #d4edda;
+			color: #155724;
+		}
+
+		.status-expired {
+			background-color: #f8d7da;
+			color: #721c24;
+		}
+
+		.warning-box {
+			background-color: #fff3cd;
+			border: 1px solid #ffc107;
+			border-radius: 4px;
+			padding: 15px;
+			margin: 20px 0;
+		}
+
+		.action-card {
+			margin: 10px 0;
+		}
+
+		.two-column-layout {
+			display: flex;
+			gap: 30px;
+		}
+
+		.left-column {
+			flex: 1;
+		}
+
+		.right-column {
+			flex: 1;
+		}
+
+		@media (max-width: 768px) {
+			.two-column-layout {
+				flex-direction: column;
+			}
+		}
+	</style>
+
+	<a href="/profile" class="back-link">
+		<svg width="20" height="20" style="vertical-align: middle; margin-right: 5px;">
+			<use href="/static/sprites.svg#back"></use>
+		</svg>
+		Back to Profile
+	</a>
+
+	<h2>API Key Management</h2>
+
+	<div class="two-column-layout">
+		<div class="left-column">
+			{% if api_key %}
+				<h4>Your API Key</h4>
+
+				<div class="api-key-box">
+					<span class="api-key-text">{{ api_key[:16] }}...</span>
+					<button class="copy-btn" onclick="copyToClipboard('{{ api_key }}')">Copy</button>
+				</div>
+
+				<p><strong>Expires:</strong> {{ api_key_expiry.strftime('%Y-%m-%d %H:%M:%S') if api_key_expiry else 'Never' }}</p>
+
+				{% if is_expired %}
+					<div class="warning-box">
+						<strong>⚠️ Your API key has expired!</strong><br>
+						Generate a new key to continue using the API.
+					</div>
+				{% endif %}
+
+				<div class="card card-btn action-card" onclick="if(confirm('This will invalidate your current API key. Continue?')) { document.getElementById('generate-form').submit(); }">
+					<div class="card-body text-center">
+						{% if is_expired %}Generate New Key{% else %}Regenerate Key{% endif %}
+					</div>
+				</div>
+
+				<div class="card card-btn action-card" onclick="if(confirm('Are you sure you want to revoke your API key? This action cannot be undone.')) { document.getElementById('revoke-form').submit(); }">
+					<div class="card-body text-center" style="color: #dc3545;">
+						Revoke Key
+					</div>
+				</div>
+
+				<form id="generate-form" method="POST" action="/profile/api-key/generate" style="display: none;"></form>
+				<form id="revoke-form" method="POST" action="/profile/api-key/revoke" style="display: none;"></form>
+
+			{% else %}
+				<h4>No API Key</h4>
+				<p>You don't have an API key yet. Generate one to use the external API for submitting tasks.</p>
+
+				<div class="card card-btn action-card" onclick="document.getElementById('generate-form').submit()">
+					<div class="card-body text-center">
+						Generate API Key
+					</div>
+				</div>
+
+				<form id="generate-form" method="POST" action="/profile/api-key/generate" style="display: none;"></form>
+			{% endif %}
+		</div>
+
+		<div class="right-column">
+			<h3>API Usage</h3>
+			
+			<h4>Available Endpoints:</h4>
+			<ul>
+				<li><strong>GET /api/user/tasks</strong> - Get list of available tasks</li>
+				<li><strong>GET /api/user/task/&lt;task_id&gt;</strong> - Get task details</li>
+				<li><strong>POST /api/user/submit</strong> - Submit code for a task</li>
+			</ul>
+
+			<h4>Example: Submit Code</h4>
+			<pre style="background-color: var(--card-bg); padding: 15px; border-radius: 4px; overflow-x: auto; border: 1px solid var(--border-color);"><code>curl -X POST {{ request.host_url }}api/user/submit \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "task_id": 1,
+    "code": "your assembly or C code here"
+  }'</code></pre>
+
+			<h4>Example: Get Tasks</h4>
+			<pre style="background-color: var(--card-bg); padding: 15px; border-radius: 4px; overflow-x: auto; border: 1px solid var(--border-color);"><code>curl -X GET {{ request.host_url }}api/user/tasks \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+		</div>
+	</div>
+
+	<script>
+		function copyToClipboard(text) {
+			navigator.clipboard.writeText(text).then(function() {
+				alert('API key copied to clipboard!');
+			}, function(err) {
+				alert('Failed to copy API key');
+			});
+		}
+	</script>
+
+{% endblock content %}

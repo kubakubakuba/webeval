@@ -5,6 +5,27 @@ Login
 {% endblock title %}
 
 {% block content %}
+	<style>
+		.back-link {
+			display: inline-flex;
+			align-items: center;
+			margin-bottom: 20px;
+			color: var(--link-color);
+			text-decoration: none;
+		}
+
+		.back-link:hover {
+			text-decoration: underline;
+		}
+	</style>
+
+	<a href="/" class="back-link">
+		<svg width="20" height="20" style="vertical-align: middle; margin-right: 5px;">
+			<use href="/static/sprites.svg#back"></use>
+		</svg>
+		Back to Home
+	</a>
+
 	<div class="card">
 		<div class="card-body">
 			<form method="post" id="loginForm">

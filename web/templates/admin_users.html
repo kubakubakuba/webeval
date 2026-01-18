@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}
+User Management - Admin Panel
+{% endblock title %}
+
+{% block content %}
+	<style>
+		.form-select {
+			margin: 15px 0px 15px 0px;
+		}
+
+		.card-btn {
+			margin: 15px 0px 15px 0px;
+			cursor: pointer;
+		}
+
+		.main-content {
+			max-width: 5000px!important;
+		}
+
+		.back-link {
+			display: inline-flex;
+			align-items: center;
+			margin-bottom: 20px;
+			color: var(--link-color);
+			text-decoration: none;
+		}
+
+		.back-link:hover {
+			text-decoration: underline;
+		}
+
+		#set-group-input::placeholder {
+			color: #6c757d;
+		}
+
+		html.dark-mode #set-group-input::placeholder {
+			color: #adb5bd;
+		}
+	</style>
+
+	<a href="/admin" class="back-link">
+		<svg width="20" height="20" style="vertical-align: middle; margin-right: 5px;">
+			<use href="/static/sprites.svg#back"></use>
+		</svg>
+		Back to Admin Panel
+	</a>
+
+	<h1 class="mb-4">User Management</h1>
+
+	<div class="row">
+		<!-- Left Column -->
+		<div class="col-md-6">
+			<h3>Import & Access Control</h3>
+			
+			Batch import users:
+			<div class="card card-btn" onclick="location.href='/admin/import';">
+				<div class="card-body text-center">
+					<i class="bi bi-upload"></i> Batch Import Users from CSV
+				</div>
+			</div>
+
+			<hr />
+
+			Ban user:
+
+			<select id="ban-user-selector" class="form-select" aria-label="Ban user selector">
+				<option value="-">-</option>
+				{% for user in users %}
+					<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}</option>
+				{% endfor %}
+			</select>
+			<div class="card card-btn" onclick="location.href='/admin/ban/' + document.getElementById('ban-user-selector').value;">
+				<div class="card-body text-center">
+					Ban user
+				</div>
+			</div>
+
+			<hr />
+
+			Unban user:
+
+			<select id="unban-user-selector" class="form-select" aria-label="Unban user selector">
+				<option value="-">-</option>
+				{% for user in users %}
+					<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}</option>
+				{% endfor %}
+			</select>
+			<div class="card card-btn" onclick="location.href='/admin/unban/' + document.getElementById('unban-user-selector').value;">
+				<div class="card-body text-center">
+					Unban user
+				</div>
+			</div>
+
+			<hr />
+
+			Reset user scores (marks all scores as invalid):
+
+			<select id="reset-user-scores-selector" class="form-select" aria-label="Reset user scores selector">
+				<option value="-">-</option>
+				{% for user in all_users[::-1] %}
+					<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}</option>
+				{% endfor %}
+			</select>
+			<div class="card card-btn" onclick="location.href='/admin/resetresults/' + document.getElementById('reset-user-scores-selector').value;">
+				<div class="card-body text-center">
+					Reset user scores
+				</div>
+			</div>
+		</div>
+
+		<!-- Right Column -->
+		<div class="col-md-6">
+			<h3>Organization & Groups</h3>
+
+			Reset user organization and country:
+
+			<select id="reset-user-selector" class="form-select" aria-label="Reset user selector">
+				<option value="-">-</option>
+				{% for user in all_users[::-1] %}
+					<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}</option>
+				{% endfor %}
+			</select>
+			<div class="card card-btn" onclick="location.href='/admin/resetorg/' + document.getElementById('reset-user-selector').value;">
+				<div class="card-body text-center">
+					Reset user organization and country
+				</div>
+			</div>
+
+			<hr />
+
+			Set group for user:
+			
+			<div class="row">
+				<div class="col-md-12">
+					<select id="set-group-selector" class="form-select" aria-label="Set group selector">
+						<option value="-">-</option>
+						{% for user in all_users %}
+							<option value="{{ user[0] }}">
+								{% if user[8] is not none %}
+									{{ user[8] }}({{user[1]}}): {{ user[7] }}@{{ user[6] }}
+								{% else %}
+									{{user[1]}}: {{ user[7] }}@{{ user[6] }}
+								{% endif %}
+							</option>
+						{% endfor %}
+					</select>
+
+					<input type="text" id="set-group-input" class="form-control" placeholder="Group name" aria-label="Group name" style="margin-top: 10px;">
+				</div>
+			</div>
+
+			<div class="card card-btn" onclick="location.href='/admin/setgroup/' + document.getElementById('set-group-selector').value + '/' + document.getElementById('set-group-input').value;">
+				<div class="card-body text-center">
+					Set group for user
+				</div>
+			</div>
+
+			<hr />
+
+			Toggle submission permission for user:
+
+			<select id="toggle-submit-selector" class="form-select" aria-label="Toggle submit selector">
+				<option value="-">-</option>
+				{% for user in all_users %}
+					<option value="{{ user[0] }}">
+						{% if user[8] is not none %}
+							{{ user[8] }}({{user[1]}}): can_submit={{ user[9] }}
+						{% else %}
+							{{user[1]}}: can_submit={{ user[9] }}
+						{% endif %}
+					</option>
+				{% endfor %}
+			</select>
+
+			<div class="row">
+				<div class="col-md-6">
+					<div class="card card-btn" onclick="location.href='/admin/togglesubmit/' + document.getElementById('toggle-submit-selector').value + '/1';">
+						<div class="card-body text-center">
+							Allow Submit
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="card card-btn" onclick="location.href='/admin/togglesubmit/' + document.getElementById('toggle-submit-selector').value + '/0';">
+						<div class="card-body text-center">
+							Disallow Submit
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock content %}

@@ -1,337 +1,165 @@
 {% extends "base.html" %}
 
 {% block title %}
-Admin panel
+Admin Panel
 {% endblock title %}
 
 {% block content %}
-	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/TableDnD/1.0.5/jquery.tablednd.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/bootstrap-table.min.js"></script>
-	<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.css">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/extensions/reorder-rows/bootstrap-table-reorder-rows.min.js"></script>
-
 	<style>
-
-		.form-select{
-			margin: 15px 0px 15px 0px;
+		.admin-card {
+			margin: 20px 0;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			height: 100%;
 		}
-
-		.card-btn{
-			margin: 15px 0px 15px 0px;
+		
+		.admin-card .card-body {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			min-height: 250px;
 		}
-
-		.main-content{
-			max-width: 5000px!important;
+		
+		.admin-card:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 		}
-
-		table{
-			margin: 15px 0px 15px 0px;
+		
+		.admin-card-icon {
+			font-size: 48px;
+			margin-bottom: 15px;
 		}
-
-		#create-new-task{
-			margin-top: 15px;
+		
+		.admin-card-title {
+			font-size: 24px;
+			font-weight: bold;
+			margin-bottom: 10px;
 		}
-
+		
+		.admin-card-description {
+			color: #666;
+		}
+		
+		.status-badge {
+			display: inline-block;
+			padding: 5px 15px;
+			border-radius: 20px;
+			font-weight: bold;
+			margin: 5px 0;
+		}
+		
+		.status-enabled {
+			background-color: #d4edda;
+			color: #155724;
+		}
+		
+		.status-disabled {
+			background-color: #f8d7da;
+			color: #721c24;
+		}
 	</style>
 
-	<!--
-		{'Simple addition': [('test2', 6, 2), ('test', 6, 1)], 'Memory read and write': [('test', 5, 1)], 'Bubble sort': [('test', 1293, 1)], 'Cache optimization': [('test', 886, 1)], 'Data hazard prevention': [('test', 469, 1)], 'Print hexadecimal to serial port': [('test', 168, 1)], 'Simple calculator': [('test', 458, 1)]}
-		create a table for each task, and in each task, create a table for the first 6 users
-	-->
-	<div class="row">
-		<!--
-		<div class="col-md-6">
-			<h2>Top 6 submissions for each task:</h2>
-			{% for task, submissions in submissions.items() %}
-				<h3>{{ task }}</h3>
-				<table class="table table-striped">
-					<thead>
-						<tr>
-							<th scope="col">Userid</th>
-							<th scope="col">Username</th>
-							<th scope="col">Cycles</th>
-							<th scope="col">Score</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for submission in submissions[:6] %}
-							<tr>
-								<td>{{ submission[2] }}</td>
-								<td>{{ submission[0] }}</td>
-								<td>{{ submission[1] }}</td>
-								<td>{{ submission[3] }}</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			{% endfor %}
-		</div>
-		-->
-		<div class="col-md-6">
-			Ban a user:
-			<select id="ban-user-selector" class="form-select" aria-label="Ban user selector">
-				<option value="-">-</option>
-				{% for user in users[::-1] %}
-					{% if user[4] != '_banned_'%}
-						<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}</option>
-					{% endif %}
-				{% endfor %}
-			</select>
-			<div class="card card-btn" onclick="location.href='/admin/ban/' + document.getElementById('ban-user-selector').value;">
-				<div class="card-body text-center">
-					Ban user
-				</div>
-			</div>
-
-			<hr />
-			
-			Unban a user:
-			<select id="unban-user-selector" class="form-select" aria-label="Unban user selector">
-				<option value="-">-</option>
-				{% for user in users[::-1] %}
-					{% if user[4] == '_banned_' %}
-						<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}</option>
-					{% endif %}
-				{% endfor %}
-			</select>
-			<div class="card card-btn" onclick="location.href='/admin/unban/' + document.getElementById('unban-user-selector').value;">
-				<div class="card-body text-center">
-					Unban user
-				</div>
-			</div>
-
-			<hr />
-
-			Reset user organization and country:
-
-			<select id="reset-user-selector" class="form-select" aria-label="Reset user selector">
-				<option value="-">-</option>
-				{% for user in all_users[::-1] %}
-					<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}</option>
-				{% endfor %}
-			</select>
-			<div class="card card-btn" onclick="location.href='/admin/resetorg/' + document.getElementById('reset-user-selector').value;">
-				<div class="card-body text-center">
-					Reset user organization and country
-				</div>
-			</div>
-
-			Set group for user:
-			
-			<div class="row">
-				<div class="col-md-6">
-					<select id="set-group-selector" class="form-select" aria-label="Set group selector">
-						<option value="-">-</option>
-						{% for user in all_users %}
-							<option value="{{ user[0] }}">
-								{% if user[8] is not none %}
-									{{ user[8] }}({{user[1]}}): {{ user[7] }}@{{ user[6] }}
-								{% else %}
-									{{user[1]}}: {{ user[7] }}@{{ user[6] }}
-								{% endif %}
-							</option>
-						{% endfor %}
-
-					</select>
-
-					<input type="text" id="set-group-input" class="form-control" placeholder="Group name" aria-label="Group name">
-				</div>
-
-				<div class="card card-btn col-md-6" onclick="location.href='/admin/setgroup/' + document.getElementById('set-group-selector').value + '/' + document.getElementById('set-group-input').value;">
-					<div class="card-body text-center">
-						Set group for user
-					</div>
-				</div>
-
-			</div>
-
-			<!-- if submit_disabled render red text disabled, else green-->
-			Submissions are currently: {% if submit_disabled %}<span style="color: red;">disabled</span>{% else %}<span style="color: green;">enabled</span>{% endif %}
-
-			<div class="card card-btn" onclick="location.href='/admin/toggle/submit/'">
-				<div class="card-body text-center">
-					{% if submit_disabled %}Enable{% else %}Disable{% endif %} submissions
-				</div>
-			</div>
-
-			<hr />
-
-			Disable task:
-
-			<div class="row">
-				<div class="col-md-6">
-					<select id="disable-task-selector" class="form-select" aria-label="Disable task selector">
-						<option value="-">-</option>
-						{% for task in tasks %}
-							{% if task[3] == True %}
-								<option value="{{ task[0] }}">{{ task[1] }}</option>
-							{% endif %}
-						{% endfor %}
-					</select>
-				</div>
-
-				<div class="card card-btn col-md-6" onclick="location.href='/admin/available/' + document.getElementById('disable-task-selector').value + '/0';">
-					<div class="card-body text-center">
-						Disable task
-					</div>
-				</div>
-			</div>
-
-			<hr />
-
-			Enable task:
-
-			<div class="row">
-				<div class="col-md-6">
-					<select id="enable-task-selector" class="form-select" aria-label="Enable task selector">
-						<option value="-">-</option>
-						{% for task in tasks %}
-							{% if task[3] == False %}
-								<option value="{{ task[0] }}">{{ task[1] }}</option>
-							{% endif %}
-						{% endfor %}
-					</select>
-				</div>
+	<h1 class="mb-4">Admin Panel</h1>
 	
-				<div class="card card-btn col-md-6" onclick="location.href='/admin/available/' + document.getElementById('enable-task-selector').value + '/1';">
-					<div class="card-body text-center">
-						Enable task
+	<div class="row gy-4">
+		<!-- Users Management -->
+		<div class="col-md-6 col-lg-3">
+			<div class="card admin-card text-center" onclick="location.href='/admin/users';">
+				<div class="card-body">
+					<div class="admin-card-icon">
+						<i class="bi bi-people"></i>
+					</div>
+					<div class="admin-card-title">Users</div>
+					<hr />
+					<div class="admin-card-description">
+						Manage users, groups, and permissions
 					</div>
 				</div>
 			</div>
-			
-
-			Reset user scores (only marks the scores as invalid):
-
-			<select id="reset-user-scores-selector" class="form-select" aria-label="Reset user scores selector">
-				<option value="-">-</option>
-				{% for user in all_users[::-1] %}
-					<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}</option>
-				{% endfor %}
-			</select>
-			<div class="card card-btn" onclick="location.href='/admin/resetresults/' + document.getElementById('reset-user-scores-selector').value;">
-				<div class="card-body text-center">
-					Reset user scores
-				</div>
-			</div>
-			
 		</div>
-		<div class="col-md-6">
-			Change the task order (drag):
-
-			<table id="reorderable-table" class="table table-striped" data-toggle="table" data-reorderable-rows="true">
-				<thead>
-					<tr>
-						<th scope="col">Task ID</th>
-						<th scope="col">Name</th>
-						<th scope="col">Filepath</th>
-						<th scope="col">Available</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for task in tasks %}
-						<tr>
-							<td>{{ task[0] }}</td>
-							<td>{{ task[1] }}</td>
-							<td>{{ task[2] }}</td>
-							<td>{{ task[3] }}</td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-
-			<div id="confirm-reorder" class="card card-btn" onclick="location.href='/admin/reorder/'">
-				<div class="card-body text-center">
-					Confirm new task order
-				</div>
-			</div>
-
-			<hr />
-
-			Rename a task:
-
-			<div class="row">
-				<div class="col-md-6">
-					<select id="rename-task-selector" class="form-select" aria-label="Rename task selector">
-						<option value="-">-</option>
-						{% for task in tasks %}
-							<option value="{{ task[0] }}">{{ task[1] }}</option>
-						{% endfor %}
-
-					</select>
-
-					<input type="text" id="rename-task-input" class="form-control" placeholder="New name" aria-label="New name">
-				</div>
-
-				<div class="card card-btn col-md-6" onclick="location.href='/admin/rename/' + document.getElementById('rename-task-selector').value + '/' + document.getElementById('rename-task-input').value;">
-					<div class="card-body text-center">
-						Rename task
+		
+		<!-- Tasks Management -->
+		<div class="col-md-6 col-lg-3">
+			<div class="card admin-card text-center" onclick="location.href='/admin/tasks';">
+				<div class="card-body">
+					<div class="admin-card-icon">
+						<i class="bi bi-list-task"></i>
 					</div>
-				</div>
-
-			</div>
-
-			<hr />
-
-			Change task path (without tasks/):
-			
-			<div class="row">
-				<div class="col-md-6">
-					<select id="change-task-selector" class="form-select" aria-label="Change task selector">
-						<option value="-">-</option>
-						{% for task in tasks %}
-							<option value="{{ task[0] }}">{{ task[1] }}: {{ task[2] }}</option>
-						{% endfor %}
-					</select>
-
-					<input type="text" id="change-task-input" class="form-control" placeholder="config.toml" aria-label="New path">
-				</div>
-
-				<div class="card card-btn col-md-6" onclick="location.href='/admin/repath/' + document.getElementById('change-task-selector').value + '/' + document.getElementById('change-task-input').value;">
-					<div class="card-body text-center">
-						Change task path
+					<div class="admin-card-title">Tasks</div>
+					<hr />
+					<div class="admin-card-description">
+						Manage tasks, order, and availability
 					</div>
 				</div>
 			</div>
-
-			<hr />
-
-			
-
-			<hr />
-			
-			Create a new task:
-
-			<div class="row">
-				<div class="col-md-6">
-					<input type="text" id="create-new-task" class="form-control" placeholder="config.toml" aria-label="New path">
+		</div>
+		
+		<!-- API Keys Management -->
+		<div class="col-md-6 col-lg-3">
+			<div class="card admin-card text-center" onclick="location.href='/admin/apikeys';">
+				<div class="card-body">
+					<div class="admin-card-icon">
+						<i class="bi bi-key"></i>
+					</div>
+					<div class="admin-card-title">API Keys</div>
+					<hr />
+					<div class="admin-card-description">
+						Manage API keys and access
+					</div>
 				</div>
+			</div>
+		</div>
 
-				<div class="card card-btn col-md-6" onclick="location.href='/admin/new/' + document.getElementById('create-new-task').value;">
-					<div class="card-body text-center">
-						Create new task
+		<!-- Submissions Toggle -->
+		<div class="col-md-6 col-lg-3">
+			<div class="card admin-card text-center" onclick="location.href='/admin/toggle/submit/';">
+				<div class="card-body">
+					<div class="admin-card-icon">
+						<i class="bi bi-toggle-{% if submit_disabled %}off{% else %}on{% endif %}"></i>
+					</div>
+					<div class="admin-card-title">Submissions</div>
+					<div class="admin-card-description">
+						<span class="status-badge {% if submit_disabled %}status-disabled{% else %}status-enabled{% endif %}">
+							{% if submit_disabled %}Disabled{% else %}Enabled{% endif %}
+						</span>
+						<hr />
+						Click to {% if submit_disabled %}enable{% else %}disable{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Task Editor -->
+		<div class="col-md-6 col-lg-3">
+			<div class="card admin-card text-center" onclick="location.href='/admin/editor';">
+				<div class="card-body">
+					<div class="admin-card-icon">
+						<i class="bi bi-pencil-square"></i>
+					</div>
+					<div class="admin-card-title">Task Editor</div>
+					<hr />
+					<div class="admin-card-description">
+						Edit task configuration files
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Templates Editor -->
+		<div class="col-md-6 col-lg-3">
+			<div class="card admin-card text-center" onclick="location.href='/admin/templates';">
+				<div class="card-body">
+					<div class="admin-card-icon">
+						<i class="bi bi-file-code"></i>
+					</div>
+					<div class="admin-card-title">Template Editor</div>
+					<hr />
+					<div class="admin-card-description">
+						Edit assembly and C template files
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-
-	<script>
-		$(function() {
-			$('#reorderable-table').bootstrapTable({
-				reorderableRows: true
-			});
-	
-			$('#confirm-reorder').click(function() {
-				var newOrder = $('#reorderable-table tbody tr').map(function() {
-					return $(this).find('td:first').text();
-				}).get().join(';');
-	
-				window.location.href = '/admin/reorder/' + newOrder;
-			});
-		});
-	</script>
 
 {% endblock content %}

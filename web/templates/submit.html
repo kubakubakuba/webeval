@@ -6,10 +6,29 @@
 
 {% block content %}
 	<style>
+		.back-link {
+			display: inline-flex;
+			align-items: center;
+			margin-bottom: 20px;
+			color: var(--link-color);
+			text-decoration: none;
+		}
+
+		.back-link:hover {
+			text-decoration: underline;
+		}
+
 		.card-btn:hover {
 			background-color: #f8f9fa;
 		}
 	</style>
+
+	<a href="/task/{{ task_id }}" class="back-link">
+		<svg width="20" height="20" style="vertical-align: middle; margin-right: 5px;">
+			<use href="/static/sprites.svg#back"></use>
+		</svg>
+		Back to Task
+	</a>
 
 	<h2>Submission for task: {{ task_name }}</h2>
 	<details>
@@ -52,7 +71,7 @@
 		let submissionContent = {{submission_code|tojson}};
 
 		if (submissionContent == null) {
-			submissionContent = template_code;
+			submissionContent = templateContent;
 		}
 
 		let editor = CodeMirror(document.getElementById("codeMirror"), {
@@ -60,6 +79,7 @@
 			mode: "{% if language == 'c' %}text/x-csrc{% else %}gas{% endif %}",
 			lineWrapping: true,
 			viewportMargin: Infinity,
+			{% if user_theme and user_theme != 'default' %}theme: "{{ user_theme }}",{% endif %}
 			value: textarea.value
 		});
 

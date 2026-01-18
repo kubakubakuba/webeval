@@ -1,0 +1,39 @@
+# Git files
+.git
+.gitignore
+
+# Docker files
+docker/
+.docker/
+
+# Documentation
+docs/
+*.md
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Environment
+.env
+.env.*
+*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Scripts
+scripts/
+
+# Resources
+rsrc/

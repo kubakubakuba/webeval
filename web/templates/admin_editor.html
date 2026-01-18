@@ -1,0 +1,174 @@
+{% extends "codemirror.html" %}
+
+{% block title %}
+Task Editor
+{% endblock title %}
+
+{% block content %}
+	<style>
+		.back-link {
+			display: inline-flex;
+			align-items: center;
+			margin-bottom: 20px;
+			color: var(--link-color);
+			text-decoration: none;
+		}
+
+		.back-link:hover {
+			text-decoration: underline;
+		}
+
+		.card-btn:hover {
+			background-color: #f8f9fa;
+		}
+
+		.form-select {
+			margin-bottom: 20px;
+		}
+
+		#taskSelector {
+			width: 100%;
+			max-width: 600px;
+		}
+	</style>
+
+	<a href="/admin" class="back-link">
+		<svg width="20" height="20" style="vertical-align: middle; margin-right: 5px;">
+			<use href="/static/sprites.svg#back"></use>
+		</svg>
+		Back to Admin Panel
+	</a>
+
+	<h2>Task Editor</h2>
+
+	<div class="card">
+		<div class="card-body">
+			<form id="editorForm">
+				<div class="mb-3">
+					<label for="taskSelector" class="form-label">Select Task:</label>
+					<select id="taskSelector" class="form-select" onchange="loadTask()">
+						<option value="">-- Select a task --</option>
+						{% for task in tasks %}
+							<option value="{{ task[0] }}" data-filepath="{{ task[2] }}">{{ task[1] }} ({{ task[2] }})</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="mb-3">
+					<label for="code">Task Configuration:</label><br>
+					<textarea class="form-control" id="code" name="code" style="width:100%; display:none;"></textarea>
+					<div id="codeMirror"></div>
+				</div>
+				<div class="row">
+					<div class="col-8">
+						<div class="card card-btn">
+							<a href="#" onclick="saveFile(); return false;" class="card-body text-center text-decoration-none">
+								Save
+							</a>
+						</div>
+					</div>
+					<div class="col-4">
+						<div class="card card-btn">
+							<a href="#" onclick="resetCode(); return false;" class="card-body text-center text-decoration-none">
+								Reset
+							</a>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+{% endblock content %}
+
+{% block cmirror %}
+	<script>
+		let textarea = document.getElementById('code');
+		let currentTaskId = null;
+		let originalContent = '';
+
+		let editor = CodeMirror(document.getElementById("codeMirror"), {
+			lineNumbers: true,
+			mode: "toml",
+			lineWrapping: true,
+			viewportMargin: Infinity,
+			{% if user_theme and user_theme != 'default' %}theme: "{{ user_theme }}",{% endif %}
+			value: '',
+			readOnly: true
+		});
+
+		editor.setSize("auto", "auto");
+
+		function loadTask() {
+			const selector = document.getElementById('taskSelector');
+			const taskId = selector.value;
+			
+			if (!taskId) {
+				editor.setValue('');
+				editor.setOption('readOnly', true);
+				currentTaskId = null;
+				originalContent = '';
+				return;
+			}
+
+			currentTaskId = taskId;
+
+			// Load task file content
+			fetch('/admin/editor/load/' + taskId)
+				.then(response => response.json())
+				.then(data => {
+					if (data.error) {
+						alert('Error loading task: ' + data.error);
+						return;
+					}
+					originalContent = data.content;
+					editor.setValue(data.content);
+					editor.setOption('readOnly', false);
+				})
+				.catch(error => {
+					alert('Error loading task: ' + error);
+				});
+		}
+
+		function saveFile() {
+			if (!currentTaskId) {
+				alert('Please select a task first');
+				return;
+			}
+
+			if (!confirm('Are you sure you want to save changes to this task file? This will overwrite the current file.')) {
+				return;
+			}
+
+			const content = editor.getValue();
+			const formData = new FormData();
+			formData.append('content', content);
+
+			fetch('/admin/editor/save/' + currentTaskId, {
+				method: 'POST',
+				body: formData
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.error) {
+					alert('Error saving file: ' + data.error);
+				} else {
+					alert('File saved successfully!');
+					originalContent = content;
+				}
+			})
+			.catch(error => {
+				alert('Error saving file: ' + error);
+			});
+		}
+
+		function resetCode() {
+			if (!currentTaskId) {
+				alert('Please select a task first');
+				return;
+			}
+
+			if (confirm('Reset to the last saved version?')) {
+				editor.setValue(originalContent);
+			}
+		}
+	</script>
+{% endblock %}

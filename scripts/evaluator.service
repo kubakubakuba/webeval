@@ -1,14 +1,19 @@
 [Unit]
-Description=QtRVSim Web Eval Evaluator
-After=network.target
+Description=QtRVSim Web Evaluation - Evaluator Service
+After=network.target postgresql.service
+Requires=postgresql.service
 
 [Service]
-User=pelcjaku
-Group=pelcjaku
-WorkingDirectory=/var/www/qtrvsim-eval-web/evaluator
-ExecStart=/bin/bash -c 'cd /var/www/qtrvsim-eval-web/evaluator && pipenv run python3 evaluator.py'
-Restart=on-failure
-RestartSec=5
+Type=simple
+User=qtrvsim
+Group=qtrvsim
+WorkingDirectory=PROJECT_ROOT/evaluator
+Environment="PATH=/opt/eval-venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="TEMPLATES_DIR=PROJECT_ROOT/S_templates"
+Environment="TASKS_DIR=PROJECT_ROOT/tasks"
+ExecStart=/opt/eval-venv/bin/python evaluator.py
+Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

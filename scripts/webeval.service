@@ -1,0 +1,19 @@
+[Unit]
+Description=QtRVSim Web Evaluation - Web Server
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=notify
+User=qtrvsim
+Group=qtrvsim
+WorkingDirectory=PROJECT_ROOT/web
+Environment="PATH=/opt/web-venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="TEMPLATES_DIR=PROJECT_ROOT/S_templates"
+Environment="TASKS_DIR=PROJECT_ROOT/tasks"
+ExecStart=/opt/web-venv/bin/gunicorn --workers 4 --bind 127.0.0.1:8000 --timeout 120 app:app
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

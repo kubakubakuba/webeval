@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}
+API Keys Management
+{% endblock title %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='api-icons.css') }}">
+
+<style>
+	.api-key-container {
+		max-width: 1400px;
+		margin: 0 auto;
+	}
+
+	.create-key-form {
+		background-color: var(--bg-secondary);
+		border: 1px solid var(--border-color);
+		border-radius: 8px;
+		padding: 20px;
+		margin-bottom: 30px;
+	}
+
+	.form-group {
+		margin-bottom: 15px;
+	}
+
+	.form-group label {
+		display: block;
+		margin-bottom: 5px;
+		font-weight: bold;
+	}
+
+	.form-group input {
+		width: 100%;
+		padding: 8px;
+		border: 1px solid var(--border-color);
+		border-radius: 4px;
+		background-color: var(--bg-primary);
+		color: var(--text-primary);
+	}
+
+	.card {
+		border: 1px solid var(--border-color);
+		border-radius: 4px;
+		background-color: var(--bg-secondary);
+	}
+
+	.card-btn {
+		margin-top: 15px;
+		transition: background-color 0.2s;
+	}
+
+	.card-btn:hover {
+		background-color: var(--bg-primary);
+	}
+
+	.card-body {
+		padding: 15px;
+	}
+
+	.text-center {
+		text-align: center;
+	}
+
+	/* Icon styles */
+	.status-icon-active {
+		color: #28a745;
+	}
+
+	.status-icon-disabled {
+		color: #dc3545;
+	}
+
+	.api-action-btn {
+		background: none;
+		border: none;
+		padding: 4px;
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		transition: opacity 0.2s;
+		color: var(--text-primary);
+	}
+
+	.api-action-btn:hover {
+		opacity: 0.7;
+	}
+
+	.api-action-btn svg {
+		display: block;
+	}
+
+	a.api-action-btn {
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.back-link {
+		display: inline-flex;
+		align-items: center;
+		margin-bottom: 20px;
+		color: var(--link-color);
+		text-decoration: none;
+	}
+
+	.back-link:hover {
+		text-decoration: underline;
+	}
+
+	.curl-example {
+		background-color: var(--bg-code);
+		border: 1px solid var(--border-color);
+		border-radius: 8px;
+		padding: 20px;
+		margin-top: 30px;
+		font-family: monospace;
+		font-size: 13px;
+		overflow-x: auto;
+	}
+
+	.curl-example h3 {
+		margin-top: 0;
+		font-family: sans-serif;
+	}
+
+	.curl-example pre {
+		background-color: transparent;
+		border: none;
+		padding: 0;
+		margin: 10px 0;
+	}
+
+	table thead tr {
+		background-color: var(--bg-secondary);
+	}
+
+	table tbody tr:hover {
+		background-color: var(--bg-secondary);
+	}
+
+	table th {
+		font-weight: bold;
+	}
+</style>
+
+<div class="api-key-container">
+	<a href="/admin" class="back-link">
+		<svg width="20" height="20" style="vertical-align: middle; margin-right: 5px;">
+			<use href="/static/sprites.svg#back"></use>
+		</svg>
+		Back to Admin Panel
+	</a>
+	
+	<h1>API Keys Management</h1>
+	
+	<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+		<div>
+			<div class="create-key-form">
+				<h2>Create New API Key</h2>
+				<form method="POST" action="/admin/apikeys/create">
+					<div class="form-group">
+						<input type="text" id="description" name="description" placeholder="e.g., CI/CD Pipeline Key" maxlength="255">
+					</div>
+					<div class="card card-btn" onclick="this.closest('form').submit();" style="cursor: pointer;">
+						<div class="card-body text-center">
+							Generate API Key
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+		
+		<div class="curl-example">
+			<h3>API Usage Example</h3>
+			<p><strong>Endpoint:</strong> <code>POST /api/submit</code></p>
+			<p><strong>Authentication:</strong> Bearer token in Authorization header</p>
+			
+			<p style="margin-top: 15px;"><strong>Example curl command:</strong></p>
+			<pre style="font-size: 11px;">curl -X POST {{ request.url_root }}api/submit \
+  -H "Authorization: Bearer YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "student", "task_id": 1, "code": "..."}'</pre>
+			
+			<p style="margin-top: 15px;"><strong>Parameters:</strong></p>
+			<ul style="font-size: 12px; margin-left: 20px;">
+				<li><code>username</code> - Student username</li>
+				<li><code>task_id</code> - Task ID number</li>
+				<li><code>code</code> - Source code (use \n for newlines)</li>
+			</ul>
+		</div>
+	</div>
+
+	<h2>Existing API Keys</h2>
+	
+	{% if api_keys %}
+		<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+			<thead>
+				<tr style="border-bottom: 2px solid var(--border-color);">
+					<th style="text-align: left; padding: 12px;">ID</th>
+					<th style="text-align: left; padding: 12px;">Description</th>
+					<th style="text-align: left; padding: 12px;">Created By</th>
+					<th style="text-align: left; padding: 12px;">Created At</th>
+					<th style="text-align: left; padding: 12px;">Last Used</th>
+					<th style="text-align: left; padding: 12px;">Status</th>
+					<th style="text-align: left; padding: 12px;">API Key</th>
+					<th style="text-align: center; padding: 12px;">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for key in api_keys %}
+				<tr style="border-bottom: 1px solid var(--border-color);">
+					<td style="padding: 12px;">{{ key[0] }}</td>
+					<td style="padding: 12px;">
+						<div style="display: flex; align-items: center; gap: 8px;">
+							<span id="desc-text-{{ key[0] }}">{{ key[6] if key[6] else '-' }}</span>
+							<button class="api-action-btn" onclick="editDescription({{ key[0] }}, '{{ key[6] if key[6] else '' }}'); event.stopPropagation();" title="Edit description">
+								<svg class="api-icon api-icon-edit" width="16" height="16">
+									<use href="/static/sprites.svg#edit"></use>
+								</svg>
+							</button>
+									<use href="/static/sprites.svg#edit"></use>
+								</svg>
+							</button>
+						</div>
+					</td>
+					<td style="padding: 12px;">{{ key[3] }}</td>
+					<td style="padding: 12px;">{{ key[4].strftime('%Y-%m-%d %H:%M') }}</td>
+					<td style="padding: 12px;">
+						{% if key[5] %}
+							{{ key[5].strftime('%Y-%m-%d %H:%M') }}
+						{% else %}
+							Never
+						{% endif %}
+					</td>
+					<td style="padding: 12px;">
+						{% if key[7] %}
+						<svg class="status-icon-active" width="20" height="20">
+							<use href="/static/sprites.svg#enabled"></use>
+						</svg>
+						{% else %}
+						<svg class="status-icon-disabled" width="20" height="20">
+							<use href="/static/sprites.svg#disabled"></use>
+						</svg>
+						{% endif %}
+					</td>
+					<td style="padding: 12px;">
+						<div style="display: flex; align-items: center; gap: 8px;">
+							<code id="key-{{ key[0] }}" style="font-size: 12px; background-color: var(--bg-code); padding: 4px 8px; border-radius: 4px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ key[1] }}</code>
+							<button class="api-action-btn" onclick="copyToClipboard('key-{{ key[0] }}'); event.stopPropagation();" title="Copy to clipboard">
+								<svg class="api-icon api-icon-copy" width="16" height="16">
+									<use href="/static/sprites.svg#copy"></use>
+								</svg>
+							</button>
+						</div>
+					</td>
+					<td style="padding: 12px; text-align: center;">
+						<div class="api-actions" style="justify-content: center;">
+							{% if key[7] %}
+							<a href="/admin/apikeys/toggle/{{ key[0] }}" class="api-action-btn" title="Deactivate">
+								<svg class="status-icon-disabled" width="18" height="18">
+									<use href="/static/sprites.svg#disable"></use>
+								</svg>
+							</a>
+							{% else %}
+							<a href="/admin/apikeys/toggle/{{ key[0] }}" class="api-action-btn" title="Activate">
+								<svg class="status-icon-active" width="18" height="18">
+								<use href="/static/sprites.svg#enable"></use>
+								</svg>
+							</a>
+							{% endif %}
+							<a href="/admin/apikeys/delete/{{ key[0] }}" 
+							   class="api-action-btn" 
+							   onclick="return confirm('Are you sure you want to delete this API key? This action cannot be undone.');"
+							   title="Delete">
+								<svg class="status-icon-disabled" width="18" height="18">
+									<use href="/static/sprites.svg#delete"></use>
+								</svg>
+							</a>
+						</div>
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% else %}
+		<p>No API keys created yet. Create one using the form above.</p>
+	{% endif %}
+
+</div>
+
+<script>
+function copyToClipboard(elementId) {
+	const element = document.getElementById(elementId);
+	const text = element.textContent;
+	
+	navigator.clipboard.writeText(text).then(function() {
+		const button = event.target;
+		const originalText = button.textContent;
+		button.textContent = '✓';
+		
+		setTimeout(function() {
+			button.textContent = originalText;
+		}, 1500);
+	}, function(err) {
+		alert('Failed to copy: ' + err);
+	});
+}
+
+function editDescription(keyId, currentDesc) {
+	const newDesc = prompt('Enter new description for API key:', currentDesc);
+	if (newDesc !== null) {
+		// Create form and submit
+		const form = document.createElement('form');
+		form.method = 'POST';
+		form.action = '/admin/apikeys/description/' + keyId;
+		
+		const input = document.createElement('input');
+		input.type = 'hidden';
+		input.name = 'description';
+		input.value = newDesc;
+		
+		form.appendChild(input);
+		document.body.appendChild(form);
+		form.submit();
+	}
+}
+</script>
+
+{% endblock content %}
