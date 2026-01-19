@@ -499,9 +499,9 @@ def reset_results_user(user_id):
 	#------------+------------+--------+--------
 	#          0 |          0 |      1 |      5
 	#          4 |          4 |      0 |      1
-	#set the result to 0 for every task
+	#set the result to NULL for every task so the trigger can update best score on next submission
 	(db, cursor) = connect()
-	cursor.execute('UPDATE results SET result = 100, score_best = 0, score_last = 0 WHERE userid = %s', (user_id,))
+	cursor.execute('UPDATE results SET result = 100, score_best = NULL, score_last = NULL WHERE userid = %s', (user_id,))
 	db.commit()
 	cursor.close()
 	db.close()
