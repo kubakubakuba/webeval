@@ -9,7 +9,7 @@ The code is publicly available on [GitLab](https://gitlab.fel.cvut.cz/b35apo/qtr
 
 **New** [Wiki page](/wiki) is available, there you can find all the necessary information about the application. Developer documentation is also available.
 
-**New** You can now view the page in dark mode (automatically detects your OS preset), you can toggle between light/dark mode using the bottom right toggle. You can also choose your editor theme preference in the profile section of the page.
+**New** You can now view the page in dark mode (automatically detects your OS preset), you can toggle between light/dark mode using the top right toggle. You can also choose your editor theme preference in the profile section of the page.
 
 You can also read more about this application at the [Computer Architectures website](https://comparch.edu.cvut.cz/online-tools/webeval/).
 
