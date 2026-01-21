@@ -10,6 +10,7 @@ QtRVSim Web Evaluation
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
+			gap: 10px;
 		}
 		
 		.task-deadline {
@@ -18,6 +19,34 @@ QtRVSim Web Evaluation
 			font-style: italic;
 			white-space: nowrap;
 			margin-left: 20px;
+		}
+		
+		.task-status-icon {
+			width: 24px;
+			height: 24px;
+			flex-shrink: 0;
+		}
+		
+		.task-status-icon.success {
+			color: #28a745;
+		}
+		
+		.task-status-icon.error {
+			color: #dc3545;
+		}
+
+		.task-status-icon.waiting {
+			color: #de9933;
+		}
+		
+		.task-status-icon.disabled {
+			color: #6c757d;
+		}
+		
+		.task-info {
+			display: flex;
+			align-items: center;
+			gap: 10px;
 		}
 	</style>
 
@@ -28,24 +57,44 @@ QtRVSim Web Evaluation
 			<a href="/task/{{ t[0] }}" class="list-group-item list-group-item-action">
 				<div class="task-item">
 					<span>{{ t[1] }}</span>
-					{% if t[2] %}
-						<span class="task-deadline">
-							{% set action, delta = t[2] %}
-							{% set days = delta.days %}
-							{% set hours = (delta.seconds // 3600) %}
-							{% set minutes = ((delta.seconds % 3600) // 60) %}
-							
-							{% if days > 0 %}
-								{{ action.capitalize() }} in {{ days }}d
-							{% elif hours > 0 %}
-								{{ action.capitalize() }} in {{ hours }}h
-							{% elif minutes > 0 %}
-								{{ action.capitalize() }} in {{ minutes }}min
-							{% else %}
-								{{ action.capitalize() }} soon
-							{% endif %}
-						</span>
-					{% endif %}
+					<div class="task-info">
+						{% if t[2] %}
+							<span class="task-deadline">
+								{% set action, delta = t[2] %}
+								{% set days = delta.days %}
+								{% set hours = (delta.seconds // 3600) %}
+								{% set minutes = ((delta.seconds % 3600) // 60) %}
+								
+								{% if days > 0 %}
+									{{ action.capitalize() }} in {{ days }}d
+								{% elif hours > 0 %}
+									{{ action.capitalize() }} in {{ hours }}h
+								{% elif minutes > 0 %}
+									{{ action.capitalize() }} in {{ minutes }}min
+								{% else %}
+									{{ action.capitalize() }} soon
+								{% endif %}
+							</span>
+						{% endif %}
+						
+						{% if is_admin and not t[4] %}
+							<svg class="task-status-icon disabled">
+							<use href="/static/sprites.svg#disabled-task"></use>
+						</svg>
+						{% elif t[3] == 'success' %}
+						<svg class="task-status-icon success">
+							<use href="/static/sprites.svg#enabled"></use>
+						</svg>
+						{% elif t[3] == 'error' %}
+						<svg class="task-status-icon error">
+							<use href="/static/sprites.svg#error"></use>
+						</svg>
+						{% elif t[3] == 'waiting' %}
+						<svg class="task-status-icon waiting">
+							<use href="/static/sprites.svg#waiting"></use>
+						</svg>
+						{% endif %}
+					</div>
 				</div>
 			</a>
 		{% endfor %}

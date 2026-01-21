@@ -32,6 +32,24 @@ def list_tasks():
 	db.close()
 	return tasks
 
+def list_all_tasks():
+	"""List all tasks including disabled ones."""
+	(db, cursor) = connect()
+	cursor.execute('SELECT id, name, available FROM tasks ORDER BY sequence ASC')
+	tasks = cursor.fetchall()
+	cursor.close()
+	db.close()
+	return tasks
+
+def get_user_task_result(userid, taskid):
+	"""Get user's result for a specific task."""
+	(db, cursor) = connect()
+	cursor.execute('SELECT result FROM results WHERE userid = %s AND taskid = %s', (userid, taskid))
+	result = cursor.fetchone()
+	cursor.close()
+	db.close()
+	return result
+
 def list_tasks_with_filepath():
 	"""List all tasks with their file path."""
 	(db, cursor) = connect()

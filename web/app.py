@@ -72,12 +72,22 @@ app.register_blueprint(api_module.api_bp)
 
 @app.route('/')
 def index():
-	task = db.list_tasks()
+	is_admin = check_admin()
+	userid = session.get('user_id') if 'logged_in' in session else None
+	
+	if is_admin:
+		task = db.list_all_tasks()
+	else:
+		task = db.list_tasks()
 
 	tasks = []
 	if task:
 		for t in task:
-			task_id, task_name = t
+			if is_admin:
+				task_id, task_name, available = t
+			else:
+				task_id, task_name = t
+				available = True
 			
 			task_path = db.get_task_path(task_id)
 			deadline_info = None
@@ -108,9 +118,21 @@ def index():
 					except Exception as e:
 						pass
 			
-			tasks.append((task_id, task_name, deadline_info))
+			task_status = None
+			if userid:
+				result = db.get_user_task_result(userid, task_id)
+				if result is not None:
+					result_code = result[0]
+					if result_code == 0:
+						task_status = 'success'
+					elif result_code > 0:
+						task_status = 'error'
+					elif result_code < 0:
+						task_status = 'waiting'
+			
+			tasks.append((task_id, task_name, deadline_info, task_status, available))
 
-	return render_template('index.html', sessions=session, tasks=tasks)
+	return render_template('index.html', sessions=session, tasks=tasks, is_admin=is_admin)
 
 @app.route('/about')
 def about():
