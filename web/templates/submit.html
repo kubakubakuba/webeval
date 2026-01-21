@@ -21,6 +21,20 @@
 		.card-btn:hover {
 			background-color: #f8f9fa;
 		}
+		
+		/* Error line highlighting */
+		.error-line {
+			background-color: rgba(255, 0, 0, 0.15) !important;
+		}
+		
+		html.dark-mode .error-line {
+			background-color: rgba(255, 0, 0, 0.25) !important;
+		}
+		
+		.error-line-gutter {
+			background-color: rgba(255, 0, 0, 0.3) !important;
+			color: #fff !important;
+		}
 	</style>
 
 	<a href="/task/{{ task_id }}" class="back-link">
@@ -69,6 +83,7 @@
 		let textarea = document.getElementById('code');
 		let templateContent = {{template_code|tojson}};
 		let submissionContent = {{submission_code|tojson}};
+		let errorLog = {{error_log|tojson}};
 
 		if (submissionContent == null) {
 			submissionContent = templateContent;
@@ -85,6 +100,26 @@
 
 		editor.setSize("auto", "auto");
 		editor.setValue(submissionContent);
+
+		//parse error for error lines
+		if (errorLog) {
+			//matches "On line 1 in your code:" or "line 5:"
+			const linePattern = /(?:On line|line)\s+(\d+)/gi;
+			let match;
+			const errorLines = new Set();
+			
+			while ((match = linePattern.exec(errorLog)) !== null) {
+				errorLines.add(parseInt(match[1]) - 1); //0 based idx
+			}
+			
+			//highlight
+			errorLines.forEach(lineNum => {
+				if (lineNum >= 0 && lineNum < editor.lineCount()) {
+					editor.addLineClass(lineNum, "background", "error-line");
+					editor.addLineClass(lineNum, "gutter", "error-line-gutter");
+				}
+			});
+		}
 
 		function submitForm() {
 			textarea.value = editor.getValue();

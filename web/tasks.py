@@ -76,6 +76,14 @@ def submit(task_id):
 		# Get user latest submission code
 		submission_code = db.get_last_user_code(task_id, session['user_id'])
 		submission_code = "" if submission_code is None else submission_code[0]
+		
+		submission_result = db.get_last_user_submission(task_id, session['user_id'])
+		error_log = None
+		if submission_result:
+			result_code, result_file, _, _ = submission_result
+			#pass the result log with errors
+			if result_code is not None and result_code > 0 and result_file:
+				error_log = result_file
 
 		template_path = task_data['task'].get('template', None)
 
@@ -109,7 +117,7 @@ def submit(task_id):
 		# Get user's editor theme preference
 		user_theme = db.get_user_setting(session['user_id'], 'editor_theme')
 
-		return render_template('submit.html', task_name=task_name, task_id=task_id, sessions=session, submission_code=submission_code, template_code=template_code, language=language, task_description=task_description, user_theme=user_theme)
+		return render_template('submit.html', task_name=task_name, task_id=task_id, sessions=session, submission_code=submission_code, template_code=template_code, language=language, task_description=task_description, user_theme=user_theme, error_log=error_log)
 
 
 @tasks_bp.route('/task/<int:task_id>')
