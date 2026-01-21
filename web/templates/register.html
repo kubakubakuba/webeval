@@ -28,6 +28,9 @@ Register
 
 	<div class="card">
 		<div class="card-body">
+				{% if error %}
+					<div style="color: red; margin-bottom: 10px;">{{ error }}</div>
+				{% endif %}
 			<form method="post" id="registerForm">
 				<div class="form-group">
 					<label for="username">Username:</label>

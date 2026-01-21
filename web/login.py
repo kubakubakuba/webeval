@@ -5,6 +5,7 @@ import secrets
 import random
 import string
 import db
+import re
 
 URL = None
 mail = None
@@ -42,6 +43,12 @@ def register():
 		username = request.form['username']
 		password = request.form['password']
 		email = request.form['email']
+
+		if not re.match(r'^[a-zA-Z0-9_-]+$', username):
+			return render_template('register.html',	sessions=session, error='Username can only contain alphanumerical characters, dashes or underlines.')
+
+		if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', email):
+			return render_template('register.html', sessions=session, error='Invalid email address entered.')
 
 		salt = secrets.token_hex(16)  # generate random salt for hashing password
 		hashed_password = sha512((password + salt).encode()).hexdigest()
@@ -81,13 +88,13 @@ def register():
 		sent = send_email(subject, recipients, body, html)
 		
 		if not sent:
-			return redirect('/register#email_error')
+			return render_template('register.html', sessions=session, error='There was an error while sending the email.')
 		
 		register_successful = db.register(username, hashed_password, hashed_email, salt, token)
 		if register_successful:
 			return redirect('/verify')
 		else:
-			return redirect('/register#username_taken')
+			return render_template('register.html', sessions=session, error='Username is already taken')
 	else:
 		return render_template('register.html', sessions=session)
 
