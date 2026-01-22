@@ -1,6 +1,6 @@
 """Task-related routes: submit, view task details, view submissions."""
 
-from flask import Blueprint, render_template, request, redirect, session, Response
+from flask import Blueprint, render_template, request, redirect, session, Response, jsonify
 from markdown import markdown
 from datetime import datetime
 from auth import login_required, check_banned
@@ -268,6 +268,30 @@ def task(task_id):
 	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data,
 scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name,
 latest_score=latest_score, is_admin=is_admin, issue_url=issue_url, makefile=makefile, files=files, displaynames=displaynames, can_submit=can_submit, user_theme=user_theme)
+
+
+@tasks_bp.route('/task_status/<int:task_id>')
+@login_required
+def task_status(task_id):
+	"""Get evaluation status for current user's submission."""
+	user_id = session['user_id']
+	submission = db.get_last_user_submission(task_id, user_id)
+	
+	if not submission:
+		return jsonify({
+			'has_submission': False,
+			'result': None
+		})
+	
+	result, result_file, score, time = submission
+	
+	return jsonify({
+		'has_submission': True,
+		'result': result,
+		'score': score,
+		'is_pending': result == -1,
+		'is_evaluated': result is not None and result != -1
+	})
 
 
 @tasks_bp.route('/download/<int:task_id>/<user_id>/<int:is_best>')

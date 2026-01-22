@@ -180,17 +180,30 @@
 								<span style="color: rgb(239, 198, 15);">
 									Pending
 
-									<!-- Auto refresh the page when the score is pending. -->
-									<script>
-										function autoRefresh() {
-											window.location = window.location.href;
-										}
-
-										setInterval('autoRefresh()', 5000);
-									</script>
-
-									<!-- temporary solution -->
-									 
+								<!-- Poll for evaluation status without reloading the page -->
+								<script>
+									let pollInterval;
+									
+									function checkEvaluationStatus() {
+										fetch('/task_status/{{ task.id }}')
+											.then(response => response.json())
+											.then(data => {
+												if (data.has_submission && data.is_evaluated) {
+													// Evaluation complete, reload the page
+													clearInterval(pollInterval);
+													window.location.reload();
+												}
+											})
+											.catch(error => {
+												console.error('Error checking status:', error);
+											});
+									}
+									
+									// Check status every 3 seconds
+									pollInterval = setInterval(checkEvaluationStatus, 3000);
+									// Also check immediately
+									checkEvaluationStatus();
+								</script>
 								</span>
 							{% elif result == 0 %}
 								<span style="color: green;">Accepted</span>
