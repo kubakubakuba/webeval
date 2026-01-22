@@ -299,6 +299,133 @@
 					{% endfor %}
 				</ul>
 			</div>
+
+			<!-- Admin: All Submissions Table -->
+			{% if is_admin == 1 and all_submissions %}
+			<div class="card" style="margin-top: 20px;">
+			<div class="card-header" style="cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px;" onclick="toggleAdminTable()">
+				<svg width="16" height="16" id="admin-table-toggle">
+					<use href="/static/sprites.svg#inspect"></use>
+				</svg>
+				<span>All Submissions</span>
+				</div>
+				<div id="admin-submissions-table" style="display: none;">
+					<div class="card-body" style="padding: 10px;">
+						<div style="margin-bottom: 10px;">
+							<label>Sort by:</label>
+							<select id="sort-select" onchange="sortAdminTable()" class="form-select form-select-sm" style="width: auto; display: inline-block; margin-left: 10px;">
+								<option value="username">Username</option>
+								<option value="score">Cycles (ascending)</option>
+								<option value="score-desc">Cycles (descending)</option>
+								<option value="result">Result Status</option>
+							</select>
+						</div>
+					</div>
+					<ul class="list-group list-group-flush scrollable-list" id="admin-submissions-list">
+						{% for userid, result_code, score_val, time_val, username in all_submissions %}
+							<li class="list-group-item" data-username="{{ username }}" data-score="{{ score_val if score_val else 999999999 }}" data-result="{{ result_code if result_code is not none else -999 }}">
+								<div class="row align-items-center">
+									<div class="col-sm-4">
+										{% if username in displaynames and displaynames[username] is not none %}
+											{{displaynames[username]}} ({{ username }})
+										{% else %}
+											{{ username }}
+										{% endif %}
+									</div>
+									<div class="col-sm-2">
+										{% if result_code == -1 %}
+											<span style="color: rgb(239, 198, 15);">Pending</span>
+										{% elif result_code == 0 %}
+											<span style="color: green;">Accepted</span>
+										{% elif result_code == 2 %}
+											<span style="color: red;">Timeout</span>
+										{% elif result_code == 3 %}
+											<span style="color: red;">Cache error</span>
+										{% elif result_code == 4 %}
+											<span style="color: red;">Make error</span>
+										{% elif result_code == 5 %}
+											<span style="color: red;">Assembly error</span>
+										{% elif result_code == 99 %}
+											<span style="color: maroon;">Internal error</span>
+										{% elif result_code == 100 %}
+											<span style="color: maroon;">Score reset</span>
+										{% elif result_code is none %}
+											<span style="color: gray;">No submission</span>
+										{% else %}
+											<span style="color: red;">Rejected</span>
+										{% endif %}
+									</div>
+									<div class="col-sm-2">
+										{% if score_val is not none and score_val > 0 %}
+											{{ score_val }}
+										{% else %}
+											-
+										{% endif %}
+									</div>
+									<div class="col-sm-4">
+										<div class="score-row">
+											<a href="/view/{{ task.id }}/{{ userid }}/1" class="icon-link">
+												<svg width="20" height="20">
+													<use href="/static/sprites.svg#inspect"></use>
+												</svg>
+											</a>
+											<a href="/download/{{ task.id }}/{{ userid }}/0" class="icon-link">
+												<svg width="20" height="20">
+													<use href="/static/sprites.svg#download"></use>
+												</svg>
+											</a>
+											<a href="/admin/reevaluate/{{ task.id }}/{{ userid }}/0" class="icon-link">
+												<svg width="20" height="20">
+													<use href="/static/sprites.svg#reevaluate"></use>
+												</svg>
+											</a>
+										</div>
+									</div>
+								</div>
+							</li>
+						{% endfor %}
+					</ul>
+				</div>
+			</div>
+
+			<script>
+				function toggleAdminTable() {
+					const table = document.getElementById('admin-submissions-table');
+					const toggle = document.getElementById('admin-table-toggle');
+					const use = toggle.querySelector('use');
+					if (table.style.display === 'none') {
+						table.style.display = 'block';
+						use.setAttribute('href', '/static/sprites.svg#disabled-task');
+					} else {
+						table.style.display = 'none';
+						use.setAttribute('href', '/static/sprites.svg#inspect');
+					}
+				}
+
+				function sortAdminTable() {
+					const select = document.getElementById('sort-select');
+					const sortBy = select.value;
+					const list = document.getElementById('admin-submissions-list');
+					const items = Array.from(list.getElementsByTagName('li'));
+
+					items.sort((a, b) => {
+						if (sortBy === 'username') {
+							return a.dataset.username.localeCompare(b.dataset.username);
+						} else if (sortBy === 'score') {
+							return parseInt(a.dataset.score) - parseInt(b.dataset.score);
+						} else if (sortBy === 'score-desc') {
+							return parseInt(b.dataset.score) - parseInt(a.dataset.score);
+						} else if (sortBy === 'result') {
+							return parseInt(a.dataset.result) - parseInt(b.dataset.result);
+						}
+						return 0;
+					});
+
+					items.forEach(item => list.appendChild(item));
+				}
+			</script>
+			{% endif %}
+
 		</div>
 	</div>
 </div>

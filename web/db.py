@@ -318,6 +318,21 @@ def get_last_user_submission(taskid, userid):
 	db.close()
 	return submission
 
+def get_all_submissions_for_task(taskid):
+	"""Get all user submissions for a task (for admin view)."""
+	(db, cursor) = connect()
+	cursor.execute('''
+		SELECT r.userid, r.result, r.score_last, r.time, u.username
+		FROM results r
+		JOIN users u ON r.userid = u.id
+		WHERE r.taskid = %s AND u.verified = true
+		ORDER BY u.username
+	''', (taskid,))
+	submissions = cursor.fetchall()
+	cursor.close()
+	db.close()
+	return submissions
+
 def get_last_user_code(taskid, userid):
 	"""Get a user's last code for a task."""
 	(db, cursor) = connect()

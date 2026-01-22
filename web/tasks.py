@@ -269,9 +269,14 @@ def task(task_id):
 	user_theme = db.get_user_setting(userid, 'editor_theme') if userid else 'default'
 	user_theme = user_theme or 'default'
 
+	# Get all submissions for admin view
+	all_submissions = None
+	if is_admin:
+		all_submissions = db.get_all_submissions_for_task(task_id)
+
 	return render_template('task.html', task=task_info, sessions=session, result=result, result_file=result_data,
 scores=scores, time=time, submission_found=submission_found, score=score, task_name=task_name,
-latest_score=latest_score, is_admin=is_admin, issue_url=issue_url, makefile=makefile, files=files, displaynames=displaynames, can_submit=can_submit, user_theme=user_theme)
+latest_score=latest_score, is_admin=is_admin, issue_url=issue_url, makefile=makefile, files=files, displaynames=displaynames, can_submit=can_submit, user_theme=user_theme, all_submissions=all_submissions)
 
 
 @tasks_bp.route('/task_status/<int:task_id>')
