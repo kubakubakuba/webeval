@@ -355,7 +355,15 @@ def view_latest_for_user(task_id, user_id, is_latest):
 		code = result_file
 		best_or_latest = "Evaluation log"
 
+	# Get username and displayname
+	username = db.get_username(user_id)
+	username = username[0] if username else "Unknown"
+	
+	displaynames = db.get_user_displaynames()
+	displaynames = {user[0]: user[1] for user in displaynames}
+	displayname = displaynames.get(username, username)
+
 	# Get user's editor theme preference
 	user_theme = db.get_user_setting(session.get('user_id'), 'editor_theme') if 'user_id' in session else None
 
-	return render_template('view.html', submission_code=code, task_id=task_id, user_id=user_id, is_latest=is_latest, sessions=session, best_or_latest=best_or_latest, task_name=task_name, user_theme=user_theme)
+	return render_template('view.html', submission_code=code, task_id=task_id, user_id=user_id, is_latest=is_latest, sessions=session, best_or_latest=best_or_latest, task_name=task_name, user_theme=user_theme, username=username, displayname=displayname)

@@ -31,6 +31,7 @@
 	</a>
 
 	<h2>{{ best_or_latest }} for task: {{ task_name }}</h2>
+	<h5>User: {% if displayname and displayname != username %}{{ displayname }} ({{ username }}){% else %}{{ username }}{% endif %}</h5>
 	<div class="card">
 		<div class="card-body">
 			<div id="codeMirror"></div>

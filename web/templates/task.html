@@ -355,15 +355,15 @@
 											<span style="color: red;">Rejected</span>
 										{% endif %}
 									</div>
-									<div class="col-sm-2">
-										{% if score_val is not none and score_val > 0 %}
-											{{ score_val }}
-										{% else %}
-											-
-										{% endif %}
-									</div>
-									<div class="col-sm-2">
+									<div class="col-sm-4">
 										<div class="score-row">
+											<span class="score-value">
+												{% if score_val is not none and score_val > 0 %}
+													{{ score_val }}
+												{% else %}
+													-
+												{% endif %}
+											</span>
 											<a href="/view/{{ task.id }}/{{ userid }}/1" class="icon-link">
 												<svg width="20" height="20">
 													<use href="/static/sprites.svg#inspect"></use>
