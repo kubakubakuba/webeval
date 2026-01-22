@@ -317,7 +317,7 @@ def evaluate_submissions(num_submissions = 10):
 					#error_log += error_lines[2] if len(error_lines) > 2 else "\n"
 
 					error_log += f"\nPlease check your code and try again.\n"
-					error_log += f"\nPlease note, that %lo and %hi are not yet supported in the integrated assembly, and will thus throw an assembly error when no Makefile for compilation is present at the task.\n"
+					#error_log += f"\nPlease note, that %lo and %hi are not yet supported in the integrated assembly, and will thus throw an assembly error when no Makefile for compilation is present at the task.\n"
 
 					db.update_submission(s[0])
 					db.update_result(s[4], s[1], -1, 5, error_log)
