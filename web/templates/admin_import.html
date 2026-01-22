@@ -67,23 +67,15 @@ table {
         <div class="col-lg-6 csv-format-section">
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="card-title">CSV Format</h5>
-                    <p>Upload a CSV file with the following format (semicolon-separated):</p>
+                    <p>Upload a CSV file with the following format:</p>
                     <code>email;username;display_name;country;organization;group;visibility;can_submit</code>
                     
                     <h6 class="mt-3">Example:</h6>
                     <pre>john@example.com;john123;John Doe;USA;MIT;2024;0;1
 jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
                     
-                    <h6 class="mt-3">Fields:</h6>
-                    <ul>
-                        <li><strong>email</strong>: User's email address (required, unique)</li>
-                        <li><strong>username</strong>: Username (required, unique)</li>
-                        <li><strong>display_name</strong>: Display name (optional, use empty or leave blank)</li>
-                        <li><strong>country</strong>: Country (optional)</li>
-                        <li><strong>organization</strong>: Organization (optional)</li>
-                        <li><strong>group</strong>: Group (optional)</li>
-                        <li><strong>visibility</strong>: Privacy level (required):
+
+                        <strong>visibility</strong>:
                             <ul>
                                 <li><code>0</code> = <strong>Public</strong>: Everyone can see results</li>
                                 <li><code>1</code> = <strong>Organization</strong>: Only users from same organization</li>
@@ -91,17 +83,15 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
                                 <li><code>3</code> = <strong>Private</strong>: Only the user can see results</li>
                             </ul>
                         </li>
-                        <li><strong>can_submit</strong>: Submission permission (optional, defaults to 1):
-                            <ul>
-                                <li><code>0</code> = <strong>Cannot submit</strong>: User cannot submit tasks via web interface</li>
-                                <li><code>1</code> = <strong>Can submit</strong>: User can submit tasks normally</li>
-                            </ul>
-                        </li>
-                    </ul>
                     
                     <div class="alert alert-info">
-                        <strong>Note:</strong> All users will be created with a temporary password and marked as unverified.
-                        They will need to use the "Forgot Password" feature to set their password.
+
+                        Email, username, visibility and can_submit are required. Others can be left blank for a minimal setup.
+                        <br/>
+                        For example:
+                        <pre>john@example.com;john123;;;;;0;1</pre>
+
+                        All users will be created with a temporary password and marked as unverified. They will need to use the "Forgot Password" feature to set their password.
                     </div>
                 </div>
             </div>
@@ -135,7 +125,7 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="dryRun" name="dryRun">
                             <label class="form-check-label" for="dryRun">
-                                Dry run (validate only, don't import)
+                                Dry run, validate only
                             </label>
                         </div>
                         <div class="card card-btn" onclick="this.closest('form').submit();">

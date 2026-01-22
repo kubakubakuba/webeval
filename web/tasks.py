@@ -102,6 +102,10 @@ def submit(task_id):
 				with open(template_path) as f:
 					template_code = f.read()
 
+		#if user has no previous submission, use template as initial code
+		if not submission_code and template_code:
+			submission_code = template_code
+
 		is_c_solution = task_data['task'].get('c_solution', False)
 
 		task_description = task_data['task'].get('description', None)
