@@ -30,10 +30,16 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 
 URL = os.getenv('BASE_URL', 'https://eval.comparch.edu.cvut.cz')
 
-USER_FILTER = ["reference"]
-
 TEMPLATES_DIR = os.getenv('TEMPLATES_DIR', 'S_templates')
 TASKS_DIR = os.getenv('TASKS_DIR', 'tasks')
+FILTER_DIR = 'config/filter'
+
+def get_filtered_users():
+	"""Get list of filtered usernames from filter directory."""
+	if not os.path.exists(FILTER_DIR):
+		os.makedirs(FILTER_DIR, exist_ok=True)
+		return []
+	return [f for f in os.listdir(FILTER_DIR) if os.path.isfile(os.path.join(FILTER_DIR, f))]
 
 mail = Mail(app)
 
@@ -62,7 +68,7 @@ app.register_blueprint(login_module.login_bp)
 tasks_module.init_tasks(TASKS_DIR, TEMPLATES_DIR, check_submission_deadlines, check_admin)
 app.register_blueprint(tasks_module.tasks_bp)
 
-scoreboard_module.init_scoreboard(USER_FILTER, check_admin)
+scoreboard_module.init_scoreboard(get_filtered_users, check_admin)
 app.register_blueprint(scoreboard_module.scoreboard_bp)
 
 app.register_blueprint(profile_module.profile_bp)

@@ -2,13 +2,13 @@ from flask import Blueprint, render_template, session
 from util import score_results, user_total_score
 import db
 
-USER_FILTER = None
+get_filtered_users = None
 check_admin = None
 
-def init_scoreboard(user_filter, admin_func):
+def init_scoreboard(filter_func, admin_func):
 	"""Initialize scoreboard module with configuration."""
-	global USER_FILTER, check_admin
-	USER_FILTER = user_filter
+	global get_filtered_users, check_admin
+	get_filtered_users = filter_func
 	check_admin = admin_func
 
 scoreboard_bp = Blueprint('scoreboard', __name__)
@@ -20,11 +20,13 @@ def scoreboard():
 
 	results = {}
 
+	filtered_users = get_filtered_users()
+	
 	for task in active_tasks:
 		task_id, task_name = task
 
 		results[task_name] = db.get_best_only_scores_for_public(task_id)
-		results[task_name] = [result for result in results[task_name] if result[0] not in USER_FILTER]
+		results[task_name] = [result for result in results[task_name] if result[0] not in filtered_users]
 
 	results = score_results(results)
 
@@ -82,21 +84,23 @@ def scoreboard_group(type, grouporg):
 			return render_template('403.html'), 403
 		
 		group_text = "study group " + grouporg
+		filtered_users = get_filtered_users()
 		for task in active_tasks:
 			task_id, task_name = task
 			results[task_name] = db.get_best_only_scores_for_group(task_id, grouporg)
-			results[task_name] = [result for result in results[task_name] if result[0] not in USER_FILTER]
+			results[task_name] = [result for result in results[task_name] if result[0] not in filtered_users]
 
 	elif type == 1:  # organization
 		if user_org != grouporg and not is_admin:
 			return render_template('403.html'), 403
 		
 		group_text = grouporg
+		filtered_users = get_filtered_users()
 		
 		for task in active_tasks:
 			task_id, task_name = task
 			results[task_name] = db.get_best_only_scores_for_org(task_id, grouporg)
-			results[task_name] = [result for result in results[task_name] if result[0] not in USER_FILTER]
+			results[task_name] = [result for result in results[task_name] if result[0] not in filtered_users]
 
 	else:
 		return render_template('400.html'), 400

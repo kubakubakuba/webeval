@@ -190,6 +190,33 @@ User Management - Admin Panel
 					</div>
 				</div>
 			</div>
+
+			<hr />
+
+			Toggle filter in scoreboard for user:
+
+			<select id="filter-user-selector" class="form-select" aria-label="Filter user selector">
+				<option value="-">-</option>
+				{% for user in users %}
+					<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}{% if user[1] in filtered_usernames %} FILTERED{% endif %}</option>
+				{% endfor %}
+			</select>
+			<div class="row">
+				<div class="col-md-6">
+					<div class="card card-btn" onclick="location.href='/admin/filter/' + document.getElementById('filter-user-selector').value;">
+						<div class="card-body text-center">
+							Add to filter
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="card card-btn" onclick="location.href='/admin/unfilter/' + document.getElementById('filter-user-selector').value;">
+						<div class="card-body text-center">
+							Remove from filter
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 

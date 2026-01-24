@@ -40,6 +40,35 @@ def unban(user_id):
 	return redirect('/admin/users')
 
 
+@admin_bp.route('/filter/<user_id>/')
+@admin_required
+def filter_user(user_id):
+	"""Filter a user from scoreboards."""
+	username = db.get_username(user_id)
+	if username:
+		username = username[0]
+		filter_dir = 'config/filter'
+		os.makedirs(filter_dir, exist_ok=True)
+		filter_file = os.path.join(filter_dir, username)
+		if not os.path.exists(filter_file):
+			with open(filter_file, 'w') as f:
+				f.write('')
+	return redirect('/admin/users')
+
+
+@admin_bp.route('/unfilter/<user_id>/')
+@admin_required
+def unfilter_user(user_id):
+	"""Unfilter a user from scoreboards."""
+	username = db.get_username(user_id)
+	if username:
+		username = username[0]
+		filter_file = os.path.join('config/filter', username)
+		if os.path.exists(filter_file):
+			os.remove(filter_file)
+	return redirect('/admin/users')
+
+
 @admin_bp.route('/')
 @admin_required
 def admin():
@@ -63,11 +92,15 @@ def admin_users():
 	all_users = [user for user in users]
 	users = [user for user in users if user[0] != userid]
 
-	# Order users by id
 	users = sorted(users, key=lambda x: x[0])
 	all_users = sorted(all_users, key=lambda x: x[0])
+	
+	filter_dir = 'config/filter'
+	filtered_usernames = set()
+	if os.path.exists(filter_dir):
+		filtered_usernames = set(os.listdir(filter_dir))
 		
-	return render_template('admin_users.html', sessions=session, users=users, all_users=all_users)
+	return render_template('admin_users.html', sessions=session, users=users, all_users=all_users, filtered_usernames=filtered_usernames)
 
 
 @admin_bp.route('/tasks')
