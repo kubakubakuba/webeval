@@ -120,19 +120,25 @@ def can_user_submit(userid):
 	db.close()
 	return result[0] if result else False
 
-def get_task(task_id):
+def get_task(task_id, is_admin=False):
 	"""Get a task."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT name FROM tasks WHERE id = %s AND available = true', (task_id,))
+	if is_admin:
+		cursor.execute('SELECT name FROM tasks WHERE id = %s', (task_id,))
+	else:
+		cursor.execute('SELECT name FROM tasks WHERE id = %s AND available = true', (task_id,))
 	task = cursor.fetchone()
 	cursor.close()
 	db.close()
 	return task
 
-def get_task_path(task_id):
+def get_task_path(task_id, is_admin=False):
 	"""Get the path to a task."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT path FROM tasks WHERE id = %s AND available = true', (task_id,))
+	if is_admin:
+		cursor.execute('SELECT path FROM tasks WHERE id = %s', (task_id,))
+	else:
+		cursor.execute('SELECT path FROM tasks WHERE id = %s AND available = true', (task_id,))
 	task = cursor.fetchone()
 	cursor.close()
 	db.close()
@@ -147,10 +153,13 @@ def get_task_path_admin(task_id):
 	db.close()
 	return task
 
-def get_task_name(task_id):
+def get_task_name(task_id, is_admin=False):
 	"""Get the name of a task."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT name FROM tasks WHERE id = %s AND available = true', (task_id,))
+	if is_admin:
+		cursor.execute('SELECT name FROM tasks WHERE id = %s', (task_id,))
+	else:
+		cursor.execute('SELECT name FROM tasks WHERE id = %s AND available = true', (task_id,))
 	task = cursor.fetchone()
 	cursor.close()
 	db.close()

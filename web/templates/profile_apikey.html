@@ -112,8 +112,6 @@ API Key Management
 	<div class="two-column-layout">
 		<div class="left-column">
 			{% if api_key %}
-				<h4>Your API Key</h4>
-
 				<div class="api-key-box">
 					<span class="api-key-text">{{ api_key[:16] }}...</span>
 					<button class="copy-btn" onclick="copyToClipboard('{{ api_key }}')">Copy</button>
@@ -123,7 +121,7 @@ API Key Management
 
 				{% if is_expired %}
 					<div class="warning-box">
-						<strong>⚠️ Your API key has expired!</strong><br>
+						<strong>Your API key has expired!</strong><br>
 						Generate a new key to continue using the API.
 					</div>
 				{% endif %}
@@ -144,8 +142,7 @@ API Key Management
 				<form id="revoke-form" method="POST" action="/profile/api-key/revoke" style="display: none;"></form>
 
 			{% else %}
-				<h4>No API Key</h4>
-				<p>You don't have an API key yet. Generate one to use the external API for submitting tasks.</p>
+				<p>You don't have an API key yet.</p>
 
 				<div class="card card-btn action-card" onclick="document.getElementById('generate-form').submit()">
 					<div class="card-body text-center">
@@ -158,8 +155,6 @@ API Key Management
 		</div>
 
 		<div class="right-column">
-			<h3>API Usage</h3>
-			
 			<h4>Available Endpoints:</h4>
 			<ul>
 				<li><strong>GET /api/user/tasks</strong> - Get list of available tasks</li>
@@ -167,7 +162,7 @@ API Key Management
 				<li><strong>POST /api/user/submit</strong> - Submit code for a task</li>
 			</ul>
 
-			<h4>Example: Submit Code</h4>
+			<h4>To submit code:</h4>
 			<pre style="background-color: var(--card-bg); padding: 15px; border-radius: 4px; overflow-x: auto; border: 1px solid var(--border-color);"><code>curl -X POST {{ request.host_url }}api/user/submit \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
@@ -176,7 +171,7 @@ API Key Management
     "code": "your assembly or C code here"
   }'</code></pre>
 
-			<h4>Example: Get Tasks</h4>
+			<h4>To get a list of available tasks:</h4>
 			<pre style="background-color: var(--card-bg); padding: 15px; border-radius: 4px; overflow-x: auto; border: 1px solid var(--border-color);"><code>curl -X GET {{ request.host_url }}api/user/tasks \
   -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
 		</div>

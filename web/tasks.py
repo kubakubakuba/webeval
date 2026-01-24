@@ -40,15 +40,16 @@ def submit(task_id):
 			if f.read() == "true":
 				return render_template('disabled.html'), 403
 	
-	task = db.get_task(task_id)
+	is_admin = check_admin()
+	
+	task = db.get_task(task_id, is_admin=is_admin)
 
 	if task:
 		task_name = task[0]
 	else:
 		return render_template('404.html'), 404
 	
-	# Read task file
-	task_path = db.get_task_path(task_id)
+	task_path = db.get_task_path(task_id, is_admin=is_admin)
 	if task_path:
 		task_path = os.path.join(TASKS_DIR, os.path.basename(task_path[0]))
 
@@ -135,7 +136,12 @@ def task(task_id):
 	result_data = None
 	name = None
 
-	task = db.get_task_path(task_id)
+	# Check if user is admin
+	is_admin = False
+	if 'user_id' in session:
+		is_admin = check_admin()
+	
+	task = db.get_task_path(task_id, is_admin=is_admin)
 
 	if task:
 		task_path = os.path.join(TASKS_DIR, os.path.basename(task[0]))

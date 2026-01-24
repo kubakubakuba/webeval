@@ -52,15 +52,19 @@ def api_submit():
 		if not username or not task_id or not code:
 			return {'error': 'Missing required fields: username, task_id, code'}, 400
 		
-		# Check if task exists and is available
-		task = db.get_task(task_id)
-		if not task:
-			return {'error': f'Task {task_id} not found or not available'}, 404
-		
 		# Get user ID from username
 		user_id = db.get_user_id_by_username(username)
 		if not user_id:
 			return {'error': f'User {username} not found'}, 404
+		
+		# Check if user is admin
+		is_admin = db.is_admin_by_id(user_id)
+		is_admin = is_admin[0] if is_admin else False
+		
+		# Check if task exists and is available
+		task = db.get_task(task_id, is_admin=is_admin)
+		if not task:
+			return {'error': f'Task {task_id} not found or not available'}, 404
 		
 		# Check if user is banned
 		is_banned = db.is_banned(user_id)
@@ -155,7 +159,11 @@ def user_get_task(user_id, username, task_id):
 	Returns task details including description, deadlines, and template code.
 	"""
 	try:
-		task = db.get_task(task_id)
+		# Check if user is admin
+		is_admin = db.is_admin_by_id(user_id)
+		is_admin = is_admin[0] if is_admin else False
+		
+		task = db.get_task(task_id, is_admin=is_admin)
 		
 		if not task:
 			return {'error': f'Task {task_id} not found or not available'}, 404
@@ -163,7 +171,7 @@ def user_get_task(user_id, username, task_id):
 		task_name = task[0]
 		
 		# Read task file
-		task_path = db.get_task_path(task_id)
+		task_path = db.get_task_path(task_id, is_admin=is_admin)
 		if not task_path:
 			return {'error': 'Task path not found'}, 404
 		
@@ -258,15 +266,17 @@ def user_submit(user_id, username):
 		if not task_id or not code:
 			return {'error': 'Missing required fields: task_id, code'}, 400
 		
-		# Check if task exists and is available
-		task = db.get_task(task_id)
+		is_admin = db.is_admin_by_id(user_id)
+		is_admin = is_admin[0] if is_admin else False
+		
+		task = db.get_task(task_id, is_admin=is_admin)
 		if not task:
 			return {'error': f'Task {task_id} not found or not available'}, 404
 		
 		task_name = task[0]
 		
 		# Read task file for deadline checking
-		task_path = db.get_task_path(task_id)
+		task_path = db.get_task_path(task_id, is_admin=is_admin)
 		if task_path:
 			task_path = os.path.join(TASKS_DIR, os.path.basename(task_path[0]))
 			if os.path.exists(task_path):
