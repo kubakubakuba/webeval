@@ -918,3 +918,57 @@ def set_user_setting(user_id, setting_key, setting_value):
 	finally:
 		cursor.close()
 		db.close()
+
+
+def get_submission_statistics(username_filter=None, organization_filter=None, group_filter=None, task_filter=None, order_by='desc'):
+	"""Get submission statistics for all users and tasks."""
+	(db, cursor) = connect()
+	
+	query = '''
+		SELECT 
+			u.username,
+			u.display_name,
+			u.organization,
+			u."group",
+			t.name as task_name,
+			t.id as task_id,
+			ss.submission_count,
+			ss.first_submission_time,
+			ss.last_submission_time
+		FROM submission_statistics ss
+		JOIN users u ON ss.userid = u.id
+		JOIN tasks t ON ss.taskid = t.id
+		WHERE 1=1
+	'''
+	
+	params = []
+	
+	if username_filter:
+		query += ' AND u.username ILIKE %s'
+		params.append(f'%{username_filter}%')
+	
+	if organization_filter:
+		query += ' AND u.organization ILIKE %s'
+		params.append(f'%{organization_filter}%')
+	
+	if group_filter:
+		query += ' AND u."group" ILIKE %s'
+		params.append(f'%{group_filter}%')
+	
+	if task_filter:
+		query += ' AND (t.name ILIKE %s OR CAST(t.id AS TEXT) ILIKE %s)'
+		params.append(f'%{task_filter}%')
+		params.append(f'%{task_filter}%')
+	
+	# Add ordering
+	if order_by == 'asc':
+		query += ' ORDER BY ss.submission_count ASC, u.username ASC'
+	else:
+		query += ' ORDER BY ss.submission_count DESC, u.username ASC'
+	
+	cursor.execute(query, params)
+	stats = cursor.fetchall()
+	cursor.close()
+	db.close()
+	
+	return stats

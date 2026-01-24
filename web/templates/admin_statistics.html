@@ -1,0 +1,187 @@
+{% extends "base_wide.html" %}
+
+{% block title %}
+Submission Statistics - Admin Panel
+{% endblock title %}
+
+{% block content %}
+	<style>
+		.back-link {
+			display: inline-flex;
+			align-items: center;
+			margin-bottom: 20px;
+			color: var(--link-color);
+			text-decoration: none;
+		}
+
+		.back-link:hover {
+			text-decoration: underline;
+		}
+
+		.filter-card {
+			margin-bottom: 20px;
+		}
+
+		.stats-table {
+			font-size: 0.95rem;
+		}
+
+		.stats-table th {
+			position: sticky;
+			top: 0;
+			background-color: var(--card-bg);
+			z-index: 10;
+		}
+
+		.total-badge {
+			font-size: 1.2rem;
+			padding: 10px 20px;
+			background-color: var(--primary-color);
+			color: white;
+			border-radius: 5px;
+			display: inline-block;
+			margin-bottom: 20px;
+		}
+
+		.filter-form {
+			display: flex;
+			gap: 10px;
+			flex-wrap: wrap;
+			align-items: end;
+		}
+
+		.filter-group {
+			flex: 1;
+			min-width: 200px;
+		}
+
+		.filter-group label {
+			display: block;
+			margin-bottom: 5px;
+			font-weight: 500;
+		}
+
+		.filter-group input,
+		.filter-group select {
+			width: 100%;
+		}
+
+		.filter-group input::placeholder {
+			color: #6c757d !important;
+		}
+
+		html.dark-mode .filter-group input::placeholder {
+			color: #adb5bd !important;
+		}
+	</style>
+
+	<a href="/admin" class="back-link">
+		<svg width="20" height="20" style="vertical-align: middle; margin-right: 5px;">
+			<use href="/static/sprites.svg#back"></use>
+		</svg>
+		Back to Admin Panel
+	</a>
+
+	<h1 class="mb-4">Submission Statistics</h1>
+
+	<div class="total-badge">
+		<i class="bi bi-graph-up"></i> Total Submissions: {{ total_submissions }}
+	</div>
+
+	<!-- Filter Card -->
+	<div class="card filter-card">
+		<div class="card-body">
+			<h5 class="card-title">Filters</h5>
+			<form method="get" action="/admin/statistics" class="filter-form">
+				<div class="filter-group">
+					<label for="username">Username</label>
+					<input type="text" id="username" name="username" class="form-control" 
+						   placeholder="Filter by username" value="{{ username_filter }}">
+				</div>
+				<div class="filter-group">
+					<label for="organization">Organization</label>
+					<input type="text" id="organization" name="organization" class="form-control" 
+						   placeholder="Filter by organization" value="{{ organization_filter }}">
+				</div>
+				<div class="filter-group">
+					<label for="group">Study Group</label>
+					<input type="text" id="group" name="group" class="form-control" 
+						   placeholder="Filter by group" value="{{ group_filter }}">
+				</div>
+				<div class="filter-group">
+					<label for="task">Task</label>
+					<input type="text" id="task" name="task" class="form-control" 
+						   placeholder="Filter by task name or ID" value="{{ task_filter }}">
+				</div>
+				<div class="filter-group">
+					<label for="order">Sort Order</label>
+					<select id="order" name="order" class="form-select">
+						<option value="desc" {% if order_by == 'desc' %}selected{% endif %}>Descending</option>
+						<option value="asc" {% if order_by == 'asc' %}selected{% endif %}>Ascending</option>
+					</select>
+				</div>
+				<div class="filter-group" style="flex: 0; min-width: 150px;">
+					<label>&nbsp;</label>
+					<div class="card">
+						<a href="javascript:void(0);" onclick="this.closest('form').submit();" class="card-body text-center text-decoration-none">
+							<i class="bi bi-funnel"></i> Apply Filters
+						</a>
+					</div>
+				</div>
+				<div class="filter-group" style="flex: 0; min-width: 150px;">
+					<label>&nbsp;</label>
+					<div class="card">
+						<a href="/admin/statistics" class="card-body text-center text-decoration-none">
+							<i class="bi bi-x-circle"></i> Clear
+						</a>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- Statistics Table -->
+	<div class="card">
+		<div class="card-body">
+			<div class="table-responsive">
+				<table class="table table-striped table-hover stats-table">
+					<thead>
+						<tr>
+							<th>Username</th>
+							<th>Display Name</th>
+							<th>Organization</th>
+							<th>Study Group</th>
+							<th>Task</th>
+							<th>Submission Count</th>
+							<th>First Submission</th>
+							<th>Last Submission</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% if stats %}
+							{% for stat in stats %}
+								<tr>
+									<td>{{ stat[0] }}</td>
+									<td>{{ stat[1] if stat[1] else '-' }}</td>
+									<td>{{ stat[2] if stat[2] else '-' }}</td>
+									<td>{{ stat[3] if stat[3] else '-' }}</td>
+									<td>
+										<a href="/task/{{ stat[5] }}">{{ stat[4] }}</a>
+									</td>
+									<td><strong>{{ stat[6] }}</strong></td>
+									<td>{{ stat[7].strftime('%Y-%m-%d %H:%M:%S') if stat[7] else '-' }}</td>
+									<td>{{ stat[8].strftime('%Y-%m-%d %H:%M:%S') if stat[8] else '-' }}</td>
+								</tr>
+							{% endfor %}
+						{% else %}
+							<tr>
+								<td colspan="8" class="text-center">No statistics found</td>
+							</tr>
+						{% endif %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+{% endblock content %}

@@ -107,6 +107,44 @@ CREATE INDEX idx_submissions_taskid ON submissions(taskid);
 CREATE INDEX idx_submissions_evaluated ON submissions(evaluated);
 
 --
+-- Table: submission_statistics
+--
+CREATE TABLE submission_statistics (
+    userid uuid NOT NULL,
+    taskid integer NOT NULL,
+    submission_count integer NOT NULL DEFAULT 0,
+    first_submission_time timestamp with time zone,
+    last_submission_time timestamp with time zone,
+    PRIMARY KEY (userid, taskid),
+    FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (taskid) REFERENCES tasks(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_submission_statistics_userid ON submission_statistics(userid);
+CREATE INDEX idx_submission_statistics_taskid ON submission_statistics(taskid);
+
+--
+-- Trigger function to update submission statistics
+--
+CREATE OR REPLACE FUNCTION update_submission_statistics()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO submission_statistics (userid, taskid, submission_count, first_submission_time, last_submission_time)
+    VALUES (NEW.userid, NEW.taskid, 1, NEW."time", NEW."time")
+    ON CONFLICT (userid, taskid)
+    DO UPDATE SET
+        submission_count = submission_statistics.submission_count + 1,
+        last_submission_time = NEW."time";
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_submission_statistics
+    AFTER INSERT ON submissions
+    FOR EACH ROW
+    EXECUTE FUNCTION update_submission_statistics();
+
+--
 -- Trigger function to update best score
 --
 CREATE OR REPLACE FUNCTION update_best_score()
@@ -179,4 +217,5 @@ ALTER TABLE users OWNER TO qtrvsim;
 ALTER TABLE tasks OWNER TO qtrvsim;
 ALTER TABLE results OWNER TO qtrvsim;
 ALTER TABLE submissions OWNER TO qtrvsim;
+ALTER TABLE submission_statistics OWNER TO qtrvsim;
 ALTER TABLE api_keys OWNER TO qtrvsim;

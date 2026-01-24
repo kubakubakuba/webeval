@@ -481,3 +481,37 @@ def create_template_file():
 		return json.dumps({'success': True, 'message': 'File created successfully', 'filename': filename})
 	except Exception as e:
 		return json.dumps({'error': str(e)}), 500
+
+
+@admin_bp.route('/statistics')
+@admin_required
+def admin_statistics():
+	"""Submission statistics page."""
+	username_filter = request.args.get('username', '').strip()
+	organization_filter = request.args.get('organization', '').strip()
+	group_filter = request.args.get('group', '').strip()
+	task_filter = request.args.get('task', '').strip()
+	order_by = request.args.get('order', 'desc')
+	
+	# Get statistics with filters
+	stats = db.get_submission_statistics(
+		username_filter=username_filter if username_filter else None,
+		organization_filter=organization_filter if organization_filter else None,
+		group_filter=group_filter if group_filter else None,
+		task_filter=task_filter if task_filter else None,
+		order_by=order_by
+	)
+	
+	# Calculate total submissions
+	total_submissions = sum(stat[6] for stat in stats)
+	
+	return render_template('admin_statistics.html', 
+		sessions=session, 
+		stats=stats,
+		total_submissions=total_submissions,
+		username_filter=username_filter,
+		organization_filter=organization_filter,
+		group_filter=group_filter,
+		task_filter=task_filter,
+		order_by=order_by
+	)
