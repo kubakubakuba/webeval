@@ -1,4 +1,5 @@
 {% extends "codemirror.html" %}
+{% from 'macros.html' import display_username %}
 
 {% block title %}
 	{{ task_name }}
@@ -265,9 +266,9 @@
 								<div class="row align-items-center">
 									<div class="col-sm-6">
 										{% if name is not none and name in displaynames and displaynames[name] is not none %}
-											{{displaynames[name]}} ({{ name }})
+											{{displaynames[name]}} ({{ display_username(name) }})
 										{% else %}
-											{{ name }}
+											{{ display_username(name) }}
 										{% endif %}
 									</div>
 									<div class="col-sm-6">
@@ -327,9 +328,9 @@
 								<div class="row align-items-center">
 									<div class="col-sm-4">
 										{% if username in displaynames and displaynames[username] is not none %}
-											{{displaynames[username]}} ({{ username }})
+											{{displaynames[username]}} ({{ display_username(username) }})
 										{% else %}
-											{{ username }}
+											{{ display_username(username) }}
 										{% endif %}
 									</div>
 									<div class="col-sm-4">

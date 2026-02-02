@@ -209,12 +209,39 @@ def toggle_can_submit(user_id, can_submit):
 	return redirect('/admin/users')
 
 
+@admin_bp.route('/toggledisplayname/<user_id>/<int:can_change>/')
+@admin_required
+def toggle_display_name(user_id, can_change):
+	"""Toggle whether a user can change display name."""
+	can_change_bool = can_change == 1
+	db.set_user_setting(user_id, 'can_change_display_name', can_change_bool)
+	return redirect('/admin/users')
+
+
+@admin_bp.route('/toggleapikey/<user_id>/<int:can_access>/')
+@admin_required
+def toggle_api_key(user_id, can_access):
+	"""Toggle whether a user can access API keys."""
+	can_access_bool = can_access == 1
+	db.set_user_setting(user_id, 'can_access_api_keys', can_access_bool)
+	return redirect('/admin/users')
+
+
 @admin_bp.route('/resetresults/<userid>/')
 @admin_required
 def reset_results(userid):
 	"""Reset all results for a user."""
 	db.reset_results_user(userid)
 	return redirect('/admin/users')
+
+
+@admin_bp.route('/scoreboards')
+@admin_required
+def scoreboards():
+	"""Display all available group and organization scoreboards."""
+	groups = db.get_all_groups()
+	organizations = db.get_all_organizations()
+	return render_template('admin_scoreboards.html', sessions=session, groups=groups, organizations=organizations)
 
 
 @admin_bp.route('/apikeys', methods=['GET'])
@@ -253,7 +280,7 @@ def delete_api_key(key_id):
 
 @admin_bp.route('/apikeys/toggle/<int:key_id>', methods=['POST', 'GET'])
 @admin_required
-def toggle_api_key(key_id):
+def toggle_api_key_status(key_id):
 	"""Toggle an API key's active status."""
 	db.toggle_api_key(key_id)
 	return redirect('/admin/apikeys')
@@ -301,11 +328,11 @@ def admin_import_users():
 			if not row or all(cell.strip() == '' for cell in row):
 				continue
 			
-			# Expect 7-8 columns: email;username;display_name;country;organization;group;visibility;can_submit
-			# can_submit is optional and defaults to 1 (allow)
+			# Expect 7-10 columns: email;username;display_name;country;organization;group;visibility;can_submit;can_change_display_name;can_access_api_keys
+			# can_submit, can_change_display_name, can_access_api_keys are optional and default to 1 (allow)
 			if len(row) < 7:
 				return render_template('admin_import.html', 
-					errors=[f'Line {row_num}: Invalid format - expected 7-8 columns (semicolon-separated), got {len(row)}'])
+					errors=[f'Line {row_num}: Invalid format - expected 7-10 columns (semicolon-separated), got {len(row)}'])
 			
 			users_data.append({
 				'email': row[0].strip(),
@@ -315,7 +342,9 @@ def admin_import_users():
 				'organization': row[4].strip(),
 				'group': row[5].strip(),
 				'visibility': row[6].strip(),
-				'can_submit': row[7].strip() if len(row) > 7 else '1'
+				'can_submit': row[7].strip() if len(row) > 7 else '1',
+				'can_change_display_name': row[8].strip() if len(row) > 8 else '1',
+				'can_access_api_keys': row[9].strip() if len(row) > 9 else '1'
 			})
 		
 		if not users_data:
@@ -332,8 +361,10 @@ def admin_import_users():
 				for idx, user_data in enumerate(users_data, start=1):
 					line_prefix = f"Line {idx}"
 					
-					if not user_data.get('email') or '@' not in user_data['email']:
-						errors.append(f"{line_prefix}: Invalid email: {user_data.get('email', 'empty')}")
+					# Email format validation (must match db.py validation)
+					email = user_data.get('email', '').strip()
+					if not email or '@' not in email or '.' not in email:
+						errors.append(f"{line_prefix}: Invalid email format: {email if email else 'empty'}")
 					
 					if not user_data.get('username') or len(user_data['username']) < 3:
 						errors.append(f"{line_prefix}: Invalid username: {user_data.get('username', 'empty')}")
@@ -343,6 +374,12 @@ def admin_import_users():
 					
 					if user_data.get('can_submit', '1') not in ['0', '1']:
 						errors.append(f"{line_prefix}: Invalid can_submit (must be 0 or 1): {user_data.get('can_submit', 'empty')}")
+					
+					if user_data.get('can_change_display_name', '1') not in ['0', '1']:
+						errors.append(f"{line_prefix}: Invalid can_change_display_name (must be 0 or 1): {user_data.get('can_change_display_name', 'empty')}")
+					
+					if user_data.get('can_access_api_keys', '1') not in ['0', '1']:
+						errors.append(f"{line_prefix}: Invalid can_access_api_keys (must be 0 or 1): {user_data.get('can_access_api_keys', 'empty')}")
 					
 					# Check existing users
 					if user_data.get('email'):
@@ -546,10 +583,18 @@ def admin_statistics():
 	# Calculate total submissions
 	total_submissions = sum(stat[6] for stat in stats)
 	
+	# Calculate total unique users and tasks from filtered results
+	unique_users = set(stat[1] for stat in stats)  # stat[1] is username
+	unique_tasks = set(stat[3] for stat in stats)  # stat[3] is task_name
+	total_users = len(unique_users)
+	total_tasks = len(unique_tasks)
+	
 	return render_template('admin_statistics.html', 
 		sessions=session, 
 		stats=stats,
 		total_submissions=total_submissions,
+		total_users=total_users,
+		total_tasks=total_tasks,
 		username_filter=username_filter,
 		organization_filter=organization_filter,
 		group_filter=group_filter,

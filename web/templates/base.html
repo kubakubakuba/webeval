@@ -5,6 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/x-icon">
 	<title>{% block title %}{% endblock title %}</title>
+
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 	<link href="{{ url_for('static', filename='libs/bootstrap.min.css') }}" rel="stylesheet">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/katex.min.css" integrity="sha384-Pu5+C18nP5dwykLJOhd2U4Xen7rjScHN/qusop27hdd2drI+lL5KvX7YntvT8yew" crossorigin="anonymous">
@@ -31,5 +32,14 @@
 
 	{% include 'footer.html' %}
 	<script src="{{ url_for('static', filename='libs/bootstrap.bundle.min.js') }}"></script>
+	<script>
+		// Initialize Bootstrap tooltips
+		document.addEventListener('DOMContentLoaded', function() {
+			var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+			var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+				return new bootstrap.Tooltip(tooltipTriggerEl);
+			});
+		});
+	</script>
 </body>
 </html>

@@ -49,8 +49,23 @@ def profile():
 	
 	# Get allowed privacy levels based on user's group/org membership
 	allowed_privacy = get_allowed_privacy_levels(user)
+	
+	# Get user restrictions from settings
+	can_change_display_name = db.get_user_setting(userid, 'can_change_display_name')
+	if can_change_display_name is None:
+		can_change_display_name = True
+	else:
+		can_change_display_name = can_change_display_name == 'true' or can_change_display_name is True
+	
+	can_access_api_keys = db.get_user_setting(userid, 'can_access_api_keys')
+	if can_access_api_keys is None:
+		can_access_api_keys = True
+	else:
+		can_access_api_keys = can_access_api_keys == 'true' or can_access_api_keys is True
 
-	return render_template('profile.html', sessions=session, user=user_dict, user_theme=user_theme, allowed_privacy=allowed_privacy)
+	return render_template('profile.html', sessions=session, user=user_dict, user_theme=user_theme, 
+		allowed_privacy=allowed_privacy, can_change_display_name=can_change_display_name, 
+		can_access_api_keys=can_access_api_keys)
 
 
 @profile_bp.route('/org/<string:country>/<string:org>')
@@ -78,6 +93,16 @@ def change_org(country, org):
 def change_displayname(displayname):
 	"""Change user's display name."""
 	userid = session['user_id']
+	
+	# Check if user is allowed to change display name
+	can_change_display_name = db.get_user_setting(userid, 'can_change_display_name')
+	if can_change_display_name is not None:
+		can_change_display_name = can_change_display_name == 'true' or can_change_display_name is True
+	else:
+		can_change_display_name = True
+	
+	if not can_change_display_name:
+		return render_template('403.html'), 403
 	
 	# Empty string means delete display name
 	if displayname:
@@ -118,6 +143,17 @@ def change_privacy(visibility):
 def api_key():
 	"""Display user's API key management page."""
 	userid = session['user_id']
+	
+	# Check if user is allowed to access API keys
+	can_access_api_keys = db.get_user_setting(userid, 'can_access_api_keys')
+	if can_access_api_keys is not None:
+		can_access_api_keys = can_access_api_keys == 'true' or can_access_api_keys is True
+	else:
+		can_access_api_keys = True
+	
+	if not can_access_api_keys:
+		return render_template('403.html'), 403
+	
 	user = db.get_user_by_id(userid)
 	
 	# Get current API key and expiry

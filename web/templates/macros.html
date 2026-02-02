@@ -1,0 +1,12 @@
+{% macro display_username(username) %}
+	{% if ':' in username %}
+		<span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Git-linked account - {{ username.split(':')[1] }}" style="cursor: help; display: inline-block;">
+			<svg width="16" height="16" style="vertical-align: middle; margin-right: 3px;">
+				<use href="{{ url_for('static', filename='sprites.svg') }}#link"></use>
+			</svg>
+		</span>
+		{{ username.split(':')[0] }}
+	{% else %}
+		{{ username }}
+	{% endif %}
+{% endmacro %}

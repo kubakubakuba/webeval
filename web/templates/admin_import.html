@@ -68,11 +68,11 @@ table {
             <div class="card mb-4">
                 <div class="card-body">
                     <p>Upload a CSV file with the following format:</p>
-                    <code>email;username;display_name;country;organization;group;visibility;can_submit</code>
+                    <code>email;username;display_name;country;organization;group;visibility;can_submit;can_change_display_name;can_access_api_keys</code>
                     
                     <h6 class="mt-3">Example:</h6>
-                    <pre>john@example.com;john123;John Doe;USA;MIT;2024;0;1
-jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
+                    <pre>john@example.com;john123;John Doe;USA;MIT;b35apo;0;1;1;1
+jane@example.com;jane456;Jane Smith;UK;Oxford;b35apo;3;0;0;1</pre>
                     
 
                         <strong>visibility</strong>:
@@ -86,12 +86,12 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
                     
                     <div class="alert alert-info">
 
-                        Email, username, visibility and can_submit are required. Others can be left blank for a minimal setup.
+                        Email, username, and visibility are required. The last 3 columns (can_submit, can_change_display_name, can_access_api_keys) are optional and default to 1 (allowed).
                         <br/>
                         For example:
-                        <pre>john@example.com;john123;;;;;0;1</pre>
+                        <pre>john@example.com;john123;;;;;0</pre>
 
-                        All users will be created with a temporary password and marked as unverified. They will need to use the "Forgot Password" feature to set their password.
+                        All users will be created with a temporary password and marked as unverified. They will need to request a password change via "Forget password".
                     </div>
                 </div>
             </div>
@@ -143,7 +143,6 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
                 {% if info %}
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="card-title">Dry Run Result</h5>
                         <p><strong>{{ info.message }}</strong></p>
                         <p>Validated <strong>{{ info.count }}</strong> user(s) successfully:</p>
                         {% if info.users %}
@@ -158,6 +157,9 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
                                         <th>Organization</th>
                                         <th>Group</th>
                                         <th>Visibility</th>
+                                        <th>Can Submit</th>
+                                        <th>Change DispName</th>
+                                        <th>API Access</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -177,6 +179,9 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
                                             {% else %}{{ user.visibility }}
                                             {% endif %}
                                         </td>
+                                        <td>{{ 'Yes' if user.can_submit == '1' else 'No' }}</td>
+                                        <td>{{ 'Yes' if user.can_change_display_name == '1' else 'No' }}</td>
+                                        <td>{{ 'Yes' if user.can_access_api_keys == '1' else 'No' }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -191,7 +196,6 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
                 {% if success %}
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="card-title">Import Successful</h5>
                         <p>Successfully imported <strong>{{ success.count }}</strong> user(s):</p>
                         <div class="table-container">
                             <table class="table table-sm table-bordered table-striped">
@@ -204,6 +208,9 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
                                         <th>Organization</th>
                                         <th>Group</th>
                                         <th>Visibility</th>
+                                        <th>Can Submit</th>
+                                        <th>Change DispName</th>
+                                        <th>API Access</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -223,13 +230,13 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;2024;3;0</pre>
                                             {% else %}{{ user.visibility }}
                                             {% endif %}
                                         </td>
+                                        <td>{{ 'Yes' if user.can_submit == '1' else 'No' }}</td>
+                                        <td>{{ 'Yes' if user.can_change_display_name == '1' else 'No' }}</td>
+                                        <td>{{ 'Yes' if user.can_access_api_keys == '1' else 'No' }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
-                        </div>
-                        <div class="alert alert-warning mt-3 mb-0">
-                            <strong>Important:</strong> All imported users must reset their password using the "Forgot Password" feature before they can log in.
                         </div>
                     </div>
                 </div>

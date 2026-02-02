@@ -378,7 +378,7 @@ def get_username(userid):
 def get_users():
 	"""Get all users."""
 	(db, cursor) = connect()
-	cursor.execute('SELECT id, username, email, verified, token, country, organization, "group", display_name, can_submit FROM users')
+	cursor.execute('SELECT id, username, email, verified, token, country, organization, "group", display_name, can_submit, settings FROM users')
 	users = cursor.fetchall()
 	cursor.close()
 	db.close()
@@ -588,7 +588,7 @@ def batch_import_users(users_data):
 	Batch import users from CSV data.
 	
 	Args:
-		users_data: List of dictionaries with keys: email, username, display_name, country, organization, group, visibility, can_submit
+		users_data: List of dictionaries with keys: email, username, display_name, country, organization, group, visibility, can_submit, can_change_display_name, can_access_api_keys
 		
 	Returns:
 		Tuple of (success_list, error_list)
@@ -648,6 +648,16 @@ def batch_import_users(users_data):
 			if can_submit not in ['0', '1']:
 				errors.append(f"{line_prefix}: can_submit must be 0 or 1, got: {can_submit}")
 			
+			# can_change_display_name validation
+			can_change_display_name = user_data.get('can_change_display_name', '1').strip()
+			if can_change_display_name not in ['0', '1']:
+				errors.append(f"{line_prefix}: can_change_display_name must be 0 or 1, got: {can_change_display_name}")
+			
+			# can_access_api_keys validation
+			can_access_api_keys = user_data.get('can_access_api_keys', '1').strip()
+			if can_access_api_keys not in ['0', '1']:
+				errors.append(f"{line_prefix}: can_access_api_keys must be 0 or 1, got: {can_access_api_keys}")
+			
 			# Check if email already exists in database
 			cursor.execute('SELECT id FROM users WHERE LOWER(email) = LOWER(%s)', (email,))
 			if cursor.fetchone():
@@ -675,6 +685,18 @@ def batch_import_users(users_data):
 			group = user_data.get('group', '').strip() or None
 			visibility = int(user_data.get('visibility', '0').strip())
 			can_submit = user_data.get('can_submit', '1').strip() == '1'
+			can_change_display_name = user_data.get('can_change_display_name', '1').strip() == '1'
+			can_access_api_keys = user_data.get('can_access_api_keys', '1').strip() == '1'
+			
+			# Build settings JSON - only include False values (True is default)
+			settings = {}
+			if not can_change_display_name:
+				settings['can_change_display_name'] = False
+			if not can_access_api_keys:
+				settings['can_access_api_keys'] = False
+			
+			import json
+			settings_json = json.dumps(settings) if settings else None
 			
 			# Generate salt and token
 			salt = hashlib.sha512(os.urandom(64)).hexdigest()
@@ -688,10 +710,10 @@ def batch_import_users(users_data):
 			# Both email and password fields contain the hashed email
 			cursor.execute('''
 				INSERT INTO users 
-				(email, password, salt, token, verified, username, admin, display_name, country, organization, "group", visibility, can_submit)
-				VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+				(email, password, salt, token, verified, username, admin, display_name, country, organization, "group", visibility, can_submit, settings)
+				VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 				RETURNING id
-			''', (hashed_email, hashed_email, salt, token, True, username, False, display_name, country, organization, group, visibility, can_submit))
+			''', (hashed_email, hashed_email, salt, token, True, username, False, display_name, country, organization, group, visibility, can_submit, settings_json))
 			
 			user_id = cursor.fetchone()[0]
 			
@@ -703,7 +725,10 @@ def batch_import_users(users_data):
 				'country': country,
 				'organization': organization,
 				'group': group,
-				'visibility': str(visibility)
+				'visibility': str(visibility),
+				'can_submit': '1' if can_submit else '0',
+				'can_change_display_name': '1' if can_change_display_name else '0',
+				'can_access_api_keys': '1' if can_access_api_keys else '0'
 			})
 		
 		db.commit()
@@ -981,3 +1006,25 @@ def get_submission_statistics(username_filter=None, organization_filter=None, gr
 	db.close()
 	
 	return stats
+
+def get_all_groups():
+	"""Get all unique study groups from users."""
+	(db, cursor) = connect()
+	try:
+		cursor.execute('SELECT DISTINCT "group" FROM users WHERE "group" IS NOT NULL AND "group" != \'\' ORDER BY "group"')
+		result = cursor.fetchall()
+		return [row[0] for row in result]
+	finally:
+		cursor.close()
+		db.close()
+
+def get_all_organizations():
+	"""Get all unique organizations from users with their countries."""
+	(db, cursor) = connect()
+	try:
+		cursor.execute('SELECT DISTINCT organization, country FROM users WHERE organization IS NOT NULL AND organization != \'\'  AND country IS NOT NULL ORDER BY organization, country')
+		result = cursor.fetchall()
+		return [(row[0], row[1]) for row in result]
+	finally:
+		cursor.close()
+		db.close()

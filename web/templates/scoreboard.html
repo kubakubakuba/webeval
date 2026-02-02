@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from 'macros.html' import display_username %}
 
 {% block title %}
 Scoreboard
@@ -77,9 +78,9 @@ Scoreboard
 							<tr>
 								<td {% if 'user_id' in session and submission[2] == session['user_id'] %} style="background: rgba(100, 203, 153, 0.6);" {% endif %}>
 									{% if submission[0] is not none and submission[0] in displaynames and displaynames[submission[0]] is not none %}
-										{{displaynames[submission[0]]}}({{ submission[0] }})
+										{{displaynames[submission[0]]}}({{ display_username(submission[0]) }})
 									{% else %}
-										{{ submission[0] }}
+										{{ display_username(submission[0]) }}
 									{% endif %}
 								</td>
 								<td {% if 'user_id' in session and submission[2] == session['user_id'] %} style="background: rgba(100, 203, 153, 0.6);" {% endif %}>{{ submission[1] }}</td>
@@ -106,9 +107,9 @@ Scoreboard
 						<tr>
 							<td {% if 'user_id' in session and user_ids[username] == session['user_id'] %} style="background: rgba(100, 203, 153, 0.6);" {% endif %}>
 								{% if username is not none and username in displaynames and displaynames[username] is not none %}
-									{{displaynames[username]}}({{ username }})
+									{{displaynames[username]}}({{ display_username(username) }})
 								{% else %}
-									{{ username }}
+									{{ display_username(username) }}
 								{% endif %}
 							</td>
 							<td {% if 'user_id' in session and user_ids[username] == session['user_id'] %} style="background: rgba(100, 203, 153, 0.6);" {% endif %}>{{ points }}</td>

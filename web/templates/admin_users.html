@@ -78,7 +78,7 @@ User Management - Admin Panel
 			<select id="ban-user-selector" class="form-select" aria-label="Ban user selector">
 				<option value="-">-</option>
 				{% for user in users %}
-					<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}</option>
+					<option value="{{ user[0] }}">{{ user[1] }}</option>
 				{% endfor %}
 			</select>
 			<div class="card card-btn" onclick="location.href='/admin/ban/' + document.getElementById('ban-user-selector').value;">
@@ -94,7 +94,7 @@ User Management - Admin Panel
 			<select id="unban-user-selector" class="form-select" aria-label="Unban user selector">
 				<option value="-">-</option>
 				{% for user in users %}
-					<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}</option>
+					<option value="{{ user[0] }}">{{ user[1] }}</option>
 				{% endfor %}
 			</select>
 			<div class="card card-btn" onclick="location.href='/admin/unban/' + document.getElementById('unban-user-selector').value;">
@@ -110,7 +110,7 @@ User Management - Admin Panel
 			<select id="reset-user-scores-selector" class="form-select" aria-label="Reset user scores selector">
 				<option value="-">-</option>
 				{% for user in all_users[::-1] %}
-					<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}</option>
+					<option value="{{ user[0] }}">{{ user[1] }}</option>
 				{% endfor %}
 			</select>
 			<div class="card card-btn" onclick="location.href='/admin/resetresults/' + document.getElementById('reset-user-scores-selector').value;">
@@ -129,7 +129,7 @@ User Management - Admin Panel
 			<select id="reset-user-selector" class="form-select" aria-label="Reset user selector">
 				<option value="-">-</option>
 				{% for user in all_users[::-1] %}
-					<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}</option>
+					<option value="{{ user[0] }}">{{ user[1] }}</option>
 				{% endfor %}
 			</select>
 			<div class="card card-btn" onclick="location.href='/admin/resetorg/' + document.getElementById('reset-user-selector').value;">
@@ -233,12 +233,87 @@ User Management - Admin Panel
 
 			<hr />
 
+			Toggle display name change permission:
+
+			<select id="toggle-displayname-selector" class="form-select" aria-label="Toggle display name selector">
+				<option value="-">-</option>
+				{% for user in all_users %}
+					{% set settings = user[10] if user[10] else {} %}
+					{% set can_change = settings.get('can_change_display_name', true) %}
+					<option value="{{ user[0] }}">
+						{% if user[8] is not none %}
+							{{ user[8] }}({{user[1]}}): {{ can_change }}
+						{% else %}
+							{{user[1]}}: {{ can_change }}
+						{% endif %}
+					</option>
+				{% endfor %}
+			</select>
+
+			<div class="row">
+				<div class="col-md-6">
+					<div class="card card-btn" onclick="location.href='/admin/toggledisplayname/' + document.getElementById('toggle-displayname-selector').value + '/1';">
+						<div class="card-body text-center">
+							Allow Display Name Change
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="card card-btn" onclick="location.href='/admin/toggledisplayname/' + document.getElementById('toggle-displayname-selector').value + '/0';">
+						<div class="card-body text-center">
+							Disallow Display Name Change
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<hr />
+
+			Toggle API key access permission:
+
+			<select id="toggle-apikey-selector" class="form-select" aria-label="Toggle API key selector">
+				<option value="-">-</option>
+				{% for user in all_users %}
+					{% set settings = user[10] if user[10] else {} %}
+					{% set can_access = settings.get('can_access_api_keys', true) %}
+					<option value="{{ user[0] }}">
+						{% if user[8] is not none %}
+							{{ user[8] }}({{user[1]}}): {{ can_access }}
+						{% else %}
+							{{user[1]}}: {{ can_access }}
+						{% endif %}
+					</option>
+				{% endfor %}
+			</select>
+
+			<div class="row">
+				<div class="col-md-6">
+					<div class="card card-btn" onclick="location.href='/admin/toggleapikey/' + document.getElementById('toggle-apikey-selector').value + '/1';">
+						<div class="card-body text-center">
+							Allow API Key Access
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="card card-btn" onclick="location.href='/admin/toggleapikey/' + document.getElementById('toggle-apikey-selector').value + '/0';">
+						<div class="card-body text-center">
+							Disallow API Key Access
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<hr />
+
 			Toggle filter in scoreboard for user:
 
 			<select id="filter-user-selector" class="form-select" aria-label="Filter user selector">
 				<option value="-">-</option>
 				{% for user in users %}
-					<option value="{{ user[0] }}">{{ user[0] }}: {{ user[1] }}{% if user[1] in filtered_usernames %} FILTERED{% endif %}</option>
+					{% set settings = user[10] if user[10] else {} %}
+					{% set can_change_display_name = settings.get('can_change_display_name', true) %}
+					{% set can_access_api_keys = settings.get('can_access_api_keys', true) %}
+					<option value="{{ user[0] }}">{{ user[1] }}{% if user[1] in filtered_usernames %} FILTERED{% endif %}</option>
 				{% endfor %}
 			</select>
 			<div class="row">

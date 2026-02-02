@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}
+Scoreboards - Admin Panel
+{% endblock title %}
+
+{% block content %}
+	<style>
+		.back-link {
+			display: inline-flex;
+			align-items: center;
+			margin-bottom: 20px;
+			color: var(--link-color);
+			text-decoration: none;
+		}
+
+		.back-link:hover {
+			text-decoration: underline;
+		}
+
+		.card-btn{
+			margin: 15px;
+		}
+	</style>
+
+	<a href="/admin" class="back-link">
+		<svg width="20" height="20" style="vertical-align: middle; margin-right: 5px;">
+			<use href="/static/sprites.svg#back"></use>
+		</svg>
+		Back to Admin Panel
+	</a>
+
+	<h1 class="mb-4">Scoreboards</h1>
+
+	<div class="row">
+		<!-- Study Groups Column -->
+		<div class="col-md-6">
+			<h3>Study Groups</h3>
+			
+			{% if groups %}
+				{% for group in groups %}
+				<div class="card card-btn">
+					<a href="/scoreboard/grouporg/0/{{ group }}" class="card-body text-center text-decoration-none">
+					{{ group }}
+					</a>
+				</div>
+				{% endfor %}
+			{% else %}
+				<div class="alert alert-info">
+					No study groups found.
+				</div>
+			{% endif %}
+		</div>
+
+		<!-- Organizations Column -->
+		<div class="col-md-6">
+			<h3>Organizations</h3>
+			
+			{% if organizations %}
+				{% for org, country in organizations %}
+				<div class="card card-btn">
+					<a href="/scoreboard/grouporg/1/{{ org }}" class="card-body text-center text-decoration-none">
+					{{ org }} ({{ country }})
+					</a>
+				</div>
+				{% endfor %}
+			{% else %}
+				<div class="alert alert-info">
+					No organizations found.
+				</div>
+			{% endif %}
+		</div>
+	</div>
+
+{% endblock content %}
