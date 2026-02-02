@@ -38,6 +38,16 @@ User Management - Admin Panel
 		html.dark-mode #set-group-input::placeholder {
 			color: #adb5bd;
 		}
+
+		#set-country-input::placeholder,
+		#set-org-input::placeholder {
+			color: #6c757d;
+		}
+
+		html.dark-mode #set-country-input::placeholder,
+		html.dark-mode #set-org-input::placeholder {
+			color: #adb5bd;
+		}
 	</style>
 
 	<a href="/admin" class="back-link">
@@ -130,6 +140,36 @@ User Management - Admin Panel
 
 			<hr />
 
+			Set organization for user:
+			
+			<div class="row">
+				<div class="col-md-12">
+					<select id="set-org-selector" class="form-select" aria-label="Set organization selector">
+						<option value="-">-</option>
+						{% for user in all_users %}
+							<option value="{{ user[0] }}">
+								{% if user[7] is not none and user[6] is not none %}
+									{{user[1]}}: {{ user[7] }}@{{ user[6] }}
+								{% else %}
+									{{user[1]}}: No org set
+								{% endif %}
+							</option>
+						{% endfor %}
+					</select>
+
+					<input type="text" id="set-country-input" class="form-control" placeholder="Country code (e.g., CZ, US, UK)" aria-label="Country" style="margin-top: 10px;">
+					<input type="text" id="set-org-input" class="form-control" placeholder="Organization name" aria-label="Organization name" style="margin-top: 10px;">
+				</div>
+			</div>
+
+			<div class="card card-btn" onclick="location.href='/admin/setorg/' + document.getElementById('set-org-selector').value + '/' + document.getElementById('set-country-input').value + '/' + document.getElementById('set-org-input').value;">
+				<div class="card-body text-center">
+					Set organization for user
+				</div>
+			</div>
+
+			<hr />
+
 			Set group for user:
 			
 			<div class="row">
@@ -166,9 +206,9 @@ User Management - Admin Panel
 				{% for user in all_users %}
 					<option value="{{ user[0] }}">
 						{% if user[8] is not none %}
-							{{ user[8] }}({{user[1]}}): can_submit={{ user[9] }}
+							{{ user[8] }}({{user[1]}}): {{ user[9] }}
 						{% else %}
-							{{user[1]}}: can_submit={{ user[9] }}
+							{{user[1]}}: {{ user[9] }}
 						{% endif %}
 					</option>
 				{% endfor %}

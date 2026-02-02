@@ -49,6 +49,9 @@ def register():
 
 		if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', email):
 			return render_template('register.html', sessions=session, error='Invalid email address entered.')
+		
+		if len(username) > 22:
+			return render_template('register.html', sessions=session, error='Username too long.')
 
 		salt = secrets.token_hex(16)  # generate random salt for hashing password
 		hashed_password = sha512((password + salt).encode()).hexdigest()

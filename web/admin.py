@@ -192,6 +192,14 @@ def set_group(user_id, group):
 	return redirect('/admin/users')
 
 
+@admin_bp.route('/setorg/<user_id>/<string:country>/<string:org>/')
+@admin_required
+def set_org(user_id, country, org):
+	"""Set user organization and country."""
+	db.set_org(user_id, country, org)
+	return redirect('/admin/users')
+
+
 @admin_bp.route('/togglesubmit/<user_id>/<int:can_submit>/')
 @admin_required
 def toggle_can_submit(user_id, can_submit):

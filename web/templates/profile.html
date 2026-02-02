@@ -88,7 +88,7 @@ Profile
 			<h3>Organization:</h3>
 			<p>{{ user.organization }}, {{ user.country }}</p>
 
-			<small>If you wish to change your organization, please contact the administrator.</small>
+			<!--<small>If you wish to change your organization, please contact the administrator.</small>-->
 
 			<h3>Study group:</h3>
 			<p>{{ user.group }}</p>
@@ -145,10 +145,18 @@ Profile
 		<hr />
 		<h3>Change privacy settings:</h3>
 		<select id="privacy-selector" class="form-select" aria-label="Privacy selector">
+			{% if 0 in allowed_privacy %}
 			<option value="0" {% if user.visibility == 0 %} selected {% endif %}>Public (everyone can see your results)</option>
+			{% endif %}
+			{% if 1 in allowed_privacy %}
 			<option value="1" {% if user.visibility == 1 %} selected {% endif %}>Organization (only users from your organization can see your results)</option>
+			{% endif %}
+			{% if 2 in allowed_privacy %}
 			<option value="2" {% if user.visibility == 2 %} selected {% endif %}>Study group (only users from your study group can see your results)</option>
+			{% endif %}
+			{% if 3 in allowed_privacy %}
 			<option value="3" {% if user.visibility == 3 %} selected {% endif %}>Private (only you can see your results)</option>
+			{% endif %}
 		</select>
 		<div class="card card-btn" onclick="location.href='/profile/privacy/' + document.getElementById('privacy-selector').value;">
 			<div class="card-body text-center">

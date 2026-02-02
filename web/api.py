@@ -20,25 +20,6 @@ api_bp = Blueprint('api', __name__, url_prefix='/api')
 @api_bp.route('/submit', methods=['POST'])
 @api_key_required
 def api_submit():
-	"""
-	API endpoint to submit a task for a user.
-	
-	Request body (JSON):
-	{
-		"username": "user123",
-		"task_id": 1,
-		"code": "# Assembly or C code here"
-	}
-	
-	Headers:
-	Authorization: Bearer <api_key>
-	
-	Example curl:
-	curl -X POST {URL}/api/submit \\
-		-H "Authorization: Bearer <your_api_key>" \\
-		-H "Content-Type: application/json" \\
-		-d '{{"username": "user123", "task_id": 1, "code": "..."}}'
-	"""
 	try:
 		data = request.get_json()
 		

@@ -8,6 +8,24 @@ from datetime import datetime, timedelta
 profile_bp = Blueprint('profile', __name__, url_prefix='/profile')
 
 
+def get_allowed_privacy_levels(user):
+	has_group = user[10] is not None and user[10].strip() != ''
+	has_org = user[9] is not None and user[9].strip() != ''
+	
+	if has_group and has_org:
+		#both group and org - can use PUBLIC, STUDY_GROUP, or ORG (cannot use PRIVATE)
+		return [0, 1, 2]
+	elif has_group:
+		#study group only - can use PUBLIC or STUDY_GROUP (cannot use PRIVATE or ORG)
+		return [0, 2]
+	elif has_org:
+		#org only - can use PUBLIC or ORG (cannot use PRIVATE or STUDY_GROUP)
+		return [0, 1]
+	else:
+		#no affiliation - can use PRIVATE and PUBLIC (cannot use STUDY_GROUP or ORG)
+		return [0, 3]
+
+
 @profile_bp.route('/')
 @login_required
 def profile():
@@ -28,8 +46,11 @@ def profile():
 		'group': user[10],
 		'visibility': user[11]
 	}
+	
+	# Get allowed privacy levels based on user's group/org membership
+	allowed_privacy = get_allowed_privacy_levels(user)
 
-	return render_template('profile.html', sessions=session, user=user_dict, user_theme=user_theme)
+	return render_template('profile.html', sessions=session, user=user_dict, user_theme=user_theme, allowed_privacy=allowed_privacy)
 
 
 @profile_bp.route('/org/<string:country>/<string:org>')
@@ -78,6 +99,14 @@ def change_privacy(visibility):
 	# Check if visibility is in range 0-3
 	if visibility < 0 or visibility > 3:
 		return render_template('400.html'), 400
+	
+	# Get user info to check allowed privacy levels
+	user = db.get_user_by_id(userid)
+	allowed_privacy = get_allowed_privacy_levels(user)
+	
+	# Check if the requested visibility is allowed for this user
+	if visibility not in allowed_privacy:
+		return render_template('403.html'), 403
 
 	db.change_privacy(userid, visibility)
 
