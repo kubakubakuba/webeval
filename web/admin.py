@@ -584,8 +584,8 @@ def admin_statistics():
 	total_submissions = sum(stat[6] for stat in stats)
 	
 	# Calculate total unique users and tasks from filtered results
-	unique_users = set(stat[1] for stat in stats)  # stat[1] is username
-	unique_tasks = set(stat[3] for stat in stats)  # stat[3] is task_name
+	unique_users = set(stat[0] for stat in stats)  # stat[0] is username
+	unique_tasks = set(stat[4] for stat in stats)  # stat[4] is task_name
 	total_users = len(unique_users)
 	total_tasks = len(unique_tasks)
 	
