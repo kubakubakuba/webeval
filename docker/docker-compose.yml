@@ -56,6 +56,7 @@ services:
       - TASKS_DIR=/data/tasks
       - DB_INITIAL_DATA_MOUNTED=${DB_INITIAL_DATA:+/docker-init/data/initial_data.sql}
       - GIT_WEBHOOK_SECRET=${GIT_WEBHOOK_SECRET}
+      - GIT_PROVIDER_TOKEN=${GIT_PROVIDER_TOKEN}
       - GITHUB_TOKEN=${GITHUB_TOKEN}
     volumes:
       - ${TEMPLATES_DIR:-../S_templates}:/data/S_templates
