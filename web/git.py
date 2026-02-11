@@ -33,18 +33,22 @@ def verify_signature(req):
 		print(" [GIT] Error: GIT_WEBHOOK_SECRET not set in .env")
 		return False
 		
-	signature = req.headers.get('X-Hub-Signature-256')
-	if not signature:
-		return False
-	
-	#calculate HMAC SHA256
-	expected_signature = 'sha256=' + hmac.new(
-		key=secret.encode('utf-8'), 
-		msg=req.data, 
-		digestmod=hashlib.sha256
-	).hexdigest()
-	
-	return hmac.compare_digest(signature, expected_signature)
+	gh_signature = req.headers.get('X-Hub-Signature-256')
+	if gh_signature:
+		expected_signature = 'sha256=' + hmac.new(
+			key=secret.encode('utf-8'), 
+			msg=req.data, 
+			digestmod=hashlib.sha256
+		).hexdigest()
+		if hmac.compare_digest(gh_signature, expected_signature):
+			return True
+
+	gl_token = req.headers.get('X-Gitlab-Token')
+	if gl_token:
+		if hmac.compare_digest(gl_token, secret):
+			return True
+			
+	return False
 
 def get_task_id_for_path(file_path):
 	tasks = GIT_MAPPING.get('tasks', [])
@@ -73,7 +77,10 @@ def fetch_file_content(repo_full_name, commit_sha, file_path):
 		headers = {}
 		token = os.getenv('GIT_PROVIDER_TOKEN') or os.getenv('GITHUB_TOKEN')
 		if token:
-			headers['Authorization'] = f"token {token}"
+			if "gitlab" in url:
+				headers['PRIVATE-TOKEN'] = token
+			else:
+				headers['Authorization'] = f"token {token}"
 
 		response = requests.get(url, headers=headers)
 		if response.status_code == 200:
@@ -85,9 +92,6 @@ def fetch_file_content(repo_full_name, commit_sha, file_path):
 	return None
 
 def process_submission_logic(username, task_id, code):
-	"""
-	Validates user, task, deadlines, and submits code to DB.
-	"""
 	try:
 		user_id = db.get_user_id_by_username(username)
 		if not user_id:
@@ -151,10 +155,13 @@ def handle_webhook():
 	if 'commits' not in data:
 		return jsonify({'message': 'Event ignored (not a push)'}), 200
 
-	repo_name = data['repository']['name']
-	repo_full_name = data['repository']['full_name']
+	repo_data = data.get('repository') or data.get('project')
+	if not repo_data:
+		return jsonify({'message': 'No repository data found'}), 400
+
+	repo_name = repo_data.get('name')
+	repo_full_name = repo_data.get('full_name') or repo_data.get('path_with_namespace')
 	
-	# username with the postfix e.g. "dvorajan" + ":b252apo"
 	postfix = GIT_MAPPING.get('org', {}).get('postfix', '')
 	username = f"{repo_name}{postfix}"
 
