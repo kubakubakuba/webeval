@@ -106,4 +106,9 @@ EOF
 sed -i "s/'sslmode': 'require'/'sslmode': 'disable'/g" /app/db.py
 
 echo "Starting web server..."
-exec gunicorn -w 3 -b 0.0.0.0:8000 app:app
+exec gunicorn -w 3 -b 0.0.0.0:8000 \
+	--log-level=info \
+	--access-logfile=- \
+	--error-logfile=- \
+	--capture-output \
+	app:app

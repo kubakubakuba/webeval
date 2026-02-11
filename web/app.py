@@ -3,6 +3,8 @@ from flask_mail import Mail
 from markdown import markdown
 from dotenv import load_dotenv
 import os
+import sys
+import logging
 import toml
 import db
 from util import check_submission_deadlines
@@ -12,6 +14,7 @@ import tasks as tasks_module
 import scoreboard as scoreboard_module
 import profile as profile_module
 import api as api_module
+import git as git_module
 from datetime import datetime, timezone
 
 # Load .env from /app/.env in Docker or ../.env locally
@@ -19,6 +22,14 @@ env_path = "/app/.env" if os.path.exists("/app/.env") else "../.env"
 load_dotenv(env_path)
 
 app = Flask(__name__)
+
+logging.basicConfig(
+	level=logging.INFO,
+	format='%(asctime)s [%(levelname)s] %(message)s',
+	handlers=[logging.StreamHandler(sys.stdout)]
+)
+app.logger.setLevel(logging.INFO)
+
 app.secret_key = os.getenv('SECRET_KEY')
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
 app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
@@ -33,6 +44,7 @@ URL = os.getenv('BASE_URL', 'https://eval.comparch.edu.cvut.cz')
 TEMPLATES_DIR = os.getenv('TEMPLATES_DIR', 'S_templates')
 TASKS_DIR = os.getenv('TASKS_DIR', 'tasks')
 FILTER_DIR = 'config/filter'
+CONFIG_DIR = 'config'
 
 def get_filtered_users():
 	"""Get list of filtered usernames from filter directory."""
@@ -75,6 +87,9 @@ app.register_blueprint(profile_module.profile_bp)
 
 api_module.init_api(TASKS_DIR, URL)
 app.register_blueprint(api_module.api_bp)
+
+git_module.init_git(CONFIG_DIR)
+app.register_blueprint(git_module.git_bp, url_prefix='/git')
 
 @app.route('/')
 def index():

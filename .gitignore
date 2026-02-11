@@ -25,3 +25,6 @@ webeval_data.sql
 webeval_full_data.sql
 
 qtrvsim_docker.zip
+
+scripts/git/payload.json
+docker/test_users.csv

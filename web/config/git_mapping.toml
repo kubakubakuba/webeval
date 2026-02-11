@@ -1,0 +1,17 @@
+[config]
+# {repo_full_name} will be eg. "B222_B0B35APO/username"
+# {commit_sha} will be the specific hash
+# {file_path} will be eg. "work/bubble-sort/bubble-sort.S"
+#url_template = "https://gitlab.fel.cvut.cz/{repo_full_name}/-/raw/{commit_sha}/{file_path}"
+url_template = "https://raw.githubusercontent.com/{repo_full_name}/{commit_sha}/{file_path}"
+
+[org]
+postfix = ":b252apo"
+
+[[tasks]]
+path = "work/bubble_sort/bubble.S"
+task_id = 3
+
+[[tasks]]
+path = "work/apo_sort/apo.S"
+task_id = 4
