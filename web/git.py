@@ -6,6 +6,7 @@ import requests
 import db
 from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime
+import urllib.parse
 
 git_bp = Blueprint('git', __name__)
 
@@ -59,28 +60,50 @@ def get_task_id_for_path(file_path):
 	
 	return None
 
-def fetch_file_content(repo_full_name, commit_sha, file_path):
+def fetch_file_content(repo_full_name, commit_sha, file_path, project_id=None):
 	config = GIT_MAPPING.get('config', {})
+	tokens = GIT_MAPPING.get('tokens', [])
+
 	template = config.get('url_template')
+
+	namespace_p = repo_full_name.split("/")
+	namespace = namespace_p[0] if namespace_p else None
+
+	org_token = None
+	for t in tokens:
+		if t.get("name") == namespace:
+			org_token = t.get("token")
+			#with open("/tmp/fetch_url.txt", "a") as f:
+			#	f.write(f"\ngot token: {org_token}\n")
+			break
 
 	if not template:
 		print(" [GIT] Error: 'url_template' missing in git_mapping.toml")
 		return None
 
+	encoded_path = urllib.parse.quote(file_path, safe='')
+
 	url = template.format(
 		repo_full_name=repo_full_name,
 		commit_sha=commit_sha,
-		file_path=file_path
+		file_path=file_path,
+		project_id=project_id,
+		encoded_path=encoded_path
 	)
+
+	#with open("/tmp/fetch_url.txt", "a") as f:
+	#	f.write(f"\n\n{url}\n")
+	#	f.write(f"project_id: {project_id}\n")
 	
 	try:
 		headers = {}
-		token = os.getenv('GIT_PROVIDER_TOKEN') or os.getenv('GITHUB_TOKEN')
-		if token:
-			if "gitlab" in url:
-				headers['PRIVATE-TOKEN'] = token
-			else:
-				headers['Authorization'] = f"token {token}"
+		
+		if "gitlab" in url:
+			headers['Authorization'] = f"Bearer {org_token}"
+			headers['PRIVATE-TOKEN'] = org_token
+		else:
+			token = os.getenv('GITHUB_TOKEN')
+			headers['Authorization'] = f"token {token}"
 
 		response = requests.get(url, headers=headers)
 		if response.status_code == 200:
@@ -145,6 +168,9 @@ def process_submission_logic(username, task_id, code):
 
 @git_bp.route('/webhook', methods=['POST'])
 def handle_webhook():
+	#with open("/tmp/webhook.txt", "a") as f:
+	#	f.write(f"{request.get_data(as_text=True)}\n\n")
+
 	if not verify_signature(request):
 		return jsonify({'error': 'Invalid signature or secret not configured'}), 401
 	
@@ -155,12 +181,24 @@ def handle_webhook():
 	if 'commits' not in data:
 		return jsonify({'message': 'Event ignored (not a push)'}), 200
 
-	repo_data = data.get('repository') or data.get('project')
-	if not repo_data:
+	repo_data = data.get('repository')
+	project_data = data.get('project')
+	if repo_data is None:
 		return jsonify({'message': 'No repository data found'}), 400
 
 	repo_name = repo_data.get('name')
-	repo_full_name = repo_data.get('full_name') or repo_data.get('path_with_namespace')
+	repo_full_name = None
+	project_id = None
+
+	if project_data is not None:
+		if 'path_with_namespace' in project_data:
+			repo_full_name = project_data.get('path_with_namespace')
+			project_id = project_data.get('id')
+
+	if repo_full_name is None:
+		if 'full_name' in repo_data:
+			repo_full_name = repo_data.get('full_name')
+	#repo_full_name = repo_data.get('full_name') or repo_data.get('path_with_namespace')
 	
 	postfix = GIT_MAPPING.get('org', {}).get('postfix', '')
 	username = f"{repo_name}{postfix}"
@@ -177,7 +215,7 @@ def handle_webhook():
 			if task_id:
 				print(f" [GIT] Processing {file_path} for user {username} (Task {task_id})")
 				
-				code_content = fetch_file_content(repo_full_name, commit_sha, file_path)
+				code_content = fetch_file_content(repo_full_name, commit_sha, file_path, project_id)
 				
 				if code_content:
 					success, msg = process_submission_logic(username, task_id, code_content)

@@ -1,17 +1,59 @@
 [config]
+# these values will be filled by a template parser from the application context
+# use them to construct a valid url address, examples are shown below
+#
 # {repo_full_name} will be eg. "B222_B0B35APO/username"
 # {commit_sha} will be the specific hash
 # {file_path} will be eg. "work/bubble-sort/bubble-sort.S"
-#url_template = "https://gitlab.fel.cvut.cz/{repo_full_name}/-/raw/{commit_sha}/{file_path}"
-url_template = "https://raw.githubusercontent.com/{repo_full_name}/{commit_sha}/{file_path}"
+# {encoded_path} will be the encoded filepath in URL
+# {project_id} will be the GitLab project id
+#
+#url_template = "https://gitlab.fel.cvut.cz/{repo_full_name}/-/raw/{commit_sha}/{file_path}" #for some reason does not work with private tokens
+#url_template = "https://raw.githubusercontent.com/{repo_full_name}/{commit_sha}/{file_path}"
+
+url_template = "https://gitlab.fel.cvut.cz/api/v4/projects/{project_id}/repository/files/{encoded_path}/raw?ref={commit_sha}"
+
+[[tokens]]
+name = "B212_B0B35APO"
+token = ""
 
 [org]
 postfix = ":b252apo"
 
 [[tasks]]
-path = "work/bubble_sort/bubble.S"
+path = "work/bubble-sort/bubble-sort.S"
+task_id = 2
+
+[[tasks]]
+path = "work/apo-sort/apo-sort.S"
 task_id = 3
 
 [[tasks]]
-path = "work/apo_sort/apo.S"
+path = "work/fibo-hazards/fibo-hazards.S"
+task_id = 6
+
+[[tasks]]
+path = "work/print-hex-to-uart/print-hex-to-uart.S"
+task_id = 9
+
+[[tasks]]
+path = "work/uart-calc-add/uart-calc-add.c"
 task_id = 4
+
+
+
+[[tasks]]
+path = "work/simple-addition/simple-addition.S"
+task_id = 1
+
+[[tasks]]
+path = "work/read-save-memory/read-save-memory.S"
+task_id = 7
+
+[[tasks]]
+path = "work/fibo-no-hazard/fibo-no-hazard.S"
+task_id = 5
+
+[[tasks]]
+path = "work/vector-sum/vector-sum.S"
+task_id = 8
