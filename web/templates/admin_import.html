@@ -68,7 +68,7 @@ table {
             <div class="card mb-4">
                 <div class="card-body">
                     <p>Upload a CSV file with the following format:</p>
-                    <code>email;username;display_name;country;organization;group;visibility;can_submit;can_change_display_name;can_access_api_keys</code>
+                    <code>email;username;display_name;country;organization;group;visibility;can_submit;can_change_display_name;can_access_api_keys;sso_username</code>
                     
                     <h6 class="mt-3">Example:</h6>
                     <pre>john@example.com;john123;John Doe;USA;MIT;b35apo;0;1;1;1
@@ -83,7 +83,10 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;b35apo;3;0;0;1</pre>
                                 <li><code>3</code> = <strong>Private</strong>: Only the user can see results</li>
                             </ul>
                         </li>
-                    
+
+                        <strong>sso_username</strong>:
+                        can be empty, if it is emtpy normal password login is allowed, if not only SSO login is allowed for the user from the given sso username
+
                     <div class="alert alert-info">
 
                         Email, username, and visibility are required. The last 3 columns (can_submit, can_change_display_name, can_access_api_keys) are optional and default to 1 (allowed).
