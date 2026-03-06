@@ -687,6 +687,7 @@ def batch_import_users(users_data):
 			can_submit = user_data.get('can_submit', '1').strip() == '1'
 			can_change_display_name = user_data.get('can_change_display_name', '1').strip() == '1'
 			can_access_api_keys = user_data.get('can_access_api_keys', '1').strip() == '1'
+			sso_username = user_data.get('sso_username', '').strip()
 			
 			# Build settings JSON - only include False values (True is default)
 			settings = {}
@@ -706,14 +707,26 @@ def batch_import_users(users_data):
 			# Email is stored hashed for privacy, password is set to same hash (user must reset)
 			hashed_email = hashlib.sha512((email + salt).encode()).hexdigest()
 			
-			# Insert user (verified=false, they need to reset password)
-			# Both email and password fields contain the hashed email
-			cursor.execute('''
-				INSERT INTO users 
-				(email, password, salt, token, verified, username, admin, display_name, country, organization, "group", visibility, can_submit, settings)
-				VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-				RETURNING id
-			''', (hashed_email, hashed_email, salt, token, True, username, False, display_name, country, organization, group, visibility, can_submit, settings_json))
+			# Check if this should be an SSO-only account
+			if sso_username:
+				# SSO-only account: no password login, SSO linked
+				cursor.execute('''
+					INSERT INTO users 
+					(email, password, salt, token, verified, username, admin, display_name, country, organization, "group", visibility, can_submit, settings,
+					 sso_provider, sso_identifier, sso_linked_at, password_login_enabled)
+					VALUES (%s, '', '', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), false)
+					RETURNING id
+				''', (hashed_email, token, True, username, False, display_name, country, organization, group, visibility, can_submit, settings_json, 
+					  'ctu_fel', sso_username))
+			else:
+				# Regular account: password login enabled (user must reset password)
+				# Both email and password fields contain the hashed email
+				cursor.execute('''
+					INSERT INTO users 
+					(email, password, salt, token, verified, username, admin, display_name, country, organization, "group", visibility, can_submit, settings)
+					VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+					RETURNING id
+				''', (hashed_email, hashed_email, salt, token, True, username, False, display_name, country, organization, group, visibility, can_submit, settings_json))
 			
 			user_id = cursor.fetchone()[0]
 			
@@ -728,7 +741,8 @@ def batch_import_users(users_data):
 				'visibility': str(visibility),
 				'can_submit': '1' if can_submit else '0',
 				'can_change_display_name': '1' if can_change_display_name else '0',
-				'can_access_api_keys': '1' if can_access_api_keys else '0'
+				'can_access_api_keys': '1' if can_access_api_keys else '0',
+				'sso_username': sso_username if sso_username else ''
 			})
 		
 		db.commit()
@@ -1025,6 +1039,230 @@ def get_all_organizations():
 		cursor.execute('SELECT DISTINCT organization, country FROM users WHERE organization IS NOT NULL AND organization != \'\'  AND country IS NOT NULL ORDER BY organization, country')
 		result = cursor.fetchall()
 		return [(row[0], row[1]) for row in result]
+	finally:
+		cursor.close()
+		db.close()
+
+
+# ============================================================================
+# SSO (OpenID Connect) Functions
+# ============================================================================
+
+def get_user_by_sso(provider, identifier):
+	"""Get user by SSO provider and identifier.
+	
+	Args:
+		provider: SSO provider name (e.g., 'ctu_fel')
+		identifier: Unique identifier from SSO (e.g., 'username123')
+	
+	Returns:
+		Tuple of (id, username, verified, can_submit) or None for single match
+		For backward compatibility, returns first match if multiple exist
+	"""
+	(db, cursor) = connect()
+	try:
+		cursor.execute(
+			'SELECT id, username, verified, can_submit FROM users WHERE sso_provider = %s AND sso_identifier = %s',
+			(provider, identifier)
+		)
+		user = cursor.fetchone()
+		return user
+	finally:
+		cursor.close()
+		db.close()
+
+
+def get_all_users_by_sso(provider, identifier):
+	"""Get all users linked to an SSO identity.
+	
+	Args:
+		provider: SSO provider name (e.g., 'ctu_fel')
+		identifier: Unique identifier from SSO (e.g., 'username123')
+	
+	Returns:
+		List of tuples: (id, username, display_name, organization, group, verified, can_submit)
+	"""
+	(db, cursor) = connect()
+	try:
+		cursor.execute(
+			'''SELECT id, username, display_name, organization, "group", verified, can_submit 
+			   FROM users 
+			   WHERE sso_provider = %s AND sso_identifier = %s
+			   ORDER BY username''',
+			(provider, identifier)
+		)
+		users = cursor.fetchall()
+		return users
+	finally:
+		cursor.close()
+		db.close()
+
+
+def link_sso_to_user(user_id, provider, identifier, display_name=None):
+	"""Link SSO identity to an existing user account.
+	
+	Args:
+		user_id: UUID of the user
+		provider: SSO provider name
+		identifier: Unique identifier from SSO
+		display_name: Optional display name from SSO
+	
+	Returns:
+		bool: True if successful
+	"""
+	(db, cursor) = connect()
+	try:
+		# Check if this user already has SSO linked
+		cursor.execute(
+			'SELECT sso_provider, sso_identifier FROM users WHERE id = %s',
+			(user_id,)
+		)
+		existing = cursor.fetchone()
+		if existing and existing[0]:
+			# User already has SSO linked
+			return False
+		
+		# Update user with SSO information
+		if display_name:
+			cursor.execute(
+				'''UPDATE users 
+				   SET sso_provider = %s, sso_identifier = %s, sso_linked_at = NOW(),
+				       display_name = COALESCE(display_name, %s)
+				   WHERE id = %s''',
+				(provider, identifier, display_name, user_id)
+			)
+		else:
+			cursor.execute(
+				'''UPDATE users 
+				   SET sso_provider = %s, sso_identifier = %s, sso_linked_at = NOW()
+				   WHERE id = %s''',
+				(provider, identifier, user_id)
+			)
+		
+		db.commit()
+		return cursor.rowcount > 0
+	except Exception as e:
+		db.rollback()
+		return False
+	finally:
+		cursor.close()
+		db.close()
+
+
+def unlink_sso_from_user(user_id):
+	"""Unlink SSO from a user account.
+	
+	Args:
+		user_id: UUID of the user
+	
+	Returns:
+		bool: True if successful
+	"""
+	(db, cursor) = connect()
+	try:
+		cursor.execute(
+			'UPDATE users SET sso_provider = NULL, sso_identifier = NULL, sso_linked_at = NULL WHERE id = %s',
+			(user_id,)
+		)
+		db.commit()
+		return cursor.rowcount > 0
+	finally:
+		cursor.close()
+		db.close()
+
+
+def toggle_password_login(user_id, enabled):
+	"""Enable or disable password login for a user.
+	
+	Args:
+		user_id: UUID of the user
+		enabled: bool - True to enable password login, False to disable
+	
+	Returns:
+		bool: True if successful
+	"""
+	(db, cursor) = connect()
+	try:
+		cursor.execute(
+			'UPDATE users SET password_login_enabled = %s WHERE id = %s',
+			(enabled, user_id)
+		)
+		db.commit()
+		return cursor.rowcount > 0
+	finally:
+		cursor.close()
+		db.close()
+
+
+def create_sso_only_user(username, email, sso_provider, sso_identifier, display_name=None, 
+                         country=None, organization=None, group=None, verified=True):
+	"""Create a new user that can only log in via SSO (no password).
+	
+	Args:
+		username: Unique username for the account
+		email: User's email address
+		sso_provider: SSO provider name (e.g., 'ctu_fel')
+		sso_identifier: Unique identifier from SSO
+		display_name: Optional display name
+		country: Optional country
+		organization: Optional organization
+		group: Optional study group
+		verified: Whether account is verified (default True for SSO-only)
+	
+	Returns:
+		bool: True if successful, False if username/email already exists
+	"""
+	(db, cursor) = connect()
+	try:
+		# Check if username already exists
+		cursor.execute('SELECT id FROM users WHERE username = %s', (username,))
+		if cursor.fetchone():
+			return False
+		
+		# Create user with no password, SSO linked
+		cursor.execute(
+			'''INSERT INTO users 
+			   (username, email, password, salt, verified, sso_provider, sso_identifier, 
+			    sso_linked_at, password_login_enabled, display_name, country, organization, "group")
+			   VALUES (%s, %s, '', '', %s, %s, %s, NOW(), false, %s, %s, %s, %s)''',
+			(username, email, verified, sso_provider, sso_identifier, 
+			 display_name, country, organization, group)
+		)
+		db.commit()
+		return True
+	except Exception as e:
+		db.rollback()
+		return False
+	finally:
+		cursor.close()
+		db.close()
+
+
+def get_user_sso_status(user_id):
+	"""Get SSO status for a user.
+	
+	Args:
+		user_id: UUID of the user
+	
+	Returns:
+		Dict with SSO status or None
+	"""
+	(db, cursor) = connect()
+	try:
+		cursor.execute(
+			'''SELECT sso_provider, sso_identifier, sso_linked_at, password_login_enabled
+			   FROM users WHERE id = %s''',
+			(user_id,)
+		)
+		result = cursor.fetchone()
+		if result:
+			return {
+				'provider': result[0],
+				'identifier': result[1],
+				'linked_at': result[2],
+				'password_login_enabled': result[3]
+			}
+		return None
 	finally:
 		cursor.close()
 		db.close()

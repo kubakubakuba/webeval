@@ -15,6 +15,7 @@ import scoreboard as scoreboard_module
 import profile as profile_module
 import api as api_module
 import git as git_module
+import sso as sso_module
 from datetime import datetime, timezone
 
 # Load .env from /app/.env in Docker or ../.env locally
@@ -76,6 +77,9 @@ app.register_blueprint(admin_module.admin_bp)
 
 login_module.init_login(URL, mail)
 app.register_blueprint(login_module.login_bp)
+
+sso_module.init_sso(app)
+app.register_blueprint(sso_module.sso_bp, url_prefix='/sso')
 
 tasks_module.init_tasks(TASKS_DIR, TEMPLATES_DIR, check_submission_deadlines, check_admin)
 app.register_blueprint(tasks_module.tasks_bp)

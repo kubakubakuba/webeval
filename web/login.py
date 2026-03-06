@@ -253,6 +253,14 @@ def login():
 
 		user_id, hashed_password, salt, username, verified, email, token, display_name, country, organization, group, visibility = user
 
+		# Check if password login is enabled for this user
+		user_full = db.get_user_by_id(user_id)
+		if user_full and len(user_full) > 12:  # Check if new fields exist
+			password_login_enabled = user_full[12]  # Assuming it's the 13th field
+			if not password_login_enabled:
+				return render_template('error.html', 
+					error='Password login is disabled for this account. Please use SSO login.'), 403
+
 		if sha512((password + salt).encode()).hexdigest() == hashed_password:
 			if verified == 0:
 				if token == "_banned_":
@@ -262,6 +270,7 @@ def login():
 			session['logged_in'] = True
 			session['user_id'] = user_id
 			session['username'] = username
+			session['login_method'] = 'password'
 			return redirect('/')
 		else:
 			return render_template('invalid.html', redirect_url='/login')

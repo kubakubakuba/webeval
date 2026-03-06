@@ -36,7 +36,8 @@ uv pip install --python /opt/web-venv/bin/python \
 	markdown \
 	psycopg2-binary \
 	python-dotenv \
-	pygments
+	pygments \
+	requests
 
 echo ""
 echo "Creating Python virtual environment for evaluator service..."

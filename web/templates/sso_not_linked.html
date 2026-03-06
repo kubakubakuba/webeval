@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}
+SSO Account Not Linked
+{% endblock title %}
+
+{% block content %}
+	<style>
+		.back-link {
+			display: inline-flex;
+			align-items: center;
+			margin-bottom: 20px;
+			color: var(--link-color);
+			text-decoration: none;
+		}
+
+		.back-link:hover {
+			text-decoration: underline;
+		}
+	</style>
+
+	<a href="/login" class="back-link">
+		<svg width="20" height="20" style="vertical-align: middle; margin-right: 5px;">
+			<use href="/static/sprites.svg#back"></use>
+		</svg>
+		Back to Login
+	</a>
+
+	<div class="card">
+		<div class="card-body">
+			<h2>SSO Account Not Linked</h2>
+			<p>Your CTU FEL account (<strong>{{ sso_username }}</strong>) is not yet linked to any account in this system.</p>
+			
+			<h3>What would you like to do?</h3>
+			
+			<div class="mt-4">
+				<h4>Option 1: Link to Existing Account</h4>
+				<p>If you already have an account with us, log in with your username and password, then link your SSO account from your profile page.</p>
+				<div class="card card-btn" onclick="location.href='/login';" style="max-width: 300px;">
+					<div class="card-body text-center">
+						Login with Username/Password
+					</div>
+				</div>
+			</div>
+			
+			<div class="mt-4">
+				<h4>Option 2: Contact Administrator</h4>
+				<p>If you don't have an account yet, please contact your administrator to have an account created for you with SSO access.</p>
+			</div>
+		</div>
+	</div>
+{% endblock content %}

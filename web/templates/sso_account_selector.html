@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}
+Select Account
+{% endblock title %}
+
+{% block content %}
+	<style>
+		.back-link {
+			display: inline-flex;
+			align-items: center;
+			margin-bottom: 20px;
+			color: var(--link-color);
+			text-decoration: none;
+		}
+
+		.back-link:hover {
+			text-decoration: underline;
+		}
+
+		.account-card {
+			margin-bottom: 15px;
+			cursor: pointer;
+			transition: all 0.2s;
+		}
+
+		.account-card:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+		}
+
+		.account-info {
+			display: flex;
+			flex-direction: column;
+		}
+
+		.account-username {
+			font-size: 1.2em;
+			font-weight: bold;
+			margin-bottom: 5px;
+		}
+
+		.account-details {
+			font-size: 0.9em;
+			color: var(--text-muted);
+		}
+
+		.account-badge {
+			display: inline-block;
+			padding: 2px 8px;
+			border-radius: 3px;
+			font-size: 0.8em;
+			margin-right: 5px;
+		}
+
+		.badge-personal {
+			background-color: #e3f2fd;
+			color: #1976d2;
+		}
+
+		.badge-university {
+			background-color: #f3e5f5;
+			color: #7b1fa2;
+		}
+	</style>
+
+	<a href="/login" class="back-link">
+		<svg width="20" height="20" style="vertical-align: middle; margin-right: 5px;">
+			<use href="/static/sprites.svg#back"></use>
+		</svg>
+		Back to Login
+	</a>
+
+	<div class="card">
+		<div class="card-body">
+			<h2>Select Account</h2>
+			<p>Your CTU account (<strong>{{ sso_username }}</strong>) is linked to multiple accounts. Please select which one you want to use:</p>
+			
+			<div style="margin-top: 30px;">
+				{% for account in accounts %}
+				<div class="card account-card" onclick="location.href='/sso/select-account/{{ account.id }}';">
+					<div class="card-body">
+						<div class="account-info">
+							<div class="account-username">
+								{% if account.organization %}
+								<span class="account-badge badge-university">University</span>
+								{% else %}
+								<span class="account-badge badge-personal">Personal</span>
+								{% endif %}
+								{{ account.username }}
+							</div>
+							
+							{% if account.display_name %}
+							<div class="account-details">
+								<strong>Name:</strong> {{ account.display_name }}
+							</div>
+							{% endif %}
+							
+							{% if account.organization %}
+							<div class="account-details">
+								<strong>Organization:</strong> {{ account.organization }}
+								{% if account.group %}
+								 • <strong>Group:</strong> {{ account.group }}
+								{% endif %}
+							</div>
+							{% endif %}
+							
+							{% if not account.verified %}
+							<div class="account-details" style="color: var(--error-color);">
+								Not verified
+							</div>
+							{% elif not account.can_submit %}
+							<div class="account-details" style="color: var(--error-color);">
+								Disabled
+							</div>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+			
+			<div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+				<p style="font-size: 0.9em; color: var(--text-muted);">
+					<strong>Tip:</strong> You can link or unlink SSO from any account in your profile settings.
+				</p>
+			</div>
+		</div>
+	</div>
+{% endblock content %}

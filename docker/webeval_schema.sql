@@ -27,10 +27,23 @@ CREATE TABLE users (
     user_api_key character varying(64),
     user_api_key_expiry timestamp with time zone,
     settings jsonb DEFAULT '{}'::jsonb,
+    sso_provider character varying(50),
+    sso_identifier character varying(255),
+    sso_linked_at timestamp with time zone,
+    password_login_enabled boolean NOT NULL DEFAULT true,
     PRIMARY KEY (id),
     UNIQUE (email),
     UNIQUE (username)
 );
+
+-- Index for SSO lookups (non-unique to allow multiple accounts per SSO)
+CREATE INDEX idx_users_sso ON users(sso_provider, sso_identifier);
+
+-- Comments for SSO fields
+COMMENT ON COLUMN users.sso_provider IS 'SSO provider name (e.g., ctu_fel)';
+COMMENT ON COLUMN users.sso_identifier IS 'Unique identifier from SSO provider (e.g., preferred_username)';
+COMMENT ON COLUMN users.sso_linked_at IS 'Timestamp when SSO was linked to this account';
+COMMENT ON COLUMN users.password_login_enabled IS 'Whether password-based login is allowed (false for SSO-only accounts)';
 
 --
 -- Table: tasks

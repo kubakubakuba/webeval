@@ -19,7 +19,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
 	psycopg2-binary \
 	python-dotenv \
 	pygments \
-	requests
+	requests \
+	authlib
 
 COPY web/ /app/
 

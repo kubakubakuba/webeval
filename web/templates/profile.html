@@ -184,6 +184,68 @@ Profile
 			</div>
 		</div>
 		{% endif %}
+		
+		<hr />
+		<h3>SSO Authentication:</h3>
+		{% if sso_linked %}
+		<div class="alert alert-success">SSO account successfully linked!</div>
+		{% endif %}
+		{% if sso_unlinked %}
+		<div class="alert alert-success">SSO account successfully unlinked!</div>
+		{% endif %}
+		{% if password_login_changed %}
+		<div class="alert alert-success">Password login setting updated!</div>
+		{% endif %}
+		
+		{% if sso_status and sso_status.provider %}
+		<p><strong>Status:</strong> <span style="color: var(--success-color);">✓ Linked</span></p>
+		<p><strong>SSO Username:</strong> {{ sso_status.identifier }}</p>
+		<p><strong>Provider:</strong> CTU FEL</p>
+		{% if sso_status.linked_at %}
+		<p><strong>Linked at:</strong> {{ sso_status.linked_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+		{% endif %}
+		
+		<p><strong>Password Login:</strong> 
+			{% if sso_status.password_login_enabled %}
+			<span style="color: var(--success-color);">Enabled</span>
+			{% else %}
+			<span style="color: var(--error-color);">Disabled</span>
+			{% endif %}
+		</p>
+		
+		<div class="row gx-2">
+			<div class="col-6">
+				<form method="POST" action="/profile/sso/toggle-password" style="display: inline;">
+					<div class="card card-btn" onclick="this.closest('form').submit();">
+						<div class="card-body text-center">
+							{% if sso_status.password_login_enabled %}
+							Disable Password Login
+							{% else %}
+							Enable Password Login
+							{% endif %}
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="col-6">
+				<form method="POST" action="/sso/unlink" onsubmit="return confirm('Are you sure you want to unlink your SSO account? {% if not sso_status.password_login_enabled %}You must enable password login first.{% endif %}');">
+					<div class="card card-btn {% if not sso_status.password_login_enabled %}disabled{% endif %}" onclick="if(!this.classList.contains('disabled')) this.closest('form').submit();">
+						<div class="card-body text-center">
+							Unlink SSO
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+		{% else %}
+		<p><strong>Status:</strong> <span style="color: var(--text-color);">Not linked</span></p>
+		<p>Link your CTU FEL account to enable SSO login.</p>
+		<div class="card card-btn" onclick="location.href='/sso/login?action=link';">
+			<div class="card-body text-center">
+				Link CTU FEL SSO
+			</div>
+		</div>
+		{% endif %}
 	</div>
 
 	<!-- Right column: Editor Theme Selection -->

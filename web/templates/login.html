@@ -38,14 +38,14 @@ Login
 					<input type="password" id="password" name="password" class="form-control" required>
 				</div>
 				<div class="row">
-					<div class="col-sm-9">
+					<div class="col-sm-6">
 						<div class="card card-btn mx-auto mt-4" onclick="document.getElementById('loginForm').submit();">
 							<div class="card-body text-center">
 								Login
 							</div>
 						</div>
 					</div>
-					<div class="col-sm-3">
+					<div class="col-sm-6">
 						<div class="card card-btn mx-auto mt-4" onclick="location.href='/reset';">
 							<div class="card-body text-center">
 								Forgot Password
@@ -54,6 +54,17 @@ Login
 					</div>
 				</div>
 			</form>
+			
+			<!-- SSO Login Option -->
+			<div class="text-center mt-4">
+				<hr style="margin: 2rem 0;">
+				<p style="margin-bottom: 1rem;">Or sign in with:</p>
+				<div class="card card-btn mx-auto" onclick="location.href='/sso/login';" style="max-width: 300px;">
+					<div class="card-body text-center">
+						<strong>CTU FEE SSO</strong>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 {% endblock content %}

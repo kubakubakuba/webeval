@@ -36,6 +36,9 @@ def profile():
 
 	# Get user theme from settings
 	user_theme = db.get_user_setting(userid, 'editor_theme') or 'default'
+	
+	# Get SSO status
+	sso_status = db.get_user_sso_status(userid)
 
 	user_dict = {
 		'id': user[0],
@@ -62,10 +65,16 @@ def profile():
 		can_access_api_keys = True
 	else:
 		can_access_api_keys = can_access_api_keys == 'true' or can_access_api_keys is True
+	
+	# Check for SSO-related flash messages
+	sso_linked = request.args.get('sso_linked')
+	sso_unlinked = request.args.get('sso_unlinked')
+	password_login_changed = request.args.get('password_login_changed')
 
 	return render_template('profile.html', sessions=session, user=user_dict, user_theme=user_theme, 
 		allowed_privacy=allowed_privacy, can_change_display_name=can_change_display_name, 
-		can_access_api_keys=can_access_api_keys)
+		can_access_api_keys=can_access_api_keys, sso_status=sso_status,
+		sso_linked=sso_linked, sso_unlinked=sso_unlinked, password_login_changed=password_login_changed)
 
 
 @profile_bp.route('/org/<string:country>/<string:org>')
@@ -225,3 +234,26 @@ def save_theme(theme_name):
 		return jsonify({'success': True, 'theme': theme_name}), 200
 	else:
 		return jsonify({'error': 'Failed to save theme'}), 500
+
+
+@profile_bp.route('/sso/toggle-password', methods=['POST'])
+@login_required
+def toggle_password_login():
+	"""Toggle password login on/off for user."""
+	userid = session['user_id']
+	
+	# Get current SSO status
+	sso_status = db.get_user_sso_status(userid)
+	
+	if not sso_status or not sso_status['provider']:
+		return render_template('error.html', error='SSO must be linked before disabling password login'), 400
+	
+	# Toggle the setting
+	current_enabled = sso_status['password_login_enabled']
+	new_enabled = not current_enabled
+	
+	if db.toggle_password_login(userid, new_enabled):
+		return redirect(f'/profile?password_login_changed=true')
+	else:
+		return render_template('error.html', error='Failed to change password login setting'), 500
+

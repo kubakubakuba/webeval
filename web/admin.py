@@ -328,11 +328,12 @@ def admin_import_users():
 			if not row or all(cell.strip() == '' for cell in row):
 				continue
 			
-			# Expect 7-10 columns: email;username;display_name;country;organization;group;visibility;can_submit;can_change_display_name;can_access_api_keys
-			# can_submit, can_change_display_name, can_access_api_keys are optional and default to 1 (allow)
+			# Expect 7-11 columns: email;username;display_name;country;organization;group;visibility;can_submit;can_change_display_name;can_access_api_keys;sso_username
+			# can_submit, can_change_display_name, can_access_api_keys, sso_username are optional
+			# If sso_username is provided, account will be SSO-only (no password login)
 			if len(row) < 7:
 				return render_template('admin_import.html', 
-					errors=[f'Line {row_num}: Invalid format - expected 7-10 columns (semicolon-separated), got {len(row)}'])
+					errors=[f'Line {row_num}: Invalid format - expected 7-11 columns (semicolon-separated), got {len(row)}'])
 			
 			users_data.append({
 				'email': row[0].strip(),
@@ -344,7 +345,8 @@ def admin_import_users():
 				'visibility': row[6].strip(),
 				'can_submit': row[7].strip() if len(row) > 7 else '1',
 				'can_change_display_name': row[8].strip() if len(row) > 8 else '1',
-				'can_access_api_keys': row[9].strip() if len(row) > 9 else '1'
+				'can_access_api_keys': row[9].strip() if len(row) > 9 else '1',
+				'sso_username': row[10].strip() if len(row) > 10 else ''
 			})
 		
 		if not users_data:

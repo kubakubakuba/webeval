@@ -52,6 +52,10 @@ services:
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
       - BASE_URL=${BASE_URL:-https://eval.comparch.edu.cvut.cz}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET}
+      - OIDC_SERVER_URL=${OIDC_SERVER_URL:-https://auth-test.fel.cvut.cz}
+      - OIDC_REDIRECT_URI=${OIDC_REDIRECT_URI}
       - TEMPLATES_DIR=/data/S_templates
       - TASKS_DIR=/data/tasks
       - DB_INITIAL_DATA_MOUNTED=${DB_INITIAL_DATA:+/docker-init/data/initial_data.sql}

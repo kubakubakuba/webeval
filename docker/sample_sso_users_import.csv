@@ -1,0 +1,4 @@
+email;username;display_name;country;organization;group;visibility;can_submit;can_change_display_name;can_access_api_keys;sso_username
+student1@fel.cvut.cz;jnovak01;Ing. Jan Novák;CZ;CTU FEL;B221;2;1;0;1;novakj01
+student2@fel.cvut.cz;asmith02;Alice Smith, Ph.D.;CZ;CTU FEL;B221;2;1;0;1;smitha02
+student3@fel.cvut.cz;pbrown03;Peter Brown;CZ;CTU FEL;B221;2;1;0;1;brownp03
