@@ -115,9 +115,6 @@ def _handle_sso_login(sso_username, full_name, given_name, family_name):
 		if not verified:
 			return render_template('error.html', error='Your account is not verified'), 403
 		
-		if not can_submit:
-			return render_template('error.html', error='Your account is disabled'), 403
-		
 		# Set session
 		session['logged_in'] = True
 		session['user_id'] = user_id
@@ -212,9 +209,6 @@ def sso_select_account(user_id):
 	
 	if not selected_account['verified']:
 		return render_template('error.html', error='Selected account is not verified'), 403
-	
-	if not selected_account['can_submit']:
-		return render_template('error.html', error='Selected account is disabled'), 403
 	
 	# Set session
 	session['logged_in'] = True
