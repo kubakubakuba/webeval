@@ -163,6 +163,7 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;b35apo;3;0;0;1</pre>
                                         <th>Can Submit</th>
                                         <th>Change DispName</th>
                                         <th>API Access</th>
+                                        <th>SSO Username</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -185,6 +186,7 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;b35apo;3;0;0;1</pre>
                                         <td>{{ 'Yes' if user.can_submit == '1' else 'No' }}</td>
                                         <td>{{ 'Yes' if user.can_change_display_name == '1' else 'No' }}</td>
                                         <td>{{ 'Yes' if user.can_access_api_keys == '1' else 'No' }}</td>
+                                        <td>{{ user.sso_username if user.sso_username else '<em class="text-muted">None</em>' | safe }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -214,6 +216,7 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;b35apo;3;0;0;1</pre>
                                         <th>Can Submit</th>
                                         <th>Change DispName</th>
                                         <th>API Access</th>
+                                        <th>SSO Username</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -236,6 +239,7 @@ jane@example.com;jane456;Jane Smith;UK;Oxford;b35apo;3;0;0;1</pre>
                                         <td>{{ 'Yes' if user.can_submit == '1' else 'No' }}</td>
                                         <td>{{ 'Yes' if user.can_change_display_name == '1' else 'No' }}</td>
                                         <td>{{ 'Yes' if user.can_access_api_keys == '1' else 'No' }}</td>
+                                        <td>{{ user.sso_username if user.sso_username else '<em class="text-muted">None (password login)</em>' | safe }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
