@@ -104,16 +104,6 @@ Select Account
 								{% endif %}
 							</div>
 							{% endif %}
-							
-							{% if not account.verified %}
-							<div class="account-details" style="color: var(--error-color);">
-								Not verified
-							</div>
-							{% elif not account.can_submit %}
-							<div class="account-details" style="color: var(--error-color);">
-								Disabled
-							</div>
-							{% endif %}
 						</div>
 					</div>
 				</div>
