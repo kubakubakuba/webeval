@@ -60,14 +60,19 @@ def get_task_id_for_path(file_path):
 	
 	return None
 
-def fetch_file_content(repo_full_name, commit_sha, file_path, project_id=None):
+def fetch_file_content(repo_full_name, commit_sha, file_path, project_id=None, namespace=None):
 	config = GIT_MAPPING.get('config', {})
 	tokens = GIT_MAPPING.get('tokens', [])
 
 	template = config.get('url_template')
 
-	namespace_p = repo_full_name.split("/")
-	namespace = namespace_p[0] if namespace_p else None
+	with open("/tmp/fetch_url.txt", "a") as f:
+		f.write(f"\nrepo_full_name is: {repo_full_name}\n\n")
+		f.write(f"namespace: {namespace}\n\n")
+
+	#namespace_p = repo_full_name.split("/") if repo_full_name is not None else repo_full_name
+
+	#namespace = namespace_p[0] if namespace_p else None
 
 	org_token = None
 	for t in tokens:
@@ -91,9 +96,9 @@ def fetch_file_content(repo_full_name, commit_sha, file_path, project_id=None):
 		encoded_path=encoded_path
 	)
 
-	#with open("/tmp/fetch_url.txt", "a") as f:
-	#	f.write(f"\n\n{url}\n")
-	#	f.write(f"project_id: {project_id}\n")
+	with open("/tmp/fetch_url.txt", "a") as f:
+		f.write(f"\n\n{url}\n")
+		f.write(f"project_id: {project_id}\n")
 	
 	try:
 		headers = {}
@@ -109,9 +114,15 @@ def fetch_file_content(repo_full_name, commit_sha, file_path, project_id=None):
 		if response.status_code == 200:
 			return response.text
 		else:
+			with open("/tmp/fetch_url.txt", "a") as f:
+						f.write(f"\nFAILED TO FETCH: {response.status_code} from {url}\n")
+
 			print(f" [GIT] Failed to fetch file {url}: HTTP {response.status_code}")
 	except Exception as e:
 		print(f" [GIT] Error fetching file: {e}")
+		with open("/tmp/fetch_url.txt", "a") as f:
+					f.write(f"ERROR: {e}\n")
+
 	return None
 
 def process_submission_logic(username, task_id, code):
@@ -168,8 +179,8 @@ def process_submission_logic(username, task_id, code):
 
 @git_bp.route('/webhook', methods=['POST'])
 def handle_webhook():
-	#with open("/tmp/webhook.txt", "a") as f:
-	#	f.write(f"{request.get_data(as_text=True)}\n\n")
+	with open("/tmp/webhook.txt", "a") as f:
+		f.write(f"{request.get_data(as_text=True)}\n\n")
 
 	if not verify_signature(request):
 		return jsonify({'error': 'Invalid signature or secret not configured'}), 401
@@ -181,6 +192,8 @@ def handle_webhook():
 	if 'commits' not in data:
 		return jsonify({'message': 'Event ignored (not a push)'}), 200
 
+	namespace = None
+
 	repo_data = data.get('repository')
 	project_data = data.get('project')
 	if repo_data is None:
@@ -191,6 +204,9 @@ def handle_webhook():
 	project_id = None
 
 	if project_data is not None:
+		if 'namespace' in project_data:
+			namespace = project_data.get('namespace')
+
 		if 'path_with_namespace' in project_data:
 			repo_full_name = project_data.get('path_with_namespace')
 			project_id = project_data.get('id')
@@ -198,8 +214,8 @@ def handle_webhook():
 	if repo_full_name is None:
 		if 'full_name' in repo_data:
 			repo_full_name = repo_data.get('full_name')
-	#repo_full_name = repo_data.get('full_name') or repo_data.get('path_with_namespace')
-	
+
+
 	postfix = GIT_MAPPING.get('org', {}).get('postfix', '')
 	username = f"{repo_name}{postfix}"
 
@@ -215,7 +231,7 @@ def handle_webhook():
 			if task_id:
 				print(f" [GIT] Processing {file_path} for user {username} (Task {task_id})")
 				
-				code_content = fetch_file_content(repo_full_name, commit_sha, file_path, project_id)
+				code_content = fetch_file_content(repo_full_name, commit_sha, file_path, project_id, namespace)
 				
 				if code_content:
 					success, msg = process_submission_logic(username, task_id, code_content)
