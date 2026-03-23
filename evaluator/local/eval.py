@@ -11,6 +11,7 @@ class Evaluator():
 		self.score = -1
 		self.verbose = verbose
 		self.sim = None
+		self.scoring_expr = [] # Score is the sum of these fields
 
 	def evaluate(self, task_file, submission_file):
 		#get arguments from task toml file
@@ -105,6 +106,9 @@ class Evaluator():
 				
 				if self.verbose:
 					self.sim.set_verbose(True)
+
+				if task_data["task"].get("scoring_expression", None) != None:
+					self.sim.set_scoring_expr(task_data["task"]["scoring_expression"])
 
 				score = 0
 				tests_passed = 0
