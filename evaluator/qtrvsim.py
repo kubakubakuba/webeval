@@ -34,6 +34,7 @@ class QtRVSim:
 		self.reference_uart = ""
 		self.input_uart = ""
 		self.starting_memory_addresses = []
+		self.scoring_expr = [] # Score is the sum of these fields
 
 		self.reference_ending_memory_addr = 0
 		self.reference_ending_memory_length = 0
@@ -383,6 +384,23 @@ class QtRVSim:
 			if f"R{i}" in self.regs:
 				self.regs[self.register_names[i]] = self.regs.pop(f"R{i}") #replace Ri values with the register names
 
+	def set_scoring_expr(self, expr): 
+		for slice in str(expr).split("+"):
+			self.scoring_expr.append(slice.strip())
+
+	def compute_score(self):
+		self.scores["cycles"] = 0
+
+		if len(self.scoring_expr) == 0:
+			self.scores["cycles"] = self.cycles # the default scoring metric is only cycles
+			return
+
+		for field in self.scoring_expr: # custom scoring metric
+			if field == "cycles":
+				self.scores["cycles"] += self.cycles
+			elif field in self.cache_stats:
+				self.scores["cycles"] += self.cache_stats[field]
+
 	def set_verbose(self, val=True):
 		'''Set whether to print the stdout and stderr of qtrvsim to the console.'''
 		self.verbose = val
@@ -547,7 +565,7 @@ class QtRVSim:
 			self.result = was_accepted
 
 		#save score metrics, -> cycles and cache stats
-		self.scores["cycles"] = self.cycles #scoring metric for cycles
+		self.compute_score() # scoring metric can be provided by task_data
 		self.scores["cache"] = self.cache_stats["i-cache:improved-speed"] #scoring metric for cache
 
 		self.results[test_name] = (self.result, self.scores["cycles"], self.scores["cache"])

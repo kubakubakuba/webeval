@@ -148,6 +148,9 @@ def evaluate_submissions(num_submissions = 10):
 	
 				sim.set_args(args=task_data["arguments"]["run"])
 
+				if task_data["task"].get("scoring_expression", None) != None:
+					sim.set_scoring_expr(task_data["task"]["scoring_expression"])
+
 				score = 0
 				tests_passed = 0
 				timed_out = False
