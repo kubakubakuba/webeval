@@ -384,7 +384,7 @@ class QtRVSim:
 			if f"R{i}" in self.regs:
 				self.regs[self.register_names[i]] = self.regs.pop(f"R{i}") #replace Ri values with the register names
 
-	def set_scoring_expr(self, expr): 
+	def set_scoring_expr(self, expr):
 		for slice in str(expr).split("+"):
 			self.scoring_expr.append(slice.strip())
 

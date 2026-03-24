@@ -34,6 +34,7 @@ class QtRVSim:
 		self.reference_uart = ""
 		self.input_uart = ""
 		self.starting_memory_addresses = []
+		self.scoring_expr = [] # Score is the sum of these fields
 
 		self.reference_ending_memory_addr = 0
 		self.reference_ending_memory_length = 0
@@ -325,7 +326,7 @@ class QtRVSim:
 			if f"R{i}" in self.regs:
 				self.regs[self.register_names[i]] = self.regs.pop(f"R{i}") #replace Ri values with the register names
 
-	def set_scoring_expr(self, expr): 
+	def set_scoring_expr(self, expr):
 		for slice in str(expr).split("+"):
 			self.scoring_expr.append(slice.strip())
 
@@ -338,9 +339,9 @@ class QtRVSim:
 
 		for field in self.scoring_expr: # custom scoring metric
 			if field == "cycles":
-				self.scores["cycles"] += self.cycles 
+				self.scores["cycles"] += self.cycles
 			elif field in self.cache_stats:
-				self.scores["cycles"] += self.cache_stats[field] 
+				self.scores["cycles"] += self.cache_stats[field]
 
 	def set_verbose(self, val=True):
 		'''Set whether to print the stdout and stderr of qtrvsim to the console.'''
